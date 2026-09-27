@@ -1,7 +1,7 @@
 {
-    "versionCode":  16,
-    "versionName":  "1.5.9",
+    "versionCode":  17,
+    "versionName":  "1.6.0",
     "apk":  "ARI.apk",
-    "notes":  "Neu gekoppelte Geraete bekommen automatisch das echte Geraetemodell als Namen statt immer \"Handy-App\" - am PC umbenennbar",
+    "notes":  "Wischen zwischen den Reitern (unten): der Inhalt und die Markierung in der Tab-Leiste gleiten jetzt live mit dem Finger mit, Tempo der Animation passt sich der Wisch-Geschwindigkeit an",
     "sizeMb":  5.9
 }
