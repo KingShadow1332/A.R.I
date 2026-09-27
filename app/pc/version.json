@@ -1,7 +1,7 @@
 {
-    "version":  14,
-    "name":  "1.3.6",
+    "version":  15,
+    "name":  "1.3.7",
     "zip":  "ari-pc.zip",
-    "sha256":  "63ad84350f3a98aea61a4d09d6f40b898ddcb3a8677ee323ccb53d72b6f972bb",
-    "notes":  "Mails im HUD anklicken: der ganze Text wird angezeigt\nKopplungs-Link geht immer an dein verbundenes Google-Konto, keine Adresse mehr eintippen\nKopplung: gleiches Handy ersetzt seinen alten Eintrag statt doppelt zu erscheinen\nKleine Verbesserungen"
+    "sha256":  "8eae5ee712dbd80477167b63eb12f6018554f9dcfb4789569ffb01b6f42e736a",
+    "notes":  "Handy-Kopplung: nur noch ueber WLAN, kein Cloudflare-Tunnel mehr\nDadurch entfaellt der Kopplungs-Link per Mail und die Adresse ueber ntfy.sh\nEinfacher und sicherer: PC und Handy muessen im selben Netz sein"
 }
