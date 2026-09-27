@@ -1,7 +1,7 @@
 {
-    "version":  19,
-    "name":  "1.4.1",
+    "version":  20,
+    "name":  "1.4.2",
     "zip":  "ari-pc.zip",
-    "sha256":  "175d30403b979823e8ae70edcaeb8cbd0608ce0b572af84896d99d2daca00bef",
-    "notes":  "Handy findet den PC jetzt automatisch im WLAN per UDP-Suche - beim Koppeln reicht meist nur noch der Code, keine Adresse mehr noetig\nWindows fragt beim ersten Start evtl. einmal nach Firewall-Erlaubnis dafuer - zulassen"
+    "sha256":  "a1bd92438416794761b056283deba0935487fa07bd454e3cb752999347439cf8",
+    "notes":  "PC-Bildschirm-Seite (phone.html) akzeptiert jetzt einen bereits vorhandenen Kopplungs-Token per Link - die Handy-App kann sich damit direkt am Bildschirm anmelden, ohne dort nochmal zu koppeln"
 }
