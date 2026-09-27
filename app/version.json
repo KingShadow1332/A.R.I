@@ -1,7 +1,7 @@
 {
-    "versionCode":  12,
-    "versionName":  "1.5.6",
+    "versionCode":  13,
+    "versionName":  "1.5.7",
     "apk":  "ARI.apk",
-    "notes":  "Mails anklicken: der ganze Text wird angezeigt (auch ohne PC ueber Google)\nKoppeln: deutlich sichtbarer Status im PC-Tab und Bestaetigung nach dem Verbinden\nNeuer Dialog beim Koppeln, klare Meldung bei abgelaufenem Link",
+    "notes":  "Verbindung zum PC nur noch im selben WLAN (kein Internet-Zugriff mehr noetig/moeglich)\nKlarere Meldung, wenn der PC nicht im selben Netz erreichbar ist",
     "sizeMb":  5.9
 }
