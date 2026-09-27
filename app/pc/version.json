@@ -1,7 +1,7 @@
 {
-    "version":  18,
-    "name":  "1.4.0",
+    "version":  19,
+    "name":  "1.4.1",
     "zip":  "ari-pc.zip",
-    "sha256":  "8e4f091e9aa16e2e89127372867d997a142178406b5c38157e7e661513643978",
-    "notes":  "Geraete umbenennen: am Namen in Einstellungen -\u003e HANDY klicken (z. B. \"Handy\" / \"Tablet\")"
+    "sha256":  "175d30403b979823e8ae70edcaeb8cbd0608ce0b572af84896d99d2daca00bef",
+    "notes":  "Handy findet den PC jetzt automatisch im WLAN per UDP-Suche - beim Koppeln reicht meist nur noch der Code, keine Adresse mehr noetig\nWindows fragt beim ersten Start evtl. einmal nach Firewall-Erlaubnis dafuer - zulassen"
 }
