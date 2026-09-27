@@ -1,7 +1,7 @@
 {
-    "versionCode":  23,
-    "versionName":  "1.6.6",
+    "versionCode":  24,
+    "versionName":  "1.6.7",
     "apk":  "ARI.apk",
-    "notes":  "Geraetename beim Koppeln kommt jetzt vom Android-Systemnamen (Einstellungen -\u003e Ueber das Telefon -\u003e Geraetename) statt einer Marken-Ratetabelle - zeigt automatisch den richtigen Namen bei jeder Marke, auch wenn man das Handy selbst umbenannt hat",
+    "notes":  "PC OEFFNEN bleibt jetzt in der App (WLAN-Adressen sind erlaubt), statt in den externen Browser zu wechseln",
     "sizeMb":  5.9
 }
