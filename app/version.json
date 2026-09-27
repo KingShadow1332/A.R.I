@@ -1,6 +1,6 @@
 {
-    "versionCode":  15,
-    "versionName":  "1.5.8",
+    "versionCode":  16,
+    "versionName":  "1.5.9",
     "apk":  "ARI.apk",
     "notes":  "Neu gekoppelte Geraete bekommen automatisch das echte Geraetemodell als Namen statt immer \"Handy-App\" - am PC umbenennbar",
     "sizeMb":  5.9
