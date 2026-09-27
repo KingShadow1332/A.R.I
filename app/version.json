@@ -1,7 +1,7 @@
 {
-    "versionCode":  22,
-    "versionName":  "1.6.5",
+    "versionCode":  23,
+    "versionName":  "1.6.6",
     "apk":  "ARI.apk",
-    "notes":  "Bekannte Samsung-Geraete zeigen jetzt den Produktnamen (z.B. \"Galaxy S24 Ultra\") statt des Modellcodes (\"SM-S938B\") beim Koppeln - andere/unbekannte Modelle bleiben beim Modellcode, umbenennbar wie gehabt",
+    "notes":  "Geraetename beim Koppeln kommt jetzt vom Android-Systemnamen (Einstellungen -\u003e Ueber das Telefon -\u003e Geraetename) statt einer Marken-Ratetabelle - zeigt automatisch den richtigen Namen bei jeder Marke, auch wenn man das Handy selbst umbenannt hat",
     "sizeMb":  5.9
 }
