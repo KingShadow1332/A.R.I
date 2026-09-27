@@ -531,12 +531,38 @@ function renderPcs(){
     const del=document.createElement('button');del.className='btn dng';del.style.flex='0 0 52px';del.textContent='✕';del.onclick=()=>{pcs.splice(i,1);store.set('ari-app-pcs',pcs);renderPcs();};
     r.append(go,del);box.appendChild(r);});
 }
-// PC-Adresse per UDP-Broadcast im WLAN suchen (nur nativ) - damit reicht am Handy meist nur der Code.
-// Antwortet kein A.R.I (anderes Netz, Handy-Zugriff am PC aus, mehrere gefunden), bleibt die manuelle
-// Adresse als Fallback.
-async function discoverPc(){
+// PC im WLAN suchen (nur nativ), zwei Wege gleichzeitig, weil UDP-Broadcast nicht jeder Router/Mesh
+// weiterleitet: 1) schneller UDP-Broadcast, den der Hub direkt beantwortet, 2) Subnetz-Scan per HTTP
+// (eigene WLAN-IP -> alle 254 Adressen im gleichen /24 auf Port 5000 pruefen). Ergebnisse werden
+// zusammengefuehrt; findet es mehrere A.R.I, wird einfach das erste genommen statt zu blockieren -
+// wer's genauer braucht, traegt die Adresse von Hand ein.
+async function discoverPcUdp(){
   if(!NATIVE||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.AriWake)return[];
   try{const r=await Capacitor.Plugins.AriWake.discoverPc();return(r&&r.ips)||[];}catch(e){return[];}
+}
+async function subnetScan(){
+  if(!NATIVE||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.AriWake)return[];
+  let ip;try{const r=await Capacitor.Plugins.AriWake.wifiInfo();ip=r&&r.ip;}catch(e){return[];}
+  if(!ip||!/^\d+\.\d+\.\d+\.\d+$/.test(ip))return[];
+  const parts=ip.split('.'),prefix=parts[0]+'.'+parts[1]+'.'+parts[2]+'.',own=+parts[3];
+  const found=[],hosts=[];for(let i=1;i<=254;i++)if(i!==own)hosts.push(i);
+  const chunk=40;
+  for(let i=0;i<hosts.length;i+=chunk){
+    await Promise.all(hosts.slice(i,i+chunk).map(async n=>{
+      const host=prefix+n;
+      try{
+        const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),400);
+        const r=await fetch('http://'+host+':5000/phone/manifest.json',{signal:ctrl.signal});
+        clearTimeout(t);
+        if(r.ok){const d=await r.json();if(d&&d.name==='A.R.I')found.push(host);}
+      }catch(e){}
+    }));
+  }
+  return found;
+}
+async function discoverPc(){
+  const[udp,scan]=await Promise.all([discoverPcUdp(),subnetScan()]);
+  return[...new Set([...udp,...scan])];
 }
 // Ohne QR-Code: nur der Koppelcode ist noetig, die Adresse sucht die App sich selbst im WLAN
 // (leeres Adressfeld) - wer mag, kann sie trotzdem von Hand eintragen.
@@ -547,8 +573,7 @@ $('#pcPair').onclick=async()=>{
   if(!a){
     msg.textContent='Suche PC im WLAN …';
     const ips=await discoverPc();
-    if(ips.length===1)a=ips[0];
-    else if(ips.length>1){msg.textContent='Mehrere A.R.I im WLAN gefunden – bitte Adresse eintragen: '+ips.join(', ');return;}
+    if(ips.length)a=ips[0];
     else{msg.textContent='Kein PC im WLAN gefunden – bitte Adresse eintragen (steht am PC unter Einstellungen → HANDY).';return;}
   }
   if(!/^https?:\/\//i.test(a))a='http://'+a;
@@ -568,17 +593,19 @@ $('#pcGo').onclick=async()=>{
   if(!v){
     $('#pcMsg').textContent='Suche PC im WLAN …';
     const ips=await discoverPc();
-    if(ips.length===1)v='http://'+ips[0]+':5000';
-    else if(ips.length>1){$('#pcMsg').textContent='Mehrere A.R.I im WLAN gefunden – bitte Adresse eintragen: '+ips.join(', ');return;}
+    if(ips.length)v='http://'+ips[0]+':5000';
     else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – bitte Link oder Adresse einfügen.';return;}
   }
   {const A=parseAnyLink(v);if(A){$('#pcLink').value='';pairFromLink(A.origin,A.code);return;}}
   if(!/^https?:\/\//i.test(v))v='http://'+v;
   let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return;}
   if(!/\/phone/.test(u.pathname))u.pathname=u.pathname.replace(/\/$/,'')+'/phone';
-  const url=u.toString();
+  let url=u.toString();
   if(!/[#&]l=/.test(url)){const nm='PC ('+u.hostname+')';
     if(!pcs.some(p=>p.url===url)){pcs.push({name:nm,url});store.set('ari-app-pcs',pcs);}}
+  // Schon gekoppelt (sync.token)? Dann direkt am PC-Bildschirm anmelden, statt dort nochmal zu koppeln -
+  // ist der Token dort ungueltig, faengt die Bildschirm-Seite das selbst per 401 -> eigene Kopplung ab.
+  if(sync.token&&!/[#&][lt]=/.test(url))url+='#t='+encodeURIComponent(sync.token);
   location.href=url;
 };
 
