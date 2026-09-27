@@ -559,14 +559,25 @@ $('#pcPair').onclick=async()=>{
 };
 // Link einfuegen -> koppelt sich sofort von allein (kein extra Knopf noetig)
 $('#pcLink').addEventListener('input',()=>{const A=parseAnyLink($('#pcLink').value);if(A){$('#pcLink').value='';$('#pcMsg').textContent='Koppeln …';pairFromLink(A.origin,A.code);}});
-$('#pcGo').onclick=()=>{
-  let v=$('#pcLink').value.trim();if(!v){$('#pcMsg').textContent='Bitte Link oder Adresse einfügen.';return;}
+// "PC OEFFNEN": zeigt den PC-Bildschirm zum Antippen. Ohne eingetragenen Link nimmt es den bereits
+// gekoppelten PC (sync.origin), sonst sucht es ihn wie beim Koppeln per UDP-Broadcast im WLAN -
+// nur wenn beides nichts findet, muss eine Adresse eingetippt werden.
+$('#pcGo').onclick=async()=>{
+  let v=$('#pcLink').value.trim();
+  if(!v&&sync.origin)v=sync.origin;
+  if(!v){
+    $('#pcMsg').textContent='Suche PC im WLAN …';
+    const ips=await discoverPc();
+    if(ips.length===1)v='http://'+ips[0]+':5000';
+    else if(ips.length>1){$('#pcMsg').textContent='Mehrere A.R.I im WLAN gefunden – bitte Adresse eintragen: '+ips.join(', ');return;}
+    else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – bitte Link oder Adresse einfügen.';return;}
+  }
   {const A=parseAnyLink(v);if(A){$('#pcLink').value='';pairFromLink(A.origin,A.code);return;}}
   if(!/^https?:\/\//i.test(v))v='http://'+v;
   let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return;}
   if(!/\/phone/.test(u.pathname))u.pathname=u.pathname.replace(/\/$/,'')+'/phone';
   const url=u.toString();
-  if(!/[#&]l=/.test(url)){const nm=u.hostname.endsWith('trycloudflare.com')?'PC (unterwegs)':'PC ('+u.hostname+')';
+  if(!/[#&]l=/.test(url)){const nm='PC ('+u.hostname+')';
     if(!pcs.some(p=>p.url===url)){pcs.push({name:nm,url});store.set('ari-app-pcs',pcs);}}
   location.href=url;
 };
