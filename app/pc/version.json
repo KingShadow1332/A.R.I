@@ -1,7 +1,7 @@
 {
-    "version":  22,
-    "name":  "1.4.4",
+    "version":  23,
+    "name":  "1.4.5",
     "zip":  "ari-pc.zip",
-    "sha256":  "58594e497af097ce5aad00aaa03afb9d5ebf55cd1b9ce0cee40816636e21d52d",
-    "notes":  "PC-ANSICHT auf dem Handy/Tablet oeffnet jetzt die echte PC-Oberflaeche mit allen Funktionen (Chat, Einstellungen, Steuerung) - sicher angemeldet ueber denselben Kopplungs-Code wie die App, nicht mehr nur eine Nachbildung"
+    "sha256":  "e4d1888daa91af3909a2fdc56a30bf66c16aca776120edea1f320551d05e46af",
+    "notes":  "Update-Bestaetigung sieht jetzt aus wie der Rest von A.R.I, statt der haesslichen Browser-Meldung (\"Auf 127.0.0.1:5000 wird Folgendes angezeigt\")"
 }
