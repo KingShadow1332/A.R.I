@@ -481,12 +481,27 @@ function renderPcs(){
     const del=document.createElement('button');del.className='btn dng';del.style.flex='0 0 52px';del.textContent='✕';del.onclick=()=>{pcs.splice(i,1);store.set('ari-app-pcs',pcs);renderPcs();};
     r.append(go,del);box.appendChild(r);});
 }
-// Ohne QR-Code: PC-Adresse + Koppelcode von Hand eintragen
-$('#pcPair').onclick=()=>{
+// PC-Adresse per UDP-Broadcast im WLAN suchen (nur nativ) - damit reicht am Handy meist nur der Code.
+// Antwortet kein A.R.I (anderes Netz, Handy-Zugriff am PC aus, mehrere gefunden), bleibt die manuelle
+// Adresse als Fallback.
+async function discoverPc(){
+  if(!NATIVE||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.AriWake)return[];
+  try{const r=await Capacitor.Plugins.AriWake.discoverPc();return(r&&r.ips)||[];}catch(e){return[];}
+}
+// Ohne QR-Code: nur der Koppelcode ist noetig, die Adresse sucht die App sich selbst im WLAN
+// (leeres Adressfeld) - wer mag, kann sie trotzdem von Hand eintragen.
+$('#pcPair').onclick=async()=>{
   let a=$('#pcAddr').value.trim(),c=$('#pcCode').value.replace(/[\s-]/g,'');
   const msg=$('#pcMsg');
-  if(!a||!c){msg.textContent='Bitte Adresse und Koppelcode eintragen.';return;}
-  if(!/^https?:\/\//i.test(a))a=(/trycloudflare\.com|\.[a-z]{2,}$/i.test(a)&&!/^\d+\.\d+\.\d+\.\d+/.test(a)?'https://':'http://')+a;
+  if(!c){msg.textContent='Bitte den Koppelcode eintragen.';return;}
+  if(!a){
+    msg.textContent='Suche PC im WLAN …';
+    const ips=await discoverPc();
+    if(ips.length===1)a=ips[0];
+    else if(ips.length>1){msg.textContent='Mehrere A.R.I im WLAN gefunden – bitte Adresse eintragen: '+ips.join(', ');return;}
+    else{msg.textContent='Kein PC im WLAN gefunden – bitte Adresse eintragen (steht am PC unter Einstellungen → HANDY).';return;}
+  }
+  if(!/^https?:\/\//i.test(a))a='http://'+a;
   let u;try{u=new URL(a);}catch(e){msg.textContent='Ungültige Adresse.';return;}
   if(!u.port&&u.protocol==='http:')u.port='5000';
   msg.textContent='Koppeln …';$('#pcCode').value='';
