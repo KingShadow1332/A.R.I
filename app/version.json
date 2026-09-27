@@ -1,7 +1,7 @@
 {
-    "versionCode":  13,
-    "versionName":  "1.5.7",
+    "versionCode":  15,
+    "versionName":  "1.5.8",
     "apk":  "ARI.apk",
-    "notes":  "Verbindung zum PC nur noch im selben WLAN (kein Internet-Zugriff mehr noetig/moeglich)\nKlarere Meldung, wenn der PC nicht im selben Netz erreichbar ist",
+    "notes":  "Neu gekoppelte Geraete bekommen automatisch das echte Geraetemodell als Namen statt immer \"Handy-App\" - am PC umbenennbar",
     "sizeMb":  5.9
 }
