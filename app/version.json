@@ -1,7 +1,7 @@
 {
-    "versionCode":  18,
-    "versionName":  "1.6.1",
+    "versionCode":  19,
+    "versionName":  "1.6.2",
     "apk":  "ARI.apk",
-    "notes":  "Koppeln ohne QR-Code: die PC-Adresse wird automatisch im WLAN gesucht, nur noch der Code ist noetig (Adresse bleibt als Fallback moeglich)\nVeraltete Hinweise zu \u0027unterwegs erreichbar\u0027 entfernt (gibt es seit dem WLAN-only-Umbau nicht mehr)",
+    "notes":  "Fix: Wisch-Animation zwischen den Reitern war im letzten Update versehentlich verschwunden - jetzt wieder da",
     "sizeMb":  5.9
 }
