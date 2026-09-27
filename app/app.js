@@ -14,75 +14,25 @@ const saveCfg=()=>{store.set('ari-app-cfg',cfg);try{refreshReady();}catch(e){}};
 const saveBrain=()=>store.set('ari-app-brain',brain);
 
 /* ---------- Tabs / Uhr ---------- */
-const TAB_ORDER=$$('nav button').map(b=>b.dataset.t);
-function moveNavInd(t){const ind=$('#navInd');if(!ind)return;const i=TAB_ORDER.indexOf(t);if(i<0)return;ind.style.transform='translateX('+(i*100)+'%)';}
-function goTab(t){$$('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));moveNavInd(t);if(t==='brain')renderBrain();if(t==='pc')renderPcs();if(t==='cal')loadCalData();}
+function goTab(t){$$('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));if(t==='brain')renderBrain();if(t==='pc')renderPcs();if(t==='cal')loadCalData();}
 $$('nav button').forEach(b=>b.onclick=()=>goTab(b.dataset.t));
-moveNavInd(TAB_ORDER[0]);
-// Wischen zwischen den Reitern (Chat/Termine/Gehirn/PC/Einst.): der Inhalt und die Unterstreichung
-// in der Tab-Leiste unten folgen live dem Finger, beim Loslassen rutscht alles mit Schwung fertig -
-// je schneller gewischt wurde, desto kuerzer/schneller die Animation. Nur bei ueberwiegend waagerechter
-// Bewegung, damit normales Scrollen in den Listen (und die Chip-Leiste) nicht gestoert wird.
+// Wischen zwischen den Reitern (Chat/Termine/Gehirn/PC/Einst.) statt immer unten tippen zu muessen -
+// nur bei ueberwiegend waagerechter Bewegung, damit normales Scrollen in den Listen nicht gestoert wird.
 (function swipeTabs(){
   const mainEl=document.querySelector('main');if(!mainEl)return;
-  const order=TAB_ORDER;
-  let sx=0,sy=0,st=0,dx=0,tracking=false,locked=false,swp=null;
-  function hScrollable(el){
-    while(el&&el!==mainEl){
-      if(el.scrollWidth>el.clientWidth+2&&/auto|scroll/.test(getComputedStyle(el).overflowX))return true;
-      el=el.parentElement;
-    }
-    return false;
-  }
-  function reset(){
-    if(swp){swp.cs.style.cssText='';swp.ns.style.cssText='';if(!swp.commit)swp.ns.classList.remove('on');}
-    swp=null;tracking=false;locked=false;
-  }
-  mainEl.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1||hScrollable(e.target))return;
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();dx=0;tracking=true;locked=false;
-  },{passive:true});
-  mainEl.addEventListener('touchmove',e=>{
-    if(!tracking||e.touches.length!==1)return;
-    const t=e.touches[0];const ddx=t.clientX-sx,ddy=t.clientY-sy;
-    if(!locked){
-      if(Math.abs(ddx)<10&&Math.abs(ddy)<10)return;
-      if(Math.abs(ddy)>=Math.abs(ddx)){tracking=false;return;}
-      const cur=$('nav button.on');if(!cur)return;
-      const ci=order.indexOf(cur.dataset.t);
-      const dir=ddx<0?1:-1;const ni=ci+dir;
-      if(ni<0||ni>=order.length){tracking=false;return;}
-      const cs=document.getElementById('t-'+order[ci]),ns=document.getElementById('t-'+order[ni]);
-      ns.style.transition='none';ns.classList.add('on');ns.style.transform='translateX('+(dir*100)+'%)';
-      cs.style.transition='none';
-      swp={dir,ci,ni,cs,ns,commit:false};locked=true;
-    }
-    e.preventDefault();dx=ddx;
-    const w=mainEl.clientWidth||innerWidth,clamped=Math.max(-w,Math.min(w,dx));
-    swp.cs.style.transform='translateX('+clamped+'px)';
-    swp.ns.style.transform='translateX(calc('+(swp.dir*100)+'% + '+clamped+'px))';
-    const ind=$('#navInd');
-    if(ind){ind.style.transition='none';ind.style.transform='translateX('+((swp.ci+swp.dir*Math.max(0,Math.min(1,Math.abs(clamped)/w)))*100)+'%)';}
-  },{passive:false});
-  function finish(){
+  const order=$$('nav button').map(b=>b.dataset.t);
+  let sx=0,sy=0,tracking=false;
+  mainEl.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;},{passive:true});
+  mainEl.addEventListener('touchend',e=>{
     if(!tracking)return;tracking=false;
-    if(!locked||!swp)return;
-    const elapsed=Math.max(16,Date.now()-st),v=Math.abs(dx)/elapsed;
-    const w=mainEl.clientWidth||innerWidth;
-    const commit=Math.abs(dx)>w*0.28||v>0.5;
-    swp.commit=commit;
-    const dur=Math.max(120,Math.min(320,(w-Math.abs(dx))/Math.max(v,0.35)));
-    swp.cs.style.transition=swp.ns.style.transition='transform '+dur+'ms cubic-bezier(.2,.7,.3,1)';
-    const ind=$('#navInd');if(ind)ind.style.transition='transform '+dur+'ms cubic-bezier(.2,.7,.3,1)';
-    requestAnimationFrame(()=>{
-      if(commit){swp.cs.style.transform='translateX('+(-swp.dir*100)+'%)';swp.ns.style.transform='translateX(0)';}
-      else{swp.cs.style.transform='translateX(0)';swp.ns.style.transform='translateX('+(swp.dir*100)+'%)';}
-      if(ind)ind.style.transform='translateX('+((commit?swp.ni:swp.ci)*100)+'%)';
-    });
-    setTimeout(()=>{const wasCommit=swp&&swp.commit,ni=swp&&swp.ni;reset();if(wasCommit)goTab(order[ni]);},dur+20);
-  }
-  mainEl.addEventListener('touchend',finish,{passive:true});
-  mainEl.addEventListener('touchcancel',reset,{passive:true});
+    const t=e.changedTouches[0];if(!t)return;
+    const dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5)return;
+    const cur=$('nav button.on');if(!cur)return;
+    let i=order.indexOf(cur.dataset.t);
+    i=dx<0?Math.min(order.length-1,i+1):Math.max(0,i-1);
+    goTab(order[i]);
+  },{passive:true});
 })();
 setInterval(()=>{const d=new Date();$('#clock').firstChild.nodeValue=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   $('#clock small').textContent=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}).toUpperCase();},1000);
