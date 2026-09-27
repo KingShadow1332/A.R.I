@@ -829,6 +829,15 @@ function syncStatus(t,ok){
 }
 // Feste Geraete-Kennung dieser App (damit derselbe Handy-Eintrag beim erneuten Koppeln ersetzt wird, statt sich zu vermehren)
 function devId(){let d=store.get('ari-app-devid',null);if(!d){d='d'+Math.random().toString(36).slice(2,12);store.set('ari-app-devid',d);}return d;}
+// Geraetename fuer die Kopplung: das echte Geraetemodell aus dem User-Agent (z.B. "SM-S911B"),
+// sonst grob Handy/Tablet nach Bildschirmgroesse. Am PC in Einstellungen -> HANDY umbenennbar.
+function deviceLabel(){
+  try{
+    const m=/Android\s+[\d.]+;\s*([^)]+)\)/.exec(navigator.userAgent);
+    if(m){const s=m[1].split('Build')[0].trim();if(s)return s.slice(0,40);}
+  }catch(e){}
+  return Math.min(screen.width,screen.height)>=600?'Tablet':'Handy';
+}
 function toast(msg){
   const t=document.createElement('div');t.textContent=msg;
   t.style.cssText='position:fixed;left:16px;right:16px;bottom:88px;z-index:9996;padding:14px 16px;border-radius:14px;background:#0b1620;border:1px solid #39ff9e;color:#dff6ff;font:600 13px var(--font-mono);text-align:center;box-shadow:0 12px 30px -10px #000';
@@ -849,7 +858,7 @@ async function pairFromLink(origin,code){
   if(!(await askPair(origin)))return;
   syncStatus('Verbinde …');
   try{
-    const r=await fetch(origin+'/phone/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,name:'Handy-App',dev:devId()})});
+    const r=await fetch(origin+'/phone/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,name:deviceLabel(),dev:devId()})});
     const d=await r.json();
     if(!r.ok||!d.token){syncStatus('Kopplung fehlgeschlagen: '+(d.error||r.status),false);return;}
     sync.origin=origin;sync.token=d.token;sync.dirtyKeys=false;sync.dirtySet=false;saveSync();
