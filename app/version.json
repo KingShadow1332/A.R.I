@@ -1,7 +1,7 @@
 {
-    "versionCode":  20,
-    "versionName":  "1.6.3",
+    "versionCode":  21,
+    "versionName":  "1.6.4",
     "apk":  "ARI.apk",
-    "notes":  "PC OEFFNEN: findet den PC jetzt auch ohne eingetragenen Link automatisch (bereits gekoppelter PC bzw. WLAN-Suche) - Adresse eintippen ist nur noch der letzte Ausweg",
+    "notes":  "Auto-Suche findet den PC jetzt auf zwei Wegen (WLAN-Broadcast + Subnetz-Scan) - zuverlaessiger, falls der Router Broadcasts nicht weiterleitet\nMehrere gefundene A.R.I blockieren nicht mehr, es wird einfach der erste genommen\nPC OEFFNEN meldet sich jetzt automatisch mit dem schon vorhandenen Kopplungs-Token am PC-Bildschirm an, statt dort nochmal zu koppeln",
     "sizeMb":  5.9
 }
