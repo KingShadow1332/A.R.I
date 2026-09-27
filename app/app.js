@@ -810,23 +810,10 @@ $('#wipe').onclick=()=>{if(!confirm('Alle Daten dieser App auf diesem Handy lös
 // Die App sendet Daten NUR an den PC, mit dem du sie per Link gekoppelt hast (Geraete-Token).
 let sync=store.get('ari-app-sync',{origin:'',token:'',deleted:[],dirtyKeys:false,dirtySet:false,last:0,groqAll:[],pc:{}});
 const saveSync=()=>store.set('ari-app-sync',sync);
-// Der PC-Tunnel hat bei jedem Start eine neue Adresse. Antwortet der PC nicht, holt sich die App die aktuelle Adresse
-// selbststaendig (der Hub meldet sie unter dem geheimen Themennamen bei ntfy.sh) und versucht es damit noch einmal.
-async function hubResolve(){
-  if(!sync.topic)return false;
-  try{
-    const r=await fetch('https://ntfy.sh/'+encodeURIComponent(sync.topic)+'/json?poll=1&since=24h');
-    const t=await r.text();let url='';
-    t.split('\n').forEach(l=>{try{const m=JSON.parse(l);const x=/^ARI-URL (https:\/\/[a-z0-9-]+\.trycloudflare\.com)$/.exec(String(m.message||''));if(x)url=x[1];}catch(e){}});
-    if(url&&url!==sync.origin){sync.origin=url;saveSync();return true;}
-  }catch(e){}
-  return false;
-}
+// Handy und PC muessen im selben WLAN sein - keine Cloud/Tunnel-Adresse wird akzeptiert.
 async function hubFetch(path,opts){
-  try{return await fetch(sync.origin+path,opts);}
-  catch(e){if(e&&e.name==='AbortError')throw e;if(await hubResolve())return await fetch(sync.origin+path,opts);throw e;}
+  return await fetch(sync.origin+path,opts);
 }
-const SYNC_TRUSTED=new RegExp('^https:[/][/][a-z0-9-]+[.]trycloudflare[.]com$');
 const LAN_OK=new RegExp('^http:[/][/](192[.]168[.][0-9]+[.][0-9]+|10[.][0-9]+[.][0-9]+[.][0-9]+|172[.](1[6-9]|2[0-9]|3[01])[.][0-9]+[.][0-9]+)(:[0-9]+)?$');
 function syncStatus(t,ok){
   $('#syncStatus').textContent=t;$('#syncTag').textContent=sync.token?(ok===false?'GETRENNT':'VERBUNDEN'):'–';
@@ -857,7 +844,7 @@ function askPair(origin){
   });
 }
 async function pairFromLink(origin,code){
-  if(!(SYNC_TRUSTED.test(origin)||(NATIVE&&LAN_OK.test(origin)))){syncStatus('Ungültige PC-Adresse im Link.',false);return;}
+  if(!LAN_OK.test(origin)){syncStatus('PC und Handy müssen im selben WLAN sein.',false);return;}
   if(sync.token&&sync.origin===origin){toast('Schon mit diesem PC verbunden.');goTab('pc');syncNow();return;}
   if(!(await askPair(origin)))return;
   syncStatus('Verbinde …');
@@ -865,12 +852,12 @@ async function pairFromLink(origin,code){
     const r=await fetch(origin+'/phone/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,name:'Handy-App',dev:devId()})});
     const d=await r.json();
     if(!r.ok||!d.token){syncStatus('Kopplung fehlgeschlagen: '+(d.error||r.status),false);return;}
-    sync.origin=origin;sync.token=d.token;sync.topic=d.topic||'';sync.dirtyKeys=false;sync.dirtySet=false;saveSync();
+    sync.origin=origin;sync.token=d.token;sync.dirtyKeys=false;sync.dirtySet=false;saveSync();
     goTab('pc');await syncNow();
     if(sync.token)toast('✓ Mit dem PC verbunden');
-  }catch(e){syncStatus('Der Link ist abgelaufen oder der PC ist nicht erreichbar. Jeder Neustart von A.R.I erzeugt eine neue Adresse und einen neuen Link: am PC unter Einstellungen → HANDY den „Kopplungs-Link“ neu kopieren oder per Mail senden (Fernzugriff muss an sein).',false);}
+  }catch(e){syncStatus('PC nicht erreichbar. Bist du im selben WLAN wie der PC?',false);}
 }
-// Erkennt jede Art von Kopplungs-Link: App-Link (…/app/#pc=…&l=…), Tunnel-Link (…trycloudflare.com/phone#l=…) und Adresse mit 6-stelligem Code (…/phone#c=…)
+// Erkennt jede Art von Kopplungs-Link: App-Link (…/app/#pc=…&l=…) und Adresse mit 6-stelligem Code (…/phone#c=…)
 function parseAnyLink(str){
   const v=String(str||'').trim();
   const L=parseLink(v);if(L)return L;
@@ -893,9 +880,8 @@ async function syncNow(){
   try{
     const body={brain:brain.map(n=>({text:n.text,cat:n.cat})),deleted:sync.deleted||[],settings:pushSettings(),apiKeys:pushKeys()};
     const r=await hubFetch('/phone/api/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify(body)});
-    if(r.status===401){sync.token='';saveSync();syncStatus('Kopplung abgelaufen – bitte den neuen Link aus der A.R.I-Mail öffnen.',false);return;}
+    if(r.status===401){sync.token='';saveSync();syncStatus('Kopplung abgelaufen – am PC neu koppeln (Einstellungen → HANDY).',false);return;}
     const d=await r.json();
-    if(d.topic&&d.topic!==sync.topic){sync.topic=d.topic;saveSync();}
     // Gehirn: Stand vom PC uebernehmen (enthaelt jetzt auch unsere Ergaenzungen), lokale IDs behalten
     const old=new Map(brain.map(n=>[n.text.toLowerCase(),n]));
     brain=(d.brain||[]).map(n=>{const o=old.get(String(n.text).toLowerCase());return o?Object.assign(o,{cat:n.cat}):{id:Date.now()+Math.random().toString(36).slice(2,6),text:n.text,cat:n.cat,ts:Date.now()};});
@@ -912,7 +898,7 @@ async function syncNow(){
     sync.dirtyKeys=false;sync.dirtySet=false;sync.last=Date.now();saveSync();saveCfg();loadSet();
     syncStatus('✓ Synchron · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+brain.length+' Erinnerungen'+(d.hud_seen?'':' · (HUD am PC einmal öffnen, damit alle Einstellungen ankommen)'));
     if($('#t-brain').classList.contains('on'))renderBrain();
-  }catch(e){syncStatus('PC gerade nicht erreichbar – Änderungen werden nachgeholt. (Tunnel-Adresse ändert sich bei jedem PC-Start: neuen Link aus der Mail öffnen.)',false);}
+  }catch(e){syncStatus('PC gerade nicht erreichbar – Änderungen werden nachgeholt, sobald du wieder im selben WLAN bist.',false);}
   finally{syncBusy=false;}
 }
 function applyThemeSaved(){const th=store.get('ari-app-theme',null);if(th){if(th.primary)document.documentElement.style.setProperty('--pink',th.primary);if(th.accent)document.documentElement.style.setProperty('--cyan',th.accent);}}
