@@ -932,12 +932,39 @@ function syncStatus(t,ok){
 }
 // Feste Geraete-Kennung dieser App (damit derselbe Handy-Eintrag beim erneuten Koppeln ersetzt wird, statt sich zu vermehren)
 function devId(){let d=store.get('ari-app-devid',null);if(!d){d='d'+Math.random().toString(36).slice(2,12);store.set('ari-app-devid',d);}return d;}
-// Geraetename fuer die Kopplung: das echte Geraetemodell aus dem User-Agent (z.B. "SM-S911B"),
-// sonst grob Handy/Tablet nach Bildschirmgroesse. Am PC in Einstellungen -> HANDY umbenennbar.
+// Bekannte Samsung-Modellcodes (haeufigste aktuelle Serien) -> Produktname, damit "SM-S938B" als
+// "Galaxy S24 Ultra" erscheint statt als kryptischer Modellcode. Deckt nicht jedes Modell/jede
+// Regions-Variante ab - unbekannte Codes fallen einfach auf den rohen Modellcode zurueck (per Klick
+// am PC trotzdem umbenennbar).
+const SAMSUNG_MODELS={
+  g991:'Galaxy S21',g996:'Galaxy S21+',g998:'Galaxy S21 Ultra',
+  s901:'Galaxy S22',s906:'Galaxy S22+',s908:'Galaxy S22 Ultra',
+  s711:'Galaxy S23 FE',s911:'Galaxy S23',s916:'Galaxy S23+',s918:'Galaxy S23 Ultra',
+  s721:'Galaxy S24 FE',s921:'Galaxy S24',s926:'Galaxy S24+',s928:'Galaxy S24 Ultra',
+  n980:'Galaxy Note20',n981:'Galaxy Note20',n985:'Galaxy Note20 Ultra',n986:'Galaxy Note20 Ultra',
+  f711:'Galaxy Z Flip3',f721:'Galaxy Z Flip4',f731:'Galaxy Z Flip5',f741:'Galaxy Z Flip6',
+  f926:'Galaxy Z Fold3',f936:'Galaxy Z Fold4',f946:'Galaxy Z Fold5',f956:'Galaxy Z Fold6',
+  x700:'Galaxy Tab S8',x706:'Galaxy Tab S8',x800:'Galaxy Tab S8+',x806:'Galaxy Tab S8+',x900:'Galaxy Tab S8 Ultra',x906:'Galaxy Tab S8 Ultra',
+  x710:'Galaxy Tab S9',x716:'Galaxy Tab S9',x810:'Galaxy Tab S9+',x816:'Galaxy Tab S9+',x910:'Galaxy Tab S9 Ultra',x916:'Galaxy Tab S9 Ultra',
+  x510:'Galaxy Tab S9 FE',x516:'Galaxy Tab S9 FE',x610:'Galaxy Tab S9 FE+',x616:'Galaxy Tab S9 FE+',
+  x110:'Galaxy Tab A9',x210:'Galaxy Tab A9+',
+  a047:'Galaxy A04s',a057:'Galaxy A05s',a125:'Galaxy A12',a135:'Galaxy A13',a145:'Galaxy A14',
+  a155:'Galaxy A15',a346:'Galaxy A34',a356:'Galaxy A35',a536:'Galaxy A53',a546:'Galaxy A54',a556:'Galaxy A55',
+};
+function samsungName(model){
+  const m=/^SM-([A-Za-z]\d{3})/i.exec(model);
+  return m?SAMSUNG_MODELS[m[1].toLowerCase()]:null;
+}
+// Geraetename fuer die Kopplung: bei bekannten Samsung-Modellen der Produktname (z.B. "Galaxy S24 Ultra"),
+// sonst das rohe Geraetemodell aus dem User-Agent (z.B. "SM-S911B"), sonst grob Handy/Tablet nach
+// Bildschirmgroesse. Am PC in Einstellungen -> HANDY trotzdem jederzeit umbenennbar.
 function deviceLabel(){
   try{
     const m=/Android\s+[\d.]+;\s*([^)]+)\)/.exec(navigator.userAgent);
-    if(m){const s=m[1].split('Build')[0].trim();if(s)return s.slice(0,40);}
+    if(m){
+      const s=m[1].split('Build')[0].trim();
+      if(s){const nm=samsungName(s);return(nm||s).slice(0,40);}
+    }
   }catch(e){}
   return Math.min(screen.width,screen.height)>=600?'Tablet':'Handy';
 }
