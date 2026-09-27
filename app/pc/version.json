@@ -1,7 +1,7 @@
 {
-    "version":  15,
-    "name":  "1.3.7",
+    "version":  16,
+    "name":  "1.3.8",
     "zip":  "ari-pc.zip",
-    "sha256":  "8eae5ee712dbd80477167b63eb12f6018554f9dcfb4789569ffb01b6f42e736a",
-    "notes":  "Handy-Kopplung: nur noch ueber WLAN, kein Cloudflare-Tunnel mehr\nDadurch entfaellt der Kopplungs-Link per Mail und die Adresse ueber ntfy.sh\nEinfacher und sicherer: PC und Handy muessen im selben Netz sein"
+    "sha256":  "4cee191d38ff6948a6b4f797e0ba5f6f71189bb6f7d95b855a5551c849074f0e",
+    "notes":  "Handy: doppelte Geraete-Eintraege (gleiches Handy mehrfach gelistet) werden jetzt automatisch aufgeraeumt\nNur noch ein Eintrag pro Geraet in Einstellungen -\u003e HANDY"
 }
