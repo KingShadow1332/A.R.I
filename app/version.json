@@ -1,7 +1,7 @@
 {
-    "versionCode":  21,
-    "versionName":  "1.6.4",
+    "versionCode":  22,
+    "versionName":  "1.6.5",
     "apk":  "ARI.apk",
-    "notes":  "Auto-Suche findet den PC jetzt auf zwei Wegen (WLAN-Broadcast + Subnetz-Scan) - zuverlaessiger, falls der Router Broadcasts nicht weiterleitet\nMehrere gefundene A.R.I blockieren nicht mehr, es wird einfach der erste genommen\nPC OEFFNEN meldet sich jetzt automatisch mit dem schon vorhandenen Kopplungs-Token am PC-Bildschirm an, statt dort nochmal zu koppeln",
+    "notes":  "Bekannte Samsung-Geraete zeigen jetzt den Produktnamen (z.B. \"Galaxy S24 Ultra\") statt des Modellcodes (\"SM-S938B\") beim Koppeln - andere/unbekannte Modelle bleiben beim Modellcode, umbenennbar wie gehabt",
     "sizeMb":  5.9
 }
