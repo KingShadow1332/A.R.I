@@ -1,7 +1,7 @@
 {
-    "versionCode":  19,
-    "versionName":  "1.6.2",
+    "versionCode":  20,
+    "versionName":  "1.6.3",
     "apk":  "ARI.apk",
-    "notes":  "Fix: Wisch-Animation zwischen den Reitern war im letzten Update versehentlich verschwunden - jetzt wieder da",
+    "notes":  "PC OEFFNEN: findet den PC jetzt auch ohne eingetragenen Link automatisch (bereits gekoppelter PC bzw. WLAN-Suche) - Adresse eintippen ist nur noch der letzte Ausweg",
     "sizeMb":  5.9
 }
