@@ -1,7 +1,7 @@
 {
-    "version":  17,
-    "name":  "1.3.9",
+    "version":  18,
+    "name":  "1.4.0",
     "zip":  "ari-pc.zip",
-    "sha256":  "55bcccf8b20720c6be903d3774ad8d9d004c0f120e33700320527c95148719cc",
+    "sha256":  "8e4f091e9aa16e2e89127372867d997a142178406b5c38157e7e661513643978",
     "notes":  "Geraete umbenennen: am Namen in Einstellungen -\u003e HANDY klicken (z. B. \"Handy\" / \"Tablet\")"
 }
