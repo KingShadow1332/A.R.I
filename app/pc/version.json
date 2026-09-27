@@ -1,7 +1,7 @@
 {
-    "version":  21,
-    "name":  "1.4.3",
+    "version":  22,
+    "name":  "1.4.4",
     "zip":  "ari-pc.zip",
-    "sha256":  "769763aaaf6d31ff20545a87a54026870ce7cec02150c99e1fded5ca8ccfb827",
-    "notes":  "Neu: PC-Ansicht auf dem Handy/Tablet (Einstellungen -\u003e Ansicht) - zeigt alle Bereiche (Uebersicht, Chat, PC-Bildschirm, Termine, Gehirn) gleichzeitig nebeneinander statt einzelner Reiter, wie am PC. Am besten auf Tablets."
+    "sha256":  "58594e497af097ce5aad00aaa03afb9d5ebf55cd1b9ce0cee40816636e21d52d",
+    "notes":  "PC-ANSICHT auf dem Handy/Tablet oeffnet jetzt die echte PC-Oberflaeche mit allen Funktionen (Chat, Einstellungen, Steuerung) - sicher angemeldet ueber denselben Kopplungs-Code wie die App, nicht mehr nur eine Nachbildung"
 }
