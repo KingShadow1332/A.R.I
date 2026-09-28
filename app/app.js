@@ -218,8 +218,13 @@ function addMsg(who,text,lk){
 }
 // Nur "bereit", wenn wirklich ein KI-Schluessel da ist
 function hasKey(){return !!(cfg.keys[cfg.provider]||(cfg.fb&&cfg.fbKey));}
-function refreshReady(){
+function updateConn(connOk){
+  if(sync.token&&connOk!==false){$('#conn').classList.add('on');$('#conn').textContent='VERBUNDEN';return;}
   const ok=hasKey();$('#conn').classList.toggle('on',ok);$('#conn').textContent=ok?'BEREIT':'KEIN SCHLÜSSEL';
+}
+function refreshReady(){
+  updateConn();
+  const ok=hasKey();
   $('#heroSub').textContent=ok?'SYSTEM ONLINE':'NICHT EINSATZBEREIT';
   if(!$('#orb').classList.contains('busy'))$('#orbState').textContent=ok?'BEREIT · TIPPEN ZUM SPRECHEN':'KI-SCHLÜSSEL FEHLT · EINSTELLUNGEN';
 }
@@ -564,40 +569,28 @@ async function discoverPc(){
   const[udp,scan]=await Promise.all([discoverPcUdp(),subnetScan()]);
   return[...new Set([...udp,...scan])];
 }
-// Ohne QR-Code: nur der Koppelcode ist noetig, die Adresse sucht die App sich selbst im WLAN
-// (leeres Adressfeld) - wer mag, kann sie trotzdem von Hand eintragen.
+// Nur der Koppelcode ist noetig - die Adresse sucht die App sich selbst per UDP/Subnetz-Scan im WLAN.
 $('#pcPair').onclick=async()=>{
-  let a=$('#pcAddr').value.trim(),c=$('#pcCode').value.replace(/[\s-]/g,'');
+  let c=$('#pcCode').value.replace(/[\s-]/g,'');
   const msg=$('#pcMsg');
   if(!c){msg.textContent='Bitte den Koppelcode eintragen.';return;}
-  if(!a){
-    msg.textContent='Suche PC im WLAN …';
-    const ips=await discoverPc();
-    if(ips.length)a=ips[0];
-    else{msg.textContent='Kein PC im WLAN gefunden – bitte Adresse eintragen (steht am PC unter Einstellungen → HANDY).';return;}
-  }
-  if(!/^https?:\/\//i.test(a))a='http://'+a;
-  let u;try{u=new URL(a);}catch(e){msg.textContent='Ungültige Adresse.';return;}
-  if(!u.port&&u.protocol==='http:')u.port='5000';
+  msg.textContent='Suche PC im WLAN …';
+  const ips=await discoverPc();
+  if(!ips.length){msg.textContent='Kein PC im WLAN gefunden. Sind Handy und PC im selben WLAN?';return;}
+  const a='http://'+ips[0]+':5000';
   msg.textContent='Koppeln …';$('#pcCode').value='';
-  pairFromLink(u.origin,c);
+  pairFromLink(a,c);
 };
-// Link einfuegen -> koppelt sich sofort von allein (kein extra Knopf noetig)
-$('#pcLink').addEventListener('input',()=>{const A=parseAnyLink($('#pcLink').value);if(A){$('#pcLink').value='';$('#pcMsg').textContent='Koppeln …';pairFromLink(A.origin,A.code);}});
-// "PC OEFFNEN": zeigt den PC-Bildschirm zum Antippen. Ohne eingetragenen Link nimmt es den bereits
-// gekoppelten PC (sync.origin), sonst sucht es ihn wie beim Koppeln per UDP-Broadcast im WLAN -
-// nur wenn beides nichts findet, muss eine Adresse eingetippt werden.
+// "PC-BILDSCHIRM OEFFNEN": zeigt den PC-Bildschirm zum Antippen. Nimmt den bereits gekoppelten PC
+// (sync.origin), sonst sucht es ihn per UDP-Broadcast/Subnetz-Scan im WLAN.
 $('#pcGo').onclick=async()=>{
-  let v=$('#pcLink').value.trim();
-  if(!v&&sync.origin)v=sync.origin;
+  let v=sync.origin;
   if(!v){
     $('#pcMsg').textContent='Suche PC im WLAN …';
     const ips=await discoverPc();
     if(ips.length)v='http://'+ips[0]+':5000';
-    else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – bitte Link oder Adresse einfügen.';return;}
+    else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – erst per QR-Code oder Koppelcode verbinden.';return;}
   }
-  {const A=parseAnyLink(v);if(A){$('#pcLink').value='';pairFromLink(A.origin,A.code);return;}}
-  if(!/^https?:\/\//i.test(v))v='http://'+v;
   let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return;}
   if(!/\/phone/.test(u.pathname))u.pathname=u.pathname.replace(/\/$/,'')+'/phone';
   let url=u.toString();
@@ -919,6 +912,7 @@ async function hubFetch(path,opts){
 }
 const LAN_OK=new RegExp('^http:[/][/](192[.]168[.][0-9]+[.][0-9]+|10[.][0-9]+[.][0-9]+[.][0-9]+|172[.](1[6-9]|2[0-9]|3[01])[.][0-9]+[.][0-9]+)(:[0-9]+)?$');
 function syncStatus(t,ok){
+  updateConn(ok);
   $('#syncStatus').textContent=t;$('#syncTag').textContent=sync.token?(ok===false?'GETRENNT':'VERBUNDEN'):'–';
   // Gleiche Meldung gut sichtbar im PC-Tab (dort schaut man nach dem Koppeln hin)
   const box=$('#pcState'),tag=$('#pcTag');
@@ -1057,7 +1051,7 @@ if(NATIVE){try{const AP=Capacitor.Plugins.App;AP.addListener('appUrlOpen',e=>han
 
 
 /* ---------- App-Update ueber GitHub (nur in der installierten Android-App) ---------- */
-// Prueft beim Start und alle 6 Stunden version.json neben der App-Seite. Ist die Version neuer, laedt die App die
+// Prueft beim Start und stuendlich version.json neben der App-Seite. Ist die Version neuer, laedt die App die
 // neue ARI.apk von derselben Adresse und startet die Installation (Android fragt einmal "Aktualisieren?").
 const UPDATE_BASE='https://kingshadow1332.github.io/app/';
 let updInfo=null;
@@ -1106,12 +1100,12 @@ async function doUpdate(){
 }
 if(NATIVE){$('#updPanel').style.display='';}
 $('#updCheck').onclick=()=>checkUpdate(true);$('#updGo').onclick=doUpdate;$('#updBannerGo').onclick=doUpdate;$('#updBannerLater').onclick=()=>{$('#updBanner').style.display='none';};
-if(NATIVE){setTimeout(()=>checkUpdate(false),1500);setInterval(()=>checkUpdate(false),6*3600*1000);}
+if(NATIVE){setTimeout(()=>checkUpdate(false),1500);setInterval(()=>checkUpdate(false),3600*1000);}
 /* ---------- QR-Code vom PC scannen ---------- */
 let qrStream=null,qrRaf=0;
 async function qrStart(){
   const ov=$('#qrOv');ov.style.display='flex';$('#qrMsg').textContent='Kamera wird gestartet …';
-  const fail=(m)=>{qrStop();$('#pcMsg').textContent=m+' Du kannst auch ohne QR-Code koppeln: Link einfügen oder Adresse + Code eintragen.';alert(m);};
+  const fail=(m)=>{qrStop();$('#pcMsg').textContent=m+' Du kannst auch ohne QR-Code koppeln: nur den Koppelcode eintragen.';alert(m);};
   const AW=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;
   if(AW&&AW.camRequest){                                   // Android-Berechtigung ausdruecklich anfragen (sonst bleibt die Kamera einfach schwarz)
     try{const r=await AW.camRequest();if(!r.granted){fail('Die Kamera-Berechtigung fehlt. Handy-Einstellungen → Apps → A.R.I → Berechtigungen → Kamera erlauben.');return;}}catch(e){}
@@ -1130,8 +1124,8 @@ async function qrStart(){
       const sc=Math.min(1,640/v.videoWidth);c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);x.drawImage(v,0,0,c.width,c.height);
       const d=x.getImageData(0,0,c.width,c.height),r=window.jsQR&&jsQR(d.data,d.width,d.height);
       if(r&&r.data){
-        const A=parseAnyLink(r.data),M0=/[/]phone#[cl]=/.test(r.data);
-        if(A||M0){qrStop();if(A)pairFromLink(A.origin,A.code);else $('#pcLink').value=r.data;return;}
+        const A=parseAnyLink(r.data);
+        if(A){qrStop();pairFromLink(A.origin,A.code);return;}
         $('#qrMsg').textContent='Das ist kein A.R.I-QR-Code.';
       }
     }
@@ -1224,6 +1218,20 @@ if(NATIVE&&BGP()&&BGP().openNotificationAccessSettings){
   $('#notifFwdBtn').onclick=()=>{try{BGP().openNotificationAccessSettings();}catch(e){}};
   try{Capacitor.Plugins.App.addListener('appStateChange',st=>{if(st.isActive)notifFwdRefresh();});}catch(e){}
   notifFwdRefresh();
+}
+function showNotifPrompt(){
+  const old=document.getElementById('ariNotifPrompt');if(old)old.remove();
+  const o=document.createElement('div');o.id='ariNotifPrompt';
+  o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)';
+  o.innerHTML='<div style="max-width:420px;width:90%;padding:20px 24px;border:1px solid #00d4ff;border-radius:10px;background:#0b1620;color:#dff6ff"><div style="letter-spacing:.2em;font-size:12px;opacity:.7">HANDY-BENACHRICHTIGUNGEN AM PC</div><div style="font-size:15px;line-height:1.5;margin:10px 0 16px">Soll A.R.I deine Handy-Benachrichtigungen (WhatsApp, Discord, …) auch am PC anzeigen? Dafuer einmal in den Android-Einstellungen erlauben.</div><div style="display:flex;gap:8px"><button type="button" id="ariNotifPromptLater" style="flex:1;padding:10px;border:1px solid #2a3a44;background:transparent;color:#8fb0bb;border-radius:6px">SPÄTER</button><button type="button" id="ariNotifPromptGo" style="flex:1;padding:10px;border:1px solid #00d4ff;background:transparent;color:#dff6ff;border-radius:6px">ERLAUBEN</button></div></div>';
+  document.body.appendChild(o);const close=()=>o.remove();
+  o.querySelector('#ariNotifPromptLater').onclick=close;
+  o.querySelector('#ariNotifPromptGo').onclick=()=>{try{BGP().openNotificationAccessSettings();}catch(e){}close();};
+  o.onclick=e=>{if(e.target===o)close();};
+}
+if(NATIVE&&BGP()&&BGP().isNotificationAccessEnabled&&!localStorage.getItem('ari_notif_prompt_shown')){
+  localStorage.setItem('ari_notif_prompt_shown','1');
+  BGP().isNotificationAccessEnabled().then(s=>{if(!s.enabled)setTimeout(showNotifPrompt,1200);}).catch(()=>{});
 }
 /* ---------- Start ---------- */
 refreshReady();
