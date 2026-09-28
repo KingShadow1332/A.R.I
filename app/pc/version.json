@@ -1,7 +1,7 @@
 {
-    "version":  28,
-    "name":  "1.5.0",
+    "version":  29,
+    "name":  "1.6.0",
     "zip":  "ari-pc.zip",
-    "sha256":  "6f05f4ea20f92f3059c906494903e34ab9a0092b265aac7d9c712e1ccb24e9b5",
-    "notes":  "Neu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) koennen im HUD unter BENACHRICHTIGUNGEN angezeigt werden, sobald die Handy-App das erlaubt"
+    "sha256":  "aa334aae98465792662d30ee5ea99f1df36c6f9946ed8167494ce598120ded8e",
+    "notes":  "Handy-Benachrichtigungen: Spam-Duplikate von Musik-Apps (Spotify) gefiltert\nHandy-Benachrichtigungen: Wegklicken jetzt beidseitig synchron (PC und Handy)\nHandy-Benachrichtigungen: anklickbar, per Wischen nach links Spam markierbar\nNeuer Schalter: PC-Bildschirm-Ansicht an/aus (Einstellungen \u003e Handy)\nPC-Bildschirm-Ansicht: Mail-Pruefung funktioniert jetzt auch vom Handy aus"
 }
