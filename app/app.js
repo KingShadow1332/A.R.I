@@ -390,7 +390,7 @@ $('#brAdd').onclick=()=>{const t=$('#brNew').value.trim();if(t.length<4)return;r
     let x=p.x*cy-p.z*sy,z=p.x*sy+p.z*cy;
     let y=p.y*cp-z*sp;z=p.y*sp+z*cp;
     const persp=700/(700+z);
-    const sc=persp*zoom*Math.min(W,H)/800;
+    const sc=persp*zoom*Math.min(W,H)/600;
     p.sx=W/2+x*sc;p.sy=H/2+y*sc;p.sz=z;p.sc=sc;
   }
   const stars=Array.from({length:220},()=>({x:(Math.random()-.5)*1200,y:(Math.random()-.5)*1200,z:(Math.random()-.5)*1200,a:Math.random()}));
