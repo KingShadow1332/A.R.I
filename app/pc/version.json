@@ -1,7 +1,7 @@
 {
-    "version":  26,
-    "name":  "1.4.8",
+    "version":  27,
+    "name":  "1.4.9",
     "zip":  "ari-pc.zip",
-    "sha256":  "951728e83eb27e47c94b7914c782b8f16ee564b2174f78c493bb81d85443ad8b",
-    "notes":  "Fix: \u0027epische Musik\u0027 spielt jetzt genau die von dir bestaetigte Playlist, statt danebenzugreifen (vorher landete es faelschlich bei Pop)"
+    "sha256":  "e179991aa86bff3681f90304713a9679b8ce13a868973beb9e62c363a757f522",
+    "notes":  "Fix: Automatische Updates pruefen jetzt schon kurz nach dem Start (vorher erst nach einer vollen Stunde) - falls dein PC gerade auf einer Version VOR 1.4.6 laeuft, hilf einmal manuell nach (Einstellungen -\u003e AKTUALISIEREN), danach laeuft die Automatik von selbst weiter"
 }
