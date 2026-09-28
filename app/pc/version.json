@@ -1,7 +1,7 @@
 {
-    "version":  25,
-    "name":  "1.4.7",
+    "version":  26,
+    "name":  "1.4.8",
     "zip":  "ari-pc.zip",
-    "sha256":  "7b3cbc141498cacfb8718d6ce4d7b30c89da5803233849c60ee3c7d2a85b0023",
-    "notes":  "Genre-Wuensche wie \u0027spiel Pop\u0027, \u0027spiel Rock\u0027, \u0027spiel epische Musik\u0027 spielen jetzt gezielt dazu passende Musik, auch wenn du dieses Genre noch nie gehoert hast\n\u0027Lauter\u0027/\u0027Leiser\u0027 erhoehen/verringern die Lautstaerke jetzt um 10% statt nur 4%"
+    "sha256":  "951728e83eb27e47c94b7914c782b8f16ee564b2174f78c493bb81d85443ad8b",
+    "notes":  "Fix: \u0027epische Musik\u0027 spielt jetzt genau die von dir bestaetigte Playlist, statt danebenzugreifen (vorher landete es faelschlich bei Pop)"
 }
