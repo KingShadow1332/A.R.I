@@ -1,7 +1,7 @@
 {
-    "version":  29,
-    "name":  "1.6.0",
+    "version":  30,
+    "name":  "1.6.1",
     "zip":  "ari-pc.zip",
-    "sha256":  "aa334aae98465792662d30ee5ea99f1df36c6f9946ed8167494ce598120ded8e",
-    "notes":  "Handy-Benachrichtigungen: Spam-Duplikate von Musik-Apps (Spotify) gefiltert\nHandy-Benachrichtigungen: Wegklicken jetzt beidseitig synchron (PC und Handy)\nHandy-Benachrichtigungen: anklickbar, per Wischen nach links Spam markierbar\nNeuer Schalter: PC-Bildschirm-Ansicht an/aus (Einstellungen \u003e Handy)\nPC-Bildschirm-Ansicht: Mail-Pruefung funktioniert jetzt auch vom Handy aus"
+    "sha256":  "ecb713f7a57edd186cde5b0b2f079c91485da7507e7ef102d5d71e5c9d248e24",
+    "notes":  "Wettlauf-Fehler beim Speichern behoben: gleichzeitige Speichervorgaenge (z.B. Kalender-Login + Handy-Abfrage) konnten sich gegenseitig ueberschreiben und Einstellungen loeschen\nNach Kalender-Neuverbinden wird jetzt auch Gmail automatisch neu versucht statt einen alten Fehler zu zeigen"
 }
