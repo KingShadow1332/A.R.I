@@ -1,7 +1,7 @@
 {
-    "version":  27,
-    "name":  "1.4.9",
+    "version":  28,
+    "name":  "1.5.0",
     "zip":  "ari-pc.zip",
-    "sha256":  "e179991aa86bff3681f90304713a9679b8ce13a868973beb9e62c363a757f522",
-    "notes":  "Fix: Automatische Updates pruefen jetzt schon kurz nach dem Start (vorher erst nach einer vollen Stunde) - falls dein PC gerade auf einer Version VOR 1.4.6 laeuft, hilf einmal manuell nach (Einstellungen -\u003e AKTUALISIEREN), danach laeuft die Automatik von selbst weiter"
+    "sha256":  "6f05f4ea20f92f3059c906494903e34ab9a0092b265aac7d9c712e1ccb24e9b5",
+    "notes":  "Neu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) koennen im HUD unter BENACHRICHTIGUNGEN angezeigt werden, sobald die Handy-App das erlaubt"
 }
