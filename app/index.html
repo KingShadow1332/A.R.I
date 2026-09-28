@@ -560,33 +560,9 @@ main{touch-action:pan-y}
 
   <!-- EINSTELLUNGEN -->
   <section id="t-set">
-    <div class="panel" id="updPanel" style="display:none"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">APP-UPDATE</span><span class="tag" id="updVer">–</span></div>
-      <div class="dim" id="updText">Prüft beim Start automatisch, ob es eine neue Version gibt.</div>
-      <div class="row" style="margin-top:10px"><button class="btn" id="updCheck">NACH UPDATES SUCHEN</button><button class="btn pri" id="updGo" style="display:none">JETZT AKTUALISIEREN</button></div>
-      <div class="dim2" id="updProg" style="margin-top:8px"></div>
-    </div>
-    <details class="set-section" id="bgSection" style="display:none">
-      <summary>IM HINTERGRUND LAUFEN</summary>
-      <div class="set-section-body">
-        <div class="panel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">HINTERGRUND-BETRIEB</span><span class="tag" id="bgTag">AUS</span></div>
-          <div class="dim">A.R.I bleibt im Hintergrund am Leben (ohne Mikrofon), prüft alle paar Minuten Termine und Mails und meldet sich mit einer Benachrichtigung bei neuen Mails und anstehenden Terminen. Dafür läuft eine dauerhafte, leise Benachrichtigung.</div>
-          <div class="row" style="margin-top:10px"><button class="btn pri" id="bgToggle">EINSCHALTEN</button><button class="btn" id="bgBattery">AKKU-OPTIMIERUNG AUS</button></div>
-          <div class="dim2" id="bgMsg" style="margin-top:8px"></div>
-        </div>
-      </div>
-    </details>
-    <details class="set-section" id="wakeSection" style="display:none">
-      <summary>IM HINTERGRUND HÖREN</summary>
-      <div class="set-section-body">
-        <div class="panel"><div class="panel-h cy"><span class="ico">◉</span><span class="t">IM HINTERGRUND HÖREN</span><span class="tag" id="wakeTag">AUS</span></div>
-          <div class="dim" id="wakeText">Optional: A.R.I lauscht im Hintergrund auf „A.R.I“ und öffnet sich dann von selbst. Dafür läuft eine dauerhafte Benachrichtigung, das Mikrofon ist aktiv und der Akku wird stärker belastet.</div>
-          <div class="row" style="margin-top:10px"><button class="btn pri" id="wakeToggle">EINSCHALTEN</button><button class="btn" id="wakeOverlay">„ÜBER ANDEREN APPS“ ERLAUBEN</button></div>
-          <div class="dim2" id="wakeMsg" style="margin-top:8px"></div>
-        </div>
-      </div>
-    </details>
-    <details class="set-section">
-      <summary>KI-ANBIETER</summary>
+    <div class="dim2" style="margin-bottom:10px;opacity:.6">Kopplung mit dem PC und PC-Bildschirm: Tab „PC". Hier: KI, Hintergrund-Betrieb, Update, Daten.</div>
+    <details class="set-section" open>
+      <summary>◉ KI-ANBIETER</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h"><span class="ico">◉</span><span class="t">KI-ANBIETER</span></div>
       <div class="set"><label>ANBIETER</label><select id="sProv"><option value="groq">Groq</option><option value="gemini">Gemini (Google)</option><option value="openai">ChatGPT (OpenAI)</option><option value="anthropic">Claude (Anthropic)</option></select></div>
@@ -600,8 +576,38 @@ main{touch-action:pan-y}
         </div>
       </div>
     </details>
+    <details class="set-section" id="bgSection" style="display:none">
+      <summary>⟳ HINTERGRUND-BETRIEB (Termine/Mails ohne offene App)</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">HINTERGRUND-BETRIEB</span><span class="tag" id="bgTag">AUS</span></div>
+          <div class="dim">A.R.I bleibt im Hintergrund am Leben (ohne Mikrofon), prüft alle paar Minuten Termine und Mails und meldet sich mit einer Benachrichtigung bei neuen Mails und anstehenden Terminen. Dafür läuft eine dauerhafte, leise Benachrichtigung.</div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="bgToggle">EINSCHALTEN</button><button class="btn" id="bgBattery">AKKU-OPTIMIERUNG AUS</button></div>
+          <div class="dim2" id="bgMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" id="wakeSection" style="display:none">
+      <summary>◉ IM HINTERGRUND HÖREN (Weckwort „A.R.I")</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">◉</span><span class="t">IM HINTERGRUND HÖREN</span><span class="tag" id="wakeTag">AUS</span></div>
+          <div class="dim" id="wakeText">Optional: A.R.I lauscht im Hintergrund auf „A.R.I“ und öffnet sich dann von selbst. Dafür läuft eine dauerhafte Benachrichtigung, das Mikrofon ist aktiv und der Akku wird stärker belastet.</div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="wakeToggle">EINSCHALTEN</button><button class="btn" id="wakeOverlay">„ÜBER ANDEREN APPS“ ERLAUBEN</button></div>
+          <div class="dim2" id="wakeMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" open>
+      <summary>⟳ APP-UPDATE</summary>
+      <div class="set-section-body">
+        <div class="panel" id="updPanel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">APP-UPDATE</span><span class="tag" id="updVer">–</span></div>
+          <div class="dim" id="updText">Prüft beim Start automatisch, ob es eine neue Version gibt.</div>
+          <div class="row" style="margin-top:10px"><button class="btn" id="updCheck">NACH UPDATES SUCHEN</button><button class="btn pri" id="updGo" style="display:none">JETZT AKTUALISIEREN</button></div>
+          <div class="dim2" id="updProg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
     <details class="set-section">
-      <summary>VOM PC ÜBERNEHMEN</summary>
+      <summary>⇪ VOM PC ÜBERNEHMEN</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h cy"><span class="ico">⇪</span><span class="t">VOM PC ÜBERNEHMEN</span></div>
           <div class="dim" style="margin-bottom:10px">Am PC in A.R.I unter Einstellungen „EXPORTIEREN" und die Datei hier auswählen: Anbieter, Schlüssel, Sprache und Farben werden übernommen (die PC-Zugangsdaten für Google/Spotify NICHT).</div>
@@ -612,7 +618,7 @@ main{touch-action:pan-y}
       </div>
     </details>
     <details class="set-section">
-      <summary>DATEN</summary>
+      <summary>⏻ DATEN</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h"><span class="ico">⏻</span><span class="t">DATEN</span></div>
           <div class="row"><button class="btn" id="brExport">GEHIRN EXPORT</button><button class="btn" id="brImportBtn">GEHIRN IMPORT</button></div>
