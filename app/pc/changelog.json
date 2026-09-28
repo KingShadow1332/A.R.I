@@ -3,22 +3,22 @@
         "value":  [
                       {
                           "value":  [
-                                        "@{value=System.Object[]; Count=1}",
-                                        "@{version=25; name=1.4.7; notes=Genre-Wuensche wie \u0027spiel Pop\u0027, \u0027spiel Rock\u0027, \u0027spiel epische Musik\u0027 spielen jetzt gezielt dazu passende Musik, auch wenn du dieses Genre noch nie gehoert hast\n\u0027Lauter\u0027/\u0027Leiser\u0027 erhoehen/verringern die Lautstaerke jetzt um 10% statt nur 4%}"
+                                        "@{value=System.Object[]; Count=2}",
+                                        "@{version=26; name=1.4.8; notes=Fix: \u0027epische Musik\u0027 spielt jetzt genau die von dir bestaetigte Playlist, statt danebenzugreifen (vorher landete es faelschlich bei Pop)}"
                                     ],
                           "Count":  2
                       },
                       {
-                          "version":  26,
-                          "name":  "1.4.8",
-                          "notes":  "Fix: \u0027epische Musik\u0027 spielt jetzt genau die von dir bestaetigte Playlist, statt danebenzugreifen (vorher landete es faelschlich bei Pop)"
+                          "version":  27,
+                          "name":  "1.4.9",
+                          "notes":  "Fix: Automatische Updates pruefen jetzt schon kurz nach dem Start (vorher erst nach einer vollen Stunde) - falls dein PC gerade auf einer Version VOR 1.4.6 laeuft, hilf einmal manuell nach (Einstellungen -\u003e AKTUALISIEREN), danach laeuft die Automatik von selbst weiter"
                       }
                   ],
         "Count":  2
     },
     {
-        "version":  27,
-        "name":  "1.4.9",
-        "notes":  "Fix: Automatische Updates pruefen jetzt schon kurz nach dem Start (vorher erst nach einer vollen Stunde) - falls dein PC gerade auf einer Version VOR 1.4.6 laeuft, hilf einmal manuell nach (Einstellungen -\u003e AKTUALISIEREN), danach laeuft die Automatik von selbst weiter"
+        "version":  28,
+        "name":  "1.5.0",
+        "notes":  "Neu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) koennen im HUD unter BENACHRICHTIGUNGEN angezeigt werden, sobald die Handy-App das erlaubt"
     }
 ]
