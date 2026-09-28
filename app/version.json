@@ -1,7 +1,7 @@
 {
-    "versionCode":  28,
-    "versionName":  "1.7.1",
+    "versionCode":  29,
+    "versionName":  "1.7.2",
     "apk":  "ARI.apk",
-    "notes":  "Einstellungen uebersichtlicher sortiert\nMikrofon wartet jetzt mindestens ~5 Sekunden, bevor es abbricht\nGehirn-3D-Ansicht groesser\nNeu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) am PC anzeigen - Einstellungen -\u003e Handy-Benachrichtigungen am PC",
+    "notes":  "Update-Check jetzt stuendlich\nFragt nach Installation einmalig nach Benachrichtigungszugriff\nPC-Tab aufgeraeumt: nur noch QR-Code oder Koppelcode\nVerbunden-Status oben rechts jetzt gruen sichtbar",
     "sizeMb":  5.9
 }
