@@ -250,12 +250,15 @@ $$('.chips .btn[data-q]').forEach(b=>b.onclick=()=>{const q=b.dataset.q;if(q.end
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 async function nativeMic(){
   const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SpeechRecognition;
+  const AW=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;
   if(!P){addMsg('a','Spracheingabe ist in dieser App nicht verfügbar – nutze das Mikrofon deiner Tastatur.');return;}
   try{
     const av=await P.available();if(!av.available){addMsg('a','Dieses Handy hat keine Spracherkennung – nutze das Mikrofon deiner Tastatur.');return;}
     const perm=await P.requestPermissions();if(perm.speechRecognition!=='granted'){addMsg('a','Bitte erlaube A.R.I das Mikrofon (Handy-Einstellungen → Apps → A.R.I → Berechtigungen).');return;}
     orbBusy(true,'HÖRT ZU …');
-    const r=await P.start({language:cfg.lang,maxResults:1,prompt:'Sag A.R.I, was er tun soll',partialResults:false,popup:false});
+    // AriWake.listenExtended (eigene, mit mehr Stille-Toleranz) statt des Drittanbieter-Plugins - man
+    // muss so nicht sofort nach dem Antippen/Weckwort reden, A.R.I wartet mindestens ~5 Sekunden.
+    const r=AW&&AW.listenExtended?await AW.listenExtended({language:cfg.lang}):await P.start({language:cfg.lang,maxResults:1,prompt:'Sag A.R.I, was er tun soll',partialResults:false,popup:false});
     orbBusy(false);const txt=(r&&r.matches&&r.matches[0])||'';if(txt)send(txt);
   }catch(e){orbBusy(false);}
 }
