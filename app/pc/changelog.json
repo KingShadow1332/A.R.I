@@ -1,5 +1,5 @@
-{
+[{
     "version":  24,
     "name":  "1.4.6",
     "notes":  "Neu: Fenster auf einen bestimmten Bildschirm verschieben (z.B. \u0027verschieb Notepad auf Bildschirm 2\u0027)\nNeu: Automatische Updates (Einstellungen) - installiert Updates von selbst ohne Nachfragen, zeigt nach dem Neustart trotzdem zusammengefasst, was sich getan hat (auch wenn mehrere Versionen uebersprungen wurden)"
-}
+}]
