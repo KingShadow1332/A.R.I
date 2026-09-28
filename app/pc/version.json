@@ -1,7 +1,7 @@
 {
-    "version":  23,
-    "name":  "1.4.5",
+    "version":  24,
+    "name":  "1.4.6",
     "zip":  "ari-pc.zip",
-    "sha256":  "e4d1888daa91af3909a2fdc56a30bf66c16aca776120edea1f320551d05e46af",
-    "notes":  "Update-Bestaetigung sieht jetzt aus wie der Rest von A.R.I, statt der haesslichen Browser-Meldung (\"Auf 127.0.0.1:5000 wird Folgendes angezeigt\")"
+    "sha256":  "e0c2437276ecd5430dfa1fb2e09d5056cbbc03ef46ceffa35edce1d639da6db2",
+    "notes":  "Neu: Fenster auf einen bestimmten Bildschirm verschieben (z.B. \u0027verschieb Notepad auf Bildschirm 2\u0027)\nNeu: Automatische Updates (Einstellungen) - installiert Updates von selbst ohne Nachfragen, zeigt nach dem Neustart trotzdem zusammengefasst, was sich getan hat (auch wenn mehrere Versionen uebersprungen wurden)"
 }
