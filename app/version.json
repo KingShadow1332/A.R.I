@@ -1,7 +1,7 @@
 {
-    "versionCode":  26,
-    "versionName":  "1.6.9",
+    "versionCode":  28,
+    "versionName":  "1.7.1",
     "apk":  "ARI.apk",
-    "notes":  "Einstellungen uebersichtlicher sortiert und beschriftet (KI, Hintergrund, Update, Daten)\nSprachbefehl per Mikrofon-Taste/Weckwort: man muss jetzt nicht mehr sofort nach dem Antippen reden - A.R.I wartet mindestens ~5 Sekunden, bevor es abbricht",
+    "notes":  "Einstellungen uebersichtlicher sortiert\nMikrofon wartet jetzt mindestens ~5 Sekunden, bevor es abbricht\nGehirn-3D-Ansicht groesser\nNeu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) am PC anzeigen - Einstellungen -\u003e Handy-Benachrichtigungen am PC",
     "sizeMb":  5.9
 }
