@@ -1,7 +1,7 @@
 {
-    "versionCode":  29,
-    "versionName":  "1.7.2",
+    "versionCode":  30,
+    "versionName":  "1.7.3",
     "apk":  "ARI.apk",
-    "notes":  "Update-Check jetzt stuendlich\nFragt nach Installation einmalig nach Benachrichtigungszugriff\nPC-Tab aufgeraeumt: nur noch QR-Code oder Koppelcode\nVerbunden-Status oben rechts jetzt gruen sichtbar",
+    "notes":  "Handy-Benachrichtigungen: Spam-Duplikate von Musik-Apps (Spotify) gefiltert\nHandy-Benachrichtigungen: Wegklicken jetzt beidseitig synchron (PC und Handy)",
     "sizeMb":  5.9
 }
