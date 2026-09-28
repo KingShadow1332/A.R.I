@@ -250,15 +250,12 @@ $$('.chips .btn[data-q]').forEach(b=>b.onclick=()=>{const q=b.dataset.q;if(q.end
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 async function nativeMic(){
   const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SpeechRecognition;
-  const AW=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;
   if(!P){addMsg('a','Spracheingabe ist in dieser App nicht verfügbar – nutze das Mikrofon deiner Tastatur.');return;}
   try{
     const av=await P.available();if(!av.available){addMsg('a','Dieses Handy hat keine Spracherkennung – nutze das Mikrofon deiner Tastatur.');return;}
     const perm=await P.requestPermissions();if(perm.speechRecognition!=='granted'){addMsg('a','Bitte erlaube A.R.I das Mikrofon (Handy-Einstellungen → Apps → A.R.I → Berechtigungen).');return;}
     orbBusy(true,'HÖRT ZU …');
-    // AriWake.listenExtended (eigene, mit mehr Stille-Toleranz) statt des Drittanbieter-Plugins - man
-    // muss so nicht sofort nach dem Antippen/Weckwort reden, A.R.I wartet mindestens ~5 Sekunden.
-    const r=AW&&AW.listenExtended?await AW.listenExtended({language:cfg.lang}):await P.start({language:cfg.lang,maxResults:1,prompt:'Sag A.R.I, was er tun soll',partialResults:false,popup:false});
+    const r=await P.start({language:cfg.lang,maxResults:1,prompt:'Sag A.R.I, was er tun soll',partialResults:false,popup:false});
     orbBusy(false);const txt=(r&&r.matches&&r.matches[0])||'';if(txt)send(txt);
   }catch(e){orbBusy(false);}
 }
@@ -393,7 +390,7 @@ $('#brAdd').onclick=()=>{const t=$('#brNew').value.trim();if(t.length<4)return;r
     let x=p.x*cy-p.z*sy,z=p.x*sy+p.z*cy;
     let y=p.y*cp-z*sp;z=p.y*sp+z*cp;
     const persp=700/(700+z);
-    const sc=persp*zoom*Math.min(W,H)/600;
+    const sc=persp*zoom*Math.min(W,H)/800;
     p.sx=W/2+x*sc;p.sy=H/2+y*sc;p.sz=z;p.sc=sc;
   }
   const stars=Array.from({length:220},()=>({x:(Math.random()-.5)*1200,y:(Math.random()-.5)*1200,z:(Math.random()-.5)*1200,a:Math.random()}));
@@ -935,6 +932,13 @@ function syncStatus(t,ok){
 }
 // Feste Geraete-Kennung dieser App (damit derselbe Handy-Eintrag beim erneuten Koppeln ersetzt wird, statt sich zu vermehren)
 function devId(){let d=store.get('ari-app-devid',null);if(!d){d='d'+Math.random().toString(36).slice(2,12);store.set('ari-app-devid',d);}return d;}
+// PC-Adresse + Token auch nativ speichern (SharedPreferences), damit der Benachrichtigungsdienst
+// (laeuft unabhaengig von dieser WebView-Seite) weiss, wohin er Handy-Benachrichtigungen schicken soll.
+function pushSyncCreds(){
+  if(!NATIVE||!window.Capacitor||!Capacitor.Plugins||!Capacitor.Plugins.AriWake)return;
+  try{Capacitor.Plugins.AriWake.setSyncCreds({origin:sync.origin||'',token:sync.token||''}).catch(()=>{});}catch(e){}
+}
+pushSyncCreds(); // beim Start einmal senden - wichtig nach einem App-Update, falls schon vorher gekoppelt
 // Geraetename fuer die Kopplung: der Name, den der Nutzer selbst in Android unter "Ueber das Telefon ->
 // Geraetename" vergeben hat - Hersteller tragen dort meist schon den echten Produktnamen ein (z.B.
 // "Galaxy S24 Ultra"), und wer umbenannt hat, bekommt genau den eigenen Namen zurueck. Funktioniert
@@ -975,6 +979,7 @@ async function pairFromLink(origin,code){
     const d=await r.json();
     if(!r.ok||!d.token){syncStatus('Kopplung fehlgeschlagen: '+(d.error||r.status),false);return;}
     sync.origin=origin;sync.token=d.token;sync.dirtyKeys=false;sync.dirtySet=false;saveSync();
+    pushSyncCreds();
     goTab('pc');await syncNow();
     if(sync.token)toast('✓ Mit dem PC verbunden');
   }catch(e){syncStatus('PC nicht erreichbar. Bist du im selben WLAN wie der PC?',false);}
@@ -1026,7 +1031,7 @@ async function syncNow(){
 function applyThemeSaved(){const th=store.get('ari-app-theme',null);if(th){if(th.primary)document.documentElement.style.setProperty('--pink',th.primary);if(th.accent)document.documentElement.style.setProperty('--cyan',th.accent);}}
 let syncT=null;const syncSoon=()=>{clearTimeout(syncT);syncT=setTimeout(syncNow,1500);};
 $('#syncNow').onclick=syncNow;
-$('#syncOff').onclick=()=>{if(!confirm('Synchronisation mit dem PC beenden? (Daten auf dem Handy bleiben.)'))return;sync.token='';sync.origin='';saveSync();syncStatus('Nicht mit dem PC verbunden.');};
+$('#syncOff').onclick=()=>{if(!confirm('Synchronisation mit dem PC beenden? (Daten auf dem Handy bleiben.)'))return;sync.token='';sync.origin='';saveSync();pushSyncCreds();syncStatus('Nicht mit dem PC verbunden.');};
 setInterval(()=>{if(!document.hidden)syncNow();},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNow();});
 /* QR-Link im Handy-Browser: Button, der die installierte A.R.I-App oeffnet (statt im Browser weiterzumachen) */
@@ -1203,6 +1208,22 @@ if(NATIVE&&WK()){
   try{Capacitor.Plugins.App.addListener('appStateChange',st=>{if(st.isActive){wakeCheck();wakeRefresh();}});}catch(e){}
   wakeRefresh();wakeCheck();
   if(cfg.wake==='1')WK().status().then(s=>{if(!s.running)wakeStart().then(wakeRefresh);});
+}
+/* ---------- Handy-Benachrichtigungen am PC (nur Android-App, optional) ---------- */
+async function notifFwdRefresh(){
+  if(!NATIVE||!BGP()||!BGP().isNotificationAccessEnabled)return;$('#notifFwdSection').style.display='';
+  try{
+    const s=await BGP().isNotificationAccessEnabled();
+    $('#notifFwdTag').textContent=s.enabled?'AN':'AUS';
+    $('#notifFwdBtn').textContent=s.enabled?'ZUGRIFF VERWALTEN':'BENACHRICHTIGUNGSZUGRIFF ERLAUBEN';
+    $('#notifFwdMsg').textContent=s.enabled?'Aktiv – Benachrichtigungen anderer Apps werden an den gekoppelten PC geschickt.':'Noch nicht erlaubt. Nach dem Antippen A.R.I in der Liste einschalten.';
+    if(s.enabled)pushSyncCreds();
+  }catch(e){}
+}
+if(NATIVE&&BGP()&&BGP().openNotificationAccessSettings){
+  $('#notifFwdBtn').onclick=()=>{try{BGP().openNotificationAccessSettings();}catch(e){}};
+  try{Capacitor.Plugins.App.addListener('appStateChange',st=>{if(st.isActive)notifFwdRefresh();});}catch(e){}
+  notifFwdRefresh();
 }
 /* ---------- Start ---------- */
 refreshReady();
