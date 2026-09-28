@@ -4,21 +4,21 @@
                       {
                           "value":  [
                                         "@{value=System.Object[]; Count=2}",
-                                        "@{version=26; name=1.4.8; notes=Fix: \u0027epische Musik\u0027 spielt jetzt genau die von dir bestaetigte Playlist, statt danebenzugreifen (vorher landete es faelschlich bei Pop)}"
+                                        "@{version=27; name=1.4.9; notes=Fix: Automatische Updates pruefen jetzt schon kurz nach dem Start (vorher erst nach einer vollen Stunde) - falls dein PC gerade auf einer Version VOR 1.4.6 laeuft, hilf einmal manuell nach (Einstellungen -\u003e AKTUALISIEREN), danach laeuft die Automatik von selbst weiter}"
                                     ],
                           "Count":  2
                       },
                       {
-                          "version":  27,
-                          "name":  "1.4.9",
-                          "notes":  "Fix: Automatische Updates pruefen jetzt schon kurz nach dem Start (vorher erst nach einer vollen Stunde) - falls dein PC gerade auf einer Version VOR 1.4.6 laeuft, hilf einmal manuell nach (Einstellungen -\u003e AKTUALISIEREN), danach laeuft die Automatik von selbst weiter"
+                          "version":  28,
+                          "name":  "1.5.0",
+                          "notes":  "Neu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) koennen im HUD unter BENACHRICHTIGUNGEN angezeigt werden, sobald die Handy-App das erlaubt"
                       }
                   ],
         "Count":  2
     },
     {
-        "version":  28,
-        "name":  "1.5.0",
-        "notes":  "Neu: Handy-Benachrichtigungen (WhatsApp, Discord, etc.) koennen im HUD unter BENACHRICHTIGUNGEN angezeigt werden, sobald die Handy-App das erlaubt"
+        "version":  29,
+        "name":  "1.6.0",
+        "notes":  "Handy-Benachrichtigungen: Spam-Duplikate von Musik-Apps (Spotify) gefiltert\nHandy-Benachrichtigungen: Wegklicken jetzt beidseitig synchron (PC und Handy)\nHandy-Benachrichtigungen: anklickbar, per Wischen nach links Spam markierbar\nNeuer Schalter: PC-Bildschirm-Ansicht an/aus (Einstellungen \u003e Handy)\nPC-Bildschirm-Ansicht: Mail-Pruefung funktioniert jetzt auch vom Handy aus"
     }
 ]
