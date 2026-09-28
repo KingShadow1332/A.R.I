@@ -1,5 +1,17 @@
-[{
-    "version":  24,
-    "name":  "1.4.6",
-    "notes":  "Neu: Fenster auf einen bestimmten Bildschirm verschieben (z.B. \u0027verschieb Notepad auf Bildschirm 2\u0027)\nNeu: Automatische Updates (Einstellungen) - installiert Updates von selbst ohne Nachfragen, zeigt nach dem Neustart trotzdem zusammengefasst, was sich getan hat (auch wenn mehrere Versionen uebersprungen wurden)"
-}]
+[
+    {
+        "value":  [
+                      {
+                          "version":  24,
+                          "name":  "1.4.6",
+                          "notes":  "Neu: Fenster auf einen bestimmten Bildschirm verschieben (z.B. \u0027verschieb Notepad auf Bildschirm 2\u0027)\nNeu: Automatische Updates (Einstellungen) - installiert Updates von selbst ohne Nachfragen, zeigt nach dem Neustart trotzdem zusammengefasst, was sich getan hat (auch wenn mehrere Versionen uebersprungen wurden)"
+                      }
+                  ],
+        "Count":  1
+    },
+    {
+        "version":  25,
+        "name":  "1.4.7",
+        "notes":  "Genre-Wuensche wie \u0027spiel Pop\u0027, \u0027spiel Rock\u0027, \u0027spiel epische Musik\u0027 spielen jetzt gezielt dazu passende Musik, auch wenn du dieses Genre noch nie gehoert hast\n\u0027Lauter\u0027/\u0027Leiser\u0027 erhoehen/verringern die Lautstaerke jetzt um 10% statt nur 4%"
+    }
+]
