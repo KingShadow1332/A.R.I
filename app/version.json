@@ -1,7 +1,7 @@
 {
-    "versionCode":  24,
-    "versionName":  "1.6.7",
+    "versionCode":  25,
+    "versionName":  "1.6.8",
     "apk":  "ARI.apk",
-    "notes":  "PC OEFFNEN bleibt jetzt in der App (WLAN-Adressen sind erlaubt), statt in den externen Browser zu wechseln",
+    "notes":  "Gehirn-3D-Ansicht in der App ist jetzt spuerbar groesser (war auf dem Handy kleiner als am PC)",
     "sizeMb":  5.9
 }
