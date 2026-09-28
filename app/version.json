@@ -1,7 +1,7 @@
 {
-    "versionCode":  25,
-    "versionName":  "1.6.8",
+    "versionCode":  26,
+    "versionName":  "1.6.9",
     "apk":  "ARI.apk",
-    "notes":  "Gehirn-3D-Ansicht in der App ist jetzt spuerbar groesser (war auf dem Handy kleiner als am PC)",
+    "notes":  "Einstellungen uebersichtlicher sortiert und beschriftet (KI, Hintergrund, Update, Daten)\nSprachbefehl per Mikrofon-Taste/Weckwort: man muss jetzt nicht mehr sofort nach dem Antippen reden - A.R.I wartet mindestens ~5 Sekunden, bevor es abbricht",
     "sizeMb":  5.9
 }
