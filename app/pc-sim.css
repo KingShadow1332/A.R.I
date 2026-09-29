@@ -32,6 +32,17 @@ body.pc-sim-active #pcSimBox{
   background:radial-gradient(circle at 50% 22%,#140e22,#050308 70%);
 }
 
+.pc-sim-head{
+  position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 16px 10px; border-bottom:1px solid color-mix(in srgb, var(--pink) 18%, transparent);
+  background:linear-gradient(180deg, #0b0714 0%, rgba(11,7,20,.92) 82%, transparent 100%);
+  backdrop-filter:blur(6px);
+}
+.pc-sim-head-brand{display:flex; flex-direction:column; gap:2px}
+.pc-sim-head-name{font:700 18px var(--font-display); letter-spacing:.42em; color:var(--pink); text-shadow:0 0 14px color-mix(in srgb, var(--pink) 55%, transparent)}
+.pc-sim-head-sub{font:500 8.5px var(--font-mono); letter-spacing:.2em; color:var(--text-dim2)}
+.pc-sim-head-clock{font:600 15px var(--font-mono); letter-spacing:.08em; color:var(--cyan-2); text-shadow:0 0 10px color-mix(in srgb, var(--cyan) 45%, transparent)}
+
 /* --- Orb / Planet / Ringe --- */
 
 @keyframes orbSpin{to{transform:rotate(360deg)}}
