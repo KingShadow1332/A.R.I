@@ -1,7 +1,7 @@
 {
-    "versionCode":  34,
-    "versionName":  "1.7.7",
+    "versionCode":  35,
+    "versionName":  "1.7.8",
     "apk":  "ARI.apk",
-    "notes":  "Fehlerbehebung: PC-Bildschirm zeigte die falsche, vereinfachte Ansicht statt der echten PC-Oberflaeche\nFehlerbehebung: PC-Bildschirm oeffnete sich manchmal im externen Browser statt in der App - laeuft jetzt garantiert eingebettet in der App",
+    "notes":  "PC-Bildschirm ersetzt durch leichte, rein optische Simulation (Planet + Astro) statt Live-Spiegelung - laeuft dadurch fluessig und ohne WLAN/Verbindung\nNeuer Schalter \u0027PC-Simulation anzeigen\u0027 in Einstellungen \u003e PC (ersetzt vorherigen Auto-Start-Schalter)",
     "sizeMb":  5.9
 }
