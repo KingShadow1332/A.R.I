@@ -399,6 +399,7 @@ main{touch-action:pan-y}
 .notif-dismiss:active,.notif-dismiss:hover{color:var(--pink,#ff2d78);border-color:color-mix(in srgb,var(--pink,#ff2d78) 55%,transparent);background:color-mix(in srgb,var(--pink,#ff2d78) 12%,transparent)}
 .notif-dismiss svg{display:block}
 </style>
+<link rel="stylesheet" href="pc-sim.css">
 </head>
 <body>
 <header>
@@ -525,9 +526,51 @@ main{touch-action:pan-y}
         <div class="panel"><div class="panel-h cy"><span class="ico">▣</span><span class="t">MIT DEM PC VERBINDEN</span><span class="tag" id="pcTag">–</span></div>
           <div id="pcState" style="margin:0 0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);font-size:12px;line-height:1.5">Nicht mit dem PC verbunden.</div>
           <div class="dim" style="margin-bottom:10px">Die App läuft ohne PC. Für Bildschirm, Steuerung und Mediensteuerung müsst ihr im selben WLAN sein.</div>
-          <button class="btn pri" id="pcGo" style="width:100%;margin-bottom:8px">▣ PC-BILDSCHIRM ÖFFNEN</button>
           <div class="dim2" id="pcMsg" style="margin-top:4px;margin-bottom:10px"></div>
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer;margin-bottom:10px"><input type="checkbox" id="autoPcView" style="margin-top:3px;flex:none"><span style="display:block"><span style="display:block;font-size:13px;letter-spacing:.04em">Immer mit PC-Bildschirm starten</span><span style="display:block;font-size:11px;opacity:.55;line-height:1.45;margin-top:2px">App zeigt beim Öffnen direkt den PC-Bildschirm statt des normalen Chats (bleibt in der App, kein externer Browser). Nur wenn gekoppelt und im selben WLAN.</span></span></label>
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer;margin-bottom:10px"><input type="checkbox" id="pcSimOn" style="margin-top:3px;flex:none"><span style="display:block"><span style="display:block;font-size:13px;letter-spacing:.04em">PC-Simulation anzeigen</span><span style="display:block;font-size:11px;opacity:.55;line-height:1.45;margin-top:2px">Zeigt die A.R.I-Grafik (Planet + Astro) wie am PC direkt hier in der App — rein optisch, ohne Live-Verbindung, läuft flüssig ohne WLAN.</span></span></label>
+          <div id="pcSimBox" style="display:none;position:relative;min-height:260px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at 50% 30%,#120c1e,#050308);overflow:hidden;margin-bottom:10px">
+            <div style="display:flex;justify-content:center;padding-top:6px">
+              <div class="orb" id="pcSimOrb">
+                <div class="orb-glow-pink"></div>
+                <div class="orb-glow-cyan"></div>
+                <div class="ring-wrap ring-back" style="--i:-24%; --sy:.3; --spin:9s; --bc:color-mix(in srgb, var(--cyan) 42%, transparent); --sw:var(--cyan-2); --bc2:var(--cyan-2); --bw:1.6px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-back" style="--i:-11%; --sy:.26; --spin:13s; --bc:color-mix(in srgb, var(--pink) 45%, transparent); --sw:var(--am); --bc2:var(--am); --bw:1.4px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-back" style="--i:-1%; --sy:.22; --spin:17s; --bc:color-mix(in srgb, var(--cyan) 30%, transparent); --sw:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bc2:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bw:1px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="moon-orbit"><div class="spin"><span class="moon moon-a"></span></div><div class="spin-rev"><span class="moon moon-b"></span></div></div>
+                <div class="sphere sphere-core"></div>
+                <div class="sphere sphere-bands"><div></div></div>
+                <div class="sphere sphere-shade"></div>
+                <div class="sphere sphere-rim"></div>
+                <div class="sphere sphere-sweep"></div>
+                <div class="ring-wrap ring-front" style="--i:-1%; --sy:.22; --spin:17s; --bc:color-mix(in srgb, var(--cyan) 50%, transparent); --sw:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bc2:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bw:1px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-front" style="--i:-11%; --sy:.26; --spin:13s; --bc:color-mix(in srgb, var(--pink) 70%, transparent); --sw:var(--am); --bc2:var(--am); --bw:1.6px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-front" style="--i:-24%; --sy:.3; --spin:9s; --bc:color-mix(in srgb, var(--cyan) 60%, transparent); --sw:var(--cyan-2); --bc2:var(--cyan-2); --bw:1.8px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="orb-label"><span class="name">A.R.I</span><span class="state">SIMULATION</span></div>
+              </div>
+            </div>
+            <svg class="pc-sim-astro" viewBox="0 0 64 92" xmlns="http://www.w3.org/2000/svg" style="position:absolute;right:14px;bottom:10px;width:70px;height:auto;filter:drop-shadow(0 0 14px rgba(255,45,120,.4))">
+              <defs><linearGradient id="pcSimVis" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fefff"/><stop offset="1" stop-color="#29d3f5"/></linearGradient>
+              <linearGradient id="pcSimSuit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2748"/><stop offset="1" stop-color="#15132a"/></linearGradient></defs>
+              <g>
+                <line x1="27" y1="63" x2="23" y2="71" stroke="#ff2d78" stroke-width="9.6" stroke-linecap="round"/><line x1="27" y1="63" x2="23" y2="71" stroke="url(#pcSimSuit)" stroke-width="7" stroke-linecap="round"/>
+                <line x1="23" y1="71" x2="22" y2="80" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="23" y1="71" x2="22" y2="80" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><path d="M14.5 83 Q14 79 20 79.5 L27 80 Q29.5 81 28.5 84 Q28 86 25 86 L17 86 Q14.5 86 14.5 83Z" fill="#29d3f5" stroke="#8fefff" stroke-width=".8"/>
+                <line x1="37" y1="63" x2="41" y2="71" stroke="#ff2d78" stroke-width="9.6" stroke-linecap="round"/><line x1="37" y1="63" x2="41" y2="71" stroke="url(#pcSimSuit)" stroke-width="7" stroke-linecap="round"/>
+                <line x1="41" y1="71" x2="42" y2="80" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="41" y1="71" x2="42" y2="80" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><path d="M49.5 83 Q50 79 44 79.5 L37 80 Q34.5 81 35.5 84 Q36 86 39 86 L47 86 Q49.5 86 49.5 83Z" fill="#29d3f5" stroke="#8fefff" stroke-width=".8"/>
+                <rect x="17" y="40" width="30" height="27" rx="11" fill="url(#pcSimSuit)" stroke="#ff2d78" stroke-width="1.6"/>
+                <rect x="21" y="63" width="22" height="3.2" rx="1.6" fill="#29d3f5" opacity=".85"/>
+                <circle cx="32" cy="52" r="5.6" fill="#0c0b16" stroke="#29d3f5" stroke-width="1.4"/><text x="32" y="54.6" text-anchor="middle" font-size="7.4" font-weight="700" fill="#29d3f5" font-family="monospace">A</text>
+                <line x1="20" y1="47" x2="16" y2="55" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="20" y1="47" x2="16" y2="55" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><line x1="16" y1="55" x2="14.6" y2="63" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="16" y1="55" x2="14.6" y2="63" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><circle cx="14.4" cy="64.4" r="5.2" fill="#ff2d78" stroke="#ff8fb4" stroke-width=".8"/>
+                <line x1="44" y1="47" x2="48" y2="55" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="44" y1="47" x2="48" y2="55" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><line x1="48" y1="55" x2="49.4" y2="63" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="48" y1="55" x2="49.4" y2="63" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><circle cx="49.6" cy="64.4" r="5.2" fill="#ff2d78" stroke="#ff8fb4" stroke-width=".8"/>
+                <line x1="32" y1="6" x2="32" y2="12" stroke="#29d3f5" stroke-width="2"/><circle cx="32" cy="5" r="3.2" fill="#ff2d78" stroke="#ff8fb4" stroke-width=".8"/>
+                <circle cx="32" cy="26" r="19" fill="url(#pcSimSuit)" stroke="#29d3f5" stroke-width="2"/>
+                <rect x="16.5" y="15" width="31" height="22" rx="10.5" fill="url(#pcSimVis)" stroke="#8fefff" stroke-width="1.2"/>
+                <circle cx="26" cy="24.5" r="2.8" fill="#0c0b16"/><circle cx="38" cy="24.5" r="2.8" fill="#0c0b16"/><circle cx="27" cy="23.5" r=".9" fill="#8fefff"/><circle cx="39" cy="23.5" r=".9" fill="#8fefff"/>
+                <circle cx="21.5" cy="30.5" r="2.4" fill="#ff2d78" opacity=".55"/><circle cx="42.5" cy="30.5" r="2.4" fill="#ff2d78" opacity=".55"/>
+                <path d="M28 30 Q32 34.5 36 30" fill="none" stroke="#0c0b16" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M20 19.5 Q24 16 30 16" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity=".75"/>
+              </g>
+            </svg>
+          </div>
           <button class="btn" id="qrScan" style="width:100%;margin-bottom:8px">▣ QR-CODE VOM PC SCANNEN</button>
           <div class="set" style="margin-top:10px"><label>ODER CODE EINGEBEN</label>
             <input id="pcCode" inputmode="numeric" autocomplete="off" placeholder="Koppelcode (6 Ziffern vom PC)">
@@ -667,13 +710,6 @@ main{touch-action:pan-y}
 </nav>
 
 <div id="qrOv" style="display:none;position:fixed;inset:0;z-index:9999;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:12px"><video id="qrVid" playsinline muted style="width:100%;max-height:70vh;object-fit:cover"></video><div class="dim" id="qrMsg" style="color:#dff6ff">Richte die Kamera auf den QR-Code am PC (Einstellungen → HANDY).</div><button class="btn" id="qrClose" style="width:60%">ABBRECHEN</button></div>
-<div id="pcScreenOv" style="display:none;position:fixed;inset:0;z-index:9998;background:#000;flex-direction:column">
-  <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#0b1620;border-bottom:1px solid rgba(255,255,255,.1)">
-    <span class="dim2" style="font-size:11px">PC-BILDSCHIRM</span>
-    <button class="btn" id="pcScreenClose" style="padding:4px 14px">✕ SCHLIESSEN</button>
-  </div>
-  <iframe id="pcScreenFrame" style="flex:1;width:100%;border:0;background:#000" allow="clipboard-read; clipboard-write"></iframe>
-</div>
 <script src="jsqr.js"></script>
 <script src="app.js"></script>
 </body>
