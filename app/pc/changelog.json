@@ -4,21 +4,21 @@
                       {
                           "value":  [
                                         "@{value=System.Object[]; Count=2}",
-                                        "@{version=29; name=1.6.0; notes=Handy-Benachrichtigungen: Spam-Duplikate von Musik-Apps (Spotify) gefiltert\nHandy-Benachrichtigungen: Wegklicken jetzt beidseitig synchron (PC und Handy)\nHandy-Benachrichtigungen: anklickbar, per Wischen nach links Spam markierbar\nNeuer Schalter: PC-Bildschirm-Ansicht an/aus (Einstellungen \u003e Handy)\nPC-Bildschirm-Ansicht: Mail-Pruefung funktioniert jetzt auch vom Handy aus}"
+                                        "@{version=30; name=1.6.1; notes=Wettlauf-Fehler beim Speichern behoben: gleichzeitige Speichervorgaenge (z.B. Kalender-Login + Handy-Abfrage) konnten sich gegenseitig ueberschreiben und Einstellungen loeschen\nNach Kalender-Neuverbinden wird jetzt auch Gmail automatisch neu versucht statt einen alten Fehler zu zeigen}"
                                     ],
                           "Count":  2
                       },
                       {
-                          "version":  30,
-                          "name":  "1.6.1",
-                          "notes":  "Wettlauf-Fehler beim Speichern behoben: gleichzeitige Speichervorgaenge (z.B. Kalender-Login + Handy-Abfrage) konnten sich gegenseitig ueberschreiben und Einstellungen loeschen\nNach Kalender-Neuverbinden wird jetzt auch Gmail automatisch neu versucht statt einen alten Fehler zu zeigen"
+                          "version":  31,
+                          "name":  "1.6.2",
+                          "notes":  "Interne Umstellung: Projekt-Adresse bei GitHub geaendert (kein sichtbarer Unterschied fuer dich)"
                       }
                   ],
         "Count":  2
     },
     {
-        "version":  31,
-        "name":  "1.6.2",
-        "notes":  "Interne Umstellung: Projekt-Adresse bei GitHub geaendert (kein sichtbarer Unterschied fuer dich)"
+        "version":  32,
+        "name":  "1.6.3",
+        "notes":  "Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der nackten Programmdateien"
     }
 ]
