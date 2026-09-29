@@ -22,6 +22,16 @@
   --ease:cubic-bezier(.22,.9,.3,1);
 }
 
+/* --- PC-Simulation: echte Vollbild-Ansicht (deckt Kopfzeile + Inhalt ab, nur die untere
+   Navigation bleibt sichtbar/bedienbar - darueber verlaesst man die Ansicht wieder, kein
+   eigener Schliessen-Balken noetig). */
+#pcSimBox{display:none}
+body.pc-sim-active #pcSimBox{
+  display:block; position:fixed; left:0; right:0; top:0; bottom:var(--nav-h,64px); z-index:50;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  background:radial-gradient(circle at 50% 22%,#140e22,#050308 70%);
+}
+
 /* --- Orb / Planet / Ringe --- */
 
 @keyframes orbSpin{to{transform:rotate(360deg)}}
