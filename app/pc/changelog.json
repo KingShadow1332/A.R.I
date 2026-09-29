@@ -1,24 +1,32 @@
 [
-    {
-        "value":  [
-                      {
-                          "value":  [
-                                        "@{value=System.Object[]; Count=2}",
-                                        "@{version=32; name=1.6.3; notes=Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der nackten Programmdateien}"
-                                    ],
-                          "Count":  2
-                      },
-                      {
-                          "version":  33,
-                          "name":  "1.6.4",
-                          "notes":  "Neues Fenster nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify - schick gestaltete Bestaetigungsseite statt nacktem Text\nNeu: \u0027spiel [Film/Serie] ab\u0027 oeffnet den Titel automatisch beim passenden Streaming-Anbieter (merkt sich das dauerhaft im Gehirn)"
-                      }
-                  ],
-        "Count":  2
-    },
-    {
-        "version":  34,
-        "name":  "1.6.5",
-        "notes":  "\u0027Spiel [Film] ab\u0027 recherchiert jetzt echt bei JustWatch, wo der Titel laeuft, statt nur zu raten"
-    }
+  {
+    "version": 29,
+    "name": "1.6.0",
+    "notes": "Musik-Benachrichtigungen (z. B. Spotify) werden nicht mehr fälschlich als Nachrichten weitergeleitet, doppelte Benachrichtigungen werden erkannt und unterdrückt. Weggeklickte Handy-Benachrichtigungen verschwinden jetzt auch auf dem jeweils anderen Gerät. Benachrichtigungen lassen sich per Wischgeste als Spam markieren. Neue Option zum Ein- und Ausschalten der PC-Bildschirmansicht in den Einstellungen."
+  },
+  {
+    "version": 30,
+    "name": "1.6.1",
+    "notes": "Fehlerbehebung: Gleichzeitige Schreibvorgänge in den Einstellungen konnten sich in seltenen Fällen gegenseitig überschreiben. Speichervorgänge laufen jetzt abgesichert nacheinander ab."
+  },
+  {
+    "version": 31,
+    "name": "1.6.2",
+    "notes": "Interne Umstellung der Projektadresse bei GitHub. Ohne Auswirkung auf die Nutzung."
+  },
+  {
+    "version": 32,
+    "name": "1.6.3",
+    "notes": "Das Download-Paket enthält jetzt den Installer (ARI-Setup.exe) statt nur der einzelnen Programmdateien."
+  },
+  {
+    "version": 33,
+    "name": "1.6.4",
+    "notes": "Neu gestaltete Bestätigungsseite nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify. Neuer Sprachbefehl „Spiel [Film/Serie] ab“ öffnet den Titel beim passenden Streaming-Anbieter und merkt sich die Zuordnung."
+  },
+  {
+    "version": 34,
+    "name": "1.6.5",
+    "notes": "Der Sprachbefehl „Spiel [Film/Serie] ab“ ermittelt den Streaming-Anbieter jetzt durch eine echte Recherche (JustWatch) statt durch eine Schätzung."
+  }
 ]
