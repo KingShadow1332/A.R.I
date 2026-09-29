@@ -1,7 +1,7 @@
 {
-    "version":  34,
-    "name":  "1.6.5",
+    "version":  35,
+    "name":  "1.6.6",
     "zip":  "ari-pc.zip",
-    "sha256":  "ebac499c6dc7bd20515d4a0fc111614994fad27fd81f32b96dce615e083c6b5a",
-    "notes":  "\u0027Spiel [Film] ab\u0027 recherchiert jetzt echt bei JustWatch, wo der Titel laeuft, statt nur zu raten"
+    "sha256":  "0927fdba9671e3cb309afd9c35ae6f788d1bae2e1644d9796fba0a4481a3e51f",
+    "notes":  "\u0027Spiel [Film] ab\u0027 verlinkt jetzt direkt zur Titelseite beim Streaming-Anbieter (nicht mehr nur eine Suche) - ein Klick zum Abspielen"
 }
