@@ -1,7 +1,7 @@
 {
-    "versionCode":  33,
-    "versionName":  "1.7.6",
+    "versionCode":  34,
+    "versionName":  "1.7.7",
     "apk":  "ARI.apk",
-    "notes":  "Fehlerbehebung: Updates am Handy schlugen mit \u0027nicht erlaubt\u0027 fehl (eine fest einprogrammierte Sicherheits-Adresse zeigte noch auf die alte, vor der Umbenennung gueltige Adresse)",
+    "notes":  "Fehlerbehebung: PC-Bildschirm zeigte die falsche, vereinfachte Ansicht statt der echten PC-Oberflaeche\nFehlerbehebung: PC-Bildschirm oeffnete sich manchmal im externen Browser statt in der App - laeuft jetzt garantiert eingebettet in der App",
     "sizeMb":  5.9
 }
