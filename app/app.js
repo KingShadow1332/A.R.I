@@ -532,7 +532,10 @@ $('#brAdd').onclick=()=>{const t=$('#brNew').value.trim();if(t.length<4)return;r
 function renderPcs(){
   const box=$('#pcSaved');box.textContent='';
   pcs.forEach((p,i)=>{const r=document.createElement('div');r.className='row';r.style.marginTop='8px';
-    const go=document.createElement('button');go.className='btn';go.textContent='▣ '+p.name;go.onclick=()=>{location.href=p.url;};
+    const go=document.createElement('button');go.className='btn';go.textContent='▣ '+p.name;go.onclick=()=>{
+      let url=p.url;if(sync.token&&sync.origin===p.url)url+='#t='+encodeURIComponent(sync.token);
+      $('#pcScreenFrame').src=url;$('#pcScreenOv').style.display='flex';
+    };
     const del=document.createElement('button');del.className='btn dng';del.style.flex='0 0 52px';del.textContent='✕';del.onclick=()=>{pcs.splice(i,1);store.set('ari-app-pcs',pcs);renderPcs();};
     r.append(go,del);box.appendChild(r);});
 }
@@ -581,9 +584,10 @@ $('#pcPair').onclick=async()=>{
   msg.textContent='Koppeln …';$('#pcCode').value='';
   pairFromLink(a,c);
 };
-// "PC-BILDSCHIRM OEFFNEN": zeigt den PC-Bildschirm zum Antippen. Nimmt den bereits gekoppelten PC
-// (sync.origin), sonst sucht es ihn per UDP-Broadcast/Subnetz-Scan im WLAN. Navigiert per location.href
-// innerhalb derselben WebView (siehe capacitor.config.json allowNavigation) - kein externer Browser.
+// "PC-BILDSCHIRM OEFFNEN": zeigt den echten PC-Bildschirm (dieselbe Seite "/" wie am PC selbst,
+// nicht die vereinfachte "/phone"-Ansicht) in einem eingebetteten iframe innerhalb der App - kein
+// location.href auf Top-Ebene, das wuerde Android sonst manchmal im externen Browser statt in der
+// App oeffnen. Nimmt den bereits gekoppelten PC (sync.origin), sonst Suche per WLAN.
 async function goPcScreen(){
   let v=sync.origin;
   if(!v){
@@ -593,17 +597,18 @@ async function goPcScreen(){
     else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – erst per QR-Code oder Koppelcode verbinden.';return false;}
   }
   let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return false;}
-  if(!/\/phone/.test(u.pathname))u.pathname=u.pathname.replace(/\/$/,'')+'/phone';
   let url=u.toString();
-  if(!/[#&]l=/.test(url)){const nm='PC ('+u.hostname+')';
-    if(!pcs.some(p=>p.url===url)){pcs.push({name:nm,url});store.set('ari-app-pcs',pcs);}}
+  const nm='PC ('+u.hostname+')';
+  if(!pcs.some(p=>p.url===url)){pcs.push({name:nm,url});store.set('ari-app-pcs',pcs);}
   // Schon gekoppelt (sync.token)? Dann direkt am PC-Bildschirm anmelden, statt dort nochmal zu koppeln -
   // ist der Token dort ungueltig, faengt die Bildschirm-Seite das selbst per 401 -> eigene Kopplung ab.
-  if(sync.token&&!/[#&][lt]=/.test(url))url+='#t='+encodeURIComponent(sync.token);
-  location.href=url;
+  if(sync.token)url+='#t='+encodeURIComponent(sync.token);
+  $('#pcScreenFrame').src=url;
+  $('#pcScreenOv').style.display='flex';
   return true;
 }
 $('#pcGo').onclick=goPcScreen;
+$('#pcScreenClose').onclick=()=>{$('#pcScreenOv').style.display='none';$('#pcScreenFrame').src='about:blank';};
 $('#autoPcView').addEventListener('change',e=>{cfg.autoPcView=e.target.checked?'1':'0';saveCfg();});
 
 /* ---------- Termine / Benachrichtigungen (kommen vom verbundenen PC, gleiche Karten wie im Hub) ---------- */
