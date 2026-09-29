@@ -400,6 +400,7 @@ main{touch-action:pan-y}
 .notif-dismiss svg{display:block}
 </style>
 <link rel="stylesheet" href="pc-sim.css">
+<link rel="stylesheet" href="pc-sim-panels.css">
 </head>
 <body>
 <header>
@@ -528,7 +529,8 @@ main{touch-action:pan-y}
           <div class="dim" style="margin-bottom:10px">Die App läuft ohne PC. Für Bildschirm, Steuerung und Mediensteuerung müsst ihr im selben WLAN sein.</div>
           <div class="dim2" id="pcMsg" style="margin-top:4px;margin-bottom:10px"></div>
           <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer;margin-bottom:10px"><input type="checkbox" id="pcSimOn" style="margin-top:3px;flex:none"><span style="display:block"><span style="display:block;font-size:13px;letter-spacing:.04em">PC-Simulation anzeigen</span><span style="display:block;font-size:11px;opacity:.55;line-height:1.45;margin-top:2px">Zeigt die A.R.I-Grafik (Planet + Astro) wie am PC direkt hier in der App — rein optisch, ohne Live-Verbindung, läuft flüssig ohne WLAN.</span></span></label>
-          <div id="pcSimBox" style="display:none;position:relative;min-height:260px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at 50% 30%,#120c1e,#050308);overflow:hidden;margin-bottom:10px">
+          <div id="pcSimBox" style="display:none;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at 50% 30%,#120c1e,#050308);overflow:hidden;margin-bottom:10px">
+          <div style="position:relative;min-height:260px">
             <div style="display:flex;justify-content:center;padding-top:6px">
               <div class="orb" id="pcSimOrb">
                 <div class="orb-glow-pink"></div>
@@ -570,6 +572,53 @@ main{touch-action:pan-y}
                 <path d="M20 19.5 Q24 16 30 16" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity=".75"/>
               </g>
             </svg>
+          </div>
+            <div style="padding:0 12px 12px;display:flex;flex-direction:column;gap:12px">
+              <div class="panel">
+                <div class="panel-h"><span class="ico">◇</span><span class="t">SYSTEM STATUS</span></div>
+                <div class="gauges">
+                  <div>
+                    <div class="gauge-label">CPU</div>
+                    <div class="gauge-ring-wrap">
+                      <div class="gauge-track"></div>
+                      <div class="gauge-fill" id="pcSimGaugeCpu" style="--pct:0;--gc:var(--pink)"></div>
+                      <div class="gauge-inner"></div>
+                      <div class="gauge-center"><span><span class="gauge-val" id="pcSimCpuVal">--</span><span class="gauge-unit">%</span></span><span class="gauge-sub" id="pcSimCpuSub">-- GHz</span></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="gauge-label">RAM</div>
+                    <div class="gauge-ring-wrap">
+                      <div class="gauge-track"></div>
+                      <div class="gauge-fill" id="pcSimGaugeRam" style="--pct:0;--gc:var(--cyan)"></div>
+                      <div class="gauge-inner"></div>
+                      <div class="gauge-center"><span><span class="gauge-val" id="pcSimRamVal">--</span><span class="gauge-unit">%</span></span><span class="gauge-sub" id="pcSimRamSub">--/-- GB</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="statcells">
+                  <div class="statcell"><div class="l">NETZWERK MB/S</div><div class="v" id="pcSimStatNet" style="color:var(--cyan)">--</div></div>
+                  <div class="statcell"><div class="l">UPTIME</div><div class="v" id="pcSimStatUptime" style="color:var(--text)">--</div></div>
+                  <div class="statcell"><div class="l">SYSTEM</div><div class="v" id="pcSimStatSystem" style="color:var(--success)">--</div></div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-h cy"><span class="ico">▶</span><span class="t">MEDIEN</span><span class="tag">SPOTIFY</span></div>
+                <div class="media">
+                  <div class="media-cover"><img id="pcSimMediaCover" alt="" style="display:none"><span id="pcSimMediaCoverPh">♪</span></div>
+                  <div class="media-info">
+                    <div class="media-title-row"><div class="media-title" id="pcSimMediaTitle">Nichts aktiv</div></div>
+                    <div class="media-artist" id="pcSimMediaArtist">–</div>
+                    <div class="media-bar" id="pcSimMediaBar"><div class="media-fill" id="pcSimMediaFill"></div><div class="media-knob" id="pcSimMediaKnob"></div></div>
+                    <div class="media-times"><span id="pcSimMediaPos">0:00</span><span id="pcSimMediaDur">0:00</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-h"><span class="ico">◎</span><span class="t">AKTIVE TASKS</span><span class="tag" id="pcSimTaskCount">-- PROZESSE</span></div>
+                <div class="tasks" id="pcSimTaskList" style="min-height:0"></div>
+              </div>
+            </div>
           </div>
           <button class="btn" id="qrScan" style="width:100%;margin-bottom:8px">▣ QR-CODE VOM PC SCANNEN</button>
           <div class="set" style="margin-top:10px"><label>ODER CODE EINGEBEN</label>
