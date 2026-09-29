@@ -581,12 +581,60 @@ $('#pcPair').onclick=async()=>{
   msg.textContent='Koppeln …';$('#pcCode').value='';
   pairFromLink(a,c);
 };
-// "PC-Simulation": rein optische Nachbildung (Planet + Astro, dieselbe CSS-Animation wie am PC),
-// keine Live-Verbindung/Spiegelung mehr - laeuft dadurch garantiert fluessig und ohne WLAN.
+// "PC-Simulation": 1:1 dieselbe Optik wie am PC (Planet, Astro, System-Status, Medien, Tasks),
+// aber optimiert - keine schwere Live-Seite/iframe mehr, stattdessen nur zwei winzige JSON-Abfragen
+// (/status, /media, dieselben, die der echte PC-HUD auch benutzt) statt der ganzen Seite.
+function fmtTime(sec){sec=Math.max(0,Math.round(sec));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');}
+async function pcSimPoll(){
+  if(cfg.pcSimOn!=='1'||!sync.token||!sync.origin||document.hidden)return;
+  try{
+    const [rs,rm]=await Promise.all([
+      fetch(sync.origin+'/status',{headers:{'X-Ari-Token':sync.token}}),
+      fetch(sync.origin+'/media',{headers:{'X-Ari-Token':sync.token}}),
+    ]);
+    if(rs.ok){
+      const s=await rs.json();
+      $('#pcSimGaugeCpu').style.setProperty('--pct',s.cpu_percent||0);
+      $('#pcSimCpuVal').textContent=Math.round(s.cpu_percent||0);
+      $('#pcSimCpuSub').textContent=(s.cpu_freq_ghz||0)+' GHz';
+      $('#pcSimGaugeRam').style.setProperty('--pct',s.ram_percent||0);
+      $('#pcSimRamVal').textContent=Math.round(s.ram_percent||0);
+      $('#pcSimRamSub').textContent=(s.ram_used_gb||0)+'/'+(s.ram_total_gb||0)+' GB';
+      $('#pcSimStatNet').textContent='↓'+(s.net_down_mbps||0)+' ↑'+(s.net_up_mbps||0);
+      $('#pcSimStatUptime').textContent=s.uptime_str||'--';
+      $('#pcSimStatSystem').textContent=(s.system_status||'--').toUpperCase();
+      const procs=s.processes||[];
+      $('#pcSimTaskCount').textContent=procs.length+' PROZESSE';
+      $('#pcSimTaskList').innerHTML=procs.map(p=>`<div class="task-row"><span class="task-name">${p.name}</span><span>${Math.round(p.cpu_percent||0)}%</span><span></span><span>${Math.round(p.ram_mb||0)}MB</span></div>`).join('');
+    }
+    if(rm.ok){
+      const m=await rm.json();
+      const t=m.track;
+      if(t&&(t.name||t.is_playing)){
+        $('#pcSimMediaTitle').textContent=t.name||'–';
+        $('#pcSimMediaArtist').textContent=t.artists||'';
+        if(t.image){$('#pcSimMediaCover').src=t.image;$('#pcSimMediaCover').style.display='';$('#pcSimMediaCoverPh').style.display='none';}
+        const pct=t.duration_ms?Math.min(100,(t.progress_ms||0)/t.duration_ms*100):0;
+        $('#pcSimMediaFill').style.width=pct+'%';
+        $('#pcSimMediaPos').textContent=fmtTime((t.progress_ms||0)/1000);
+        $('#pcSimMediaDur').textContent=fmtTime((t.duration_ms||0)/1000);
+      } else {
+        $('#pcSimMediaTitle').textContent='Nichts aktiv';$('#pcSimMediaArtist').textContent='–';
+      }
+    }
+  }catch(e){}
+}
+let pcSimTimer=null;
+function pcSimSetActive(on){
+  clearInterval(pcSimTimer);pcSimTimer=null;
+  if(on){pcSimPoll();pcSimTimer=setInterval(pcSimPoll,4000);}
+}
 $('#pcSimOn').addEventListener('change',e=>{
   cfg.pcSimOn=e.target.checked?'1':'0';saveCfg();
   $('#pcSimBox').style.display=e.target.checked?'block':'none';
+  pcSimSetActive(e.target.checked);
 });
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cfg.pcSimOn==='1')pcSimPoll();});
 
 /* ---------- Termine / Benachrichtigungen (kommen vom verbundenen PC, gleiche Karten wie im Hub) ---------- */
 /*GOOGLE-BEGIN*/
@@ -845,6 +893,7 @@ function loadSet(){
   $('#gLogout').style.display=gOn()?'':'none';
   $$('#sGMail .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.gMail||'1')));
   $('#pcSimOn').checked=cfg.pcSimOn==='1';$('#pcSimBox').style.display=cfg.pcSimOn==='1'?'block':'none';
+  pcSimSetActive(cfg.pcSimOn==='1');
 }
 $('#sProv').onchange=()=>{cfg.provider=$('#sProv').value;$('#sKey').value=cfg.keys[cfg.provider]||'';saveCfg();sync.dirtySet=true;saveSync();syncSoon();};
 $('#sKey').onchange=()=>{cfg.keys[cfg.provider]=$('#sKey').value.trim();saveCfg();sync.dirtyKeys=true;saveSync();syncSoon();};
