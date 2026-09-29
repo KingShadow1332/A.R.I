@@ -1,37 +1,10 @@
 [
-  {
-    "version": 29,
-    "name": "1.6.0",
-    "notes": "Musik-Benachrichtigungen (z. B. Spotify) werden nicht mehr faelschlich als Nachrichten weitergeleitet, doppelte Benachrichtigungen werden erkannt und unterdrueckt. Weggeklickte Handy-Benachrichtigungen verschwinden jetzt auch auf dem jeweils anderen Geraet. Benachrichtigungen lassen sich per Wischgeste als Spam markieren. Neue Option zum Ein- und Ausschalten der PC-Bildschirmansicht in den Einstellungen."
-  },
-  {
-    "version": 30,
-    "name": "1.6.1",
-    "notes": "Fehlerbehebung: Gleichzeitige Schreibvorgaenge in den Einstellungen konnten sich in seltenen Faellen gegenseitig ueberschreiben. Speichervorgaenge laufen jetzt abgesichert nacheinander ab."
-  },
-  {
-    "version": 31,
-    "name": "1.6.2",
-    "notes": "Interne Umstellung der Projektadresse bei GitHub. Ohne Auswirkung auf die Nutzung."
-  },
-  {
-    "version": 32,
-    "name": "1.6.3",
-    "notes": "Das Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der einzelnen Programmdateien."
-  },
-  {
-    "version": 33,
-    "name": "1.6.4",
-    "notes": "Neu gestaltete Bestaetigungsseite nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify. Neuer Sprachbefehl 'Spiel [Film/Serie] ab' oeffnet den Titel beim passenden Streaming-Anbieter und merkt sich die Zuordnung."
-  },
-  {
-    "version": 34,
-    "name": "1.6.5",
-    "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' ermittelt den Streaming-Anbieter jetzt durch eine echte Recherche (JustWatch) statt durch eine Schaetzung."
-  },
-  {
-    "version": 35,
-    "name": "1.6.6",
-    "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' verlinkt jetzt direkt zur Titelseite beim Streaming-Anbieter (nicht mehr nur zu einer Suche) - ein Klick zum Abspielen."
-  }
+  {"version": 29, "name": "1.6.0", "notes": "Musik-Benachrichtigungen (z. B. Spotify) werden nicht mehr faelschlich als Nachrichten weitergeleitet, doppelte Benachrichtigungen werden erkannt und unterdrueckt. Weggeklickte Handy-Benachrichtigungen verschwinden jetzt auch auf dem jeweils anderen Geraet. Benachrichtigungen lassen sich per Wischgeste als Spam markieren. Neue Option zum Ein- und Ausschalten der PC-Bildschirmansicht in den Einstellungen."},
+  {"version": 30, "name": "1.6.1", "notes": "Fehlerbehebung: Gleichzeitige Schreibvorgaenge in den Einstellungen konnten sich in seltenen Faellen gegenseitig ueberschreiben. Speichervorgaenge laufen jetzt abgesichert nacheinander ab."},
+  {"version": 31, "name": "1.6.2", "notes": "Interne Umstellung der Projektadresse bei GitHub. Ohne Auswirkung auf die Nutzung."},
+  {"version": 32, "name": "1.6.3", "notes": "Das Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der einzelnen Programmdateien."},
+  {"version": 33, "name": "1.6.4", "notes": "Neu gestaltete Bestaetigungsseite nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify. Neuer Sprachbefehl 'Spiel [Film/Serie] ab' oeffnet den Titel beim passenden Streaming-Anbieter und merkt sich die Zuordnung."},
+  {"version": 34, "name": "1.6.5", "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' ermittelt den Streaming-Anbieter jetzt durch eine echte Recherche (JustWatch) statt durch eine Schaetzung."},
+  {"version": 35, "name": "1.6.6", "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' verlinkt jetzt direkt zur Titelseite beim Streaming-Anbieter (nicht mehr nur zu einer Suche) - ein Klick zum Abspielen."},
+  {"version": 36, "name": "1.6.7", "notes": "Erlaubt der Handy-App jetzt, die kleinen Status-/Medien-Daten fuer die PC-Simulation abzurufen (CORS-Freigabe fuer /status und /media)"}
 ]
