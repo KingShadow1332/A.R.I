@@ -4,9 +4,9 @@ A.R.I läuft als Command Center auf dem PC und als eigenständige App auf dem Ha
 
 ## 🖥️ Für den PC
 
-1. **[ari-pc.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc.zip)**
+1. **[ari-pc-setup.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip)**
 2. Entpacken (z. B. auf den Desktop)
-3. `START-ARI.bat` doppelklicken
+3. **`ARI-Setup.exe` doppelklicken** und „Installieren“ wählen — richtet Python & alle Pakete automatisch ein
 
 A.R.I sucht beim Start selbst nach neueren Versionen und bietet ein Update per Klick an — nichts hier manuell nachziehen.
 
@@ -31,8 +31,8 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 
 | | Version | Download |
 |---|---|---|
-| PC (Windows) | 1.6.2 | [ari-pc.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc.zip) |
-| PC (Linux) | 1.6.2 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
+| PC (Windows) | 1.6.3 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
+| PC (Linux) | 1.6.3 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
 | Handy | 1.7.4 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
