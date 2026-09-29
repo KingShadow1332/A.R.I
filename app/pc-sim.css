@@ -22,26 +22,36 @@
   --ease:cubic-bezier(.22,.9,.3,1);
 }
 
-/* --- PC-Simulation: echte Vollbild-Ansicht (deckt Kopfzeile + Inhalt ab, nur die untere
-   Navigation bleibt sichtbar/bedienbar - darueber verlaesst man die Ansicht wieder, kein
-   eigener Schliessen-Balken noetig). */
+/* --- PC-Simulation: normal eingebettet im Reiter (kleine Vorschau). Ueber den Vollbild-Knopf
+   im Kopf wird #pcSimBox per JS an <body> gehaengt (noetig, weil .panel ein clip-path setzt,
+   das position:fixed sonst auf den Reiter einsperren wuerde) und deckt dann den ganzen
+   Bildschirm ab (nur die untere Navigation bleibt sichtbar zum Verlassen). */
 #pcSimBox{display:none}
-body.pc-sim-active #pcSimBox{
-  display:block; position:fixed; left:0; right:0; top:0; bottom:var(--nav-h,64px); z-index:50;
+body.pc-sim-active #pcSimBox{display:block}
+#pcSimBox.pc-sim-fullscreen{
+  position:fixed; left:0; right:0; top:0; bottom:var(--nav-h,64px); z-index:9500;
   overflow-y:auto; -webkit-overflow-scrolling:touch;
   background:radial-gradient(circle at 50% 22%,#140e22,#050308 70%);
 }
 
 .pc-sim-head{
   position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:12px 16px 10px; border-bottom:1px solid color-mix(in srgb, var(--pink) 18%, transparent);
+  padding:12px 16px 10px; margin:-13px -14px 10px; border-bottom:1px solid color-mix(in srgb, var(--pink) 18%, transparent);
   background:linear-gradient(180deg, #0b0714 0%, rgba(11,7,20,.92) 82%, transparent 100%);
   backdrop-filter:blur(6px);
 }
+#pcSimBox:not(.pc-sim-fullscreen) .pc-sim-head{position:relative; margin:0 0 10px}
 .pc-sim-head-brand{display:flex; flex-direction:column; gap:2px}
 .pc-sim-head-name{font:700 18px var(--font-display); letter-spacing:.42em; color:var(--pink); text-shadow:0 0 14px color-mix(in srgb, var(--pink) 55%, transparent)}
 .pc-sim-head-sub{font:500 8.5px var(--font-mono); letter-spacing:.2em; color:var(--text-dim2)}
+.pc-sim-head-actions{display:flex; align-items:center; gap:10px}
 .pc-sim-head-clock{font:600 15px var(--font-mono); letter-spacing:.08em; color:var(--cyan-2); text-shadow:0 0 10px color-mix(in srgb, var(--cyan) 45%, transparent)}
+.pc-sim-fs-btn{
+  display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border-radius:8px;
+  background:color-mix(in srgb, var(--cyan) 8%, rgba(255,255,255,.03)); border:1px solid color-mix(in srgb, var(--cyan) 32%, transparent);
+  color:var(--cyan-2); font-size:16px; line-height:1;
+}
+.pc-sim-fs-btn:active{background:color-mix(in srgb, var(--cyan) 18%, rgba(255,255,255,.03))}
 
 /* --- Orb / Planet / Ringe --- */
 
