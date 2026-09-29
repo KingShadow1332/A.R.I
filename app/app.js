@@ -5,7 +5,7 @@ const NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNative
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 
 /* ---------- Zustand ---------- */
-const cfg=Object.assign({provider:'groq',keys:{},fb:'',fbKey:'',lang:'de-DE',tts:'1',pcRoute:'auto',gClientId:'516097970054-g630cvf7uslcoijbvblo4m4pcagamj35.apps.googleusercontent.com'},store.get('ari-app-cfg',{}));
+const cfg=Object.assign({provider:'groq',keys:{},fb:'',fbKey:'',lang:'de-DE',tts:'1',pcRoute:'auto',autoPcView:'0',gClientId:'516097970054-g630cvf7uslcoijbvblo4m4pcagamj35.apps.googleusercontent.com'},store.get('ari-app-cfg',{}));
 cfg.keys=cfg.keys||{};
 let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
@@ -582,16 +582,17 @@ $('#pcPair').onclick=async()=>{
   pairFromLink(a,c);
 };
 // "PC-BILDSCHIRM OEFFNEN": zeigt den PC-Bildschirm zum Antippen. Nimmt den bereits gekoppelten PC
-// (sync.origin), sonst sucht es ihn per UDP-Broadcast/Subnetz-Scan im WLAN.
-$('#pcGo').onclick=async()=>{
+// (sync.origin), sonst sucht es ihn per UDP-Broadcast/Subnetz-Scan im WLAN. Navigiert per location.href
+// innerhalb derselben WebView (siehe capacitor.config.json allowNavigation) - kein externer Browser.
+async function goPcScreen(){
   let v=sync.origin;
   if(!v){
     $('#pcMsg').textContent='Suche PC im WLAN …';
     const ips=await discoverPc();
     if(ips.length)v='http://'+ips[0]+':5000';
-    else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – erst per QR-Code oder Koppelcode verbinden.';return;}
+    else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – erst per QR-Code oder Koppelcode verbinden.';return false;}
   }
-  let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return;}
+  let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return false;}
   if(!/\/phone/.test(u.pathname))u.pathname=u.pathname.replace(/\/$/,'')+'/phone';
   let url=u.toString();
   if(!/[#&]l=/.test(url)){const nm='PC ('+u.hostname+')';
@@ -600,7 +601,10 @@ $('#pcGo').onclick=async()=>{
   // ist der Token dort ungueltig, faengt die Bildschirm-Seite das selbst per 401 -> eigene Kopplung ab.
   if(sync.token&&!/[#&][lt]=/.test(url))url+='#t='+encodeURIComponent(sync.token);
   location.href=url;
-};
+  return true;
+}
+$('#pcGo').onclick=goPcScreen;
+$('#autoPcView').addEventListener('change',e=>{cfg.autoPcView=e.target.checked?'1':'0';saveCfg();});
 
 /* ---------- Termine / Benachrichtigungen (kommen vom verbundenen PC, gleiche Karten wie im Hub) ---------- */
 /*GOOGLE-BEGIN*/
@@ -858,6 +862,7 @@ function loadSet(){
   $('#gStatus').textContent=gOn()?'✓ Bei Google angemeldet – Termine und Mails laufen direkt über Google, ohne PC.':'Nicht angemeldet.';
   $('#gLogout').style.display=gOn()?'':'none';
   $$('#sGMail .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.gMail||'1')));
+  $('#autoPcView').checked=cfg.autoPcView==='1';
 }
 $('#sProv').onchange=()=>{cfg.provider=$('#sProv').value;$('#sKey').value=cfg.keys[cfg.provider]||'';saveCfg();sync.dirtySet=true;saveSync();syncSoon();};
 $('#sKey').onchange=()=>{cfg.keys[cfg.provider]=$('#sKey').value.trim();saveCfg();sync.dirtyKeys=true;saveSync();syncSoon();};
@@ -1236,6 +1241,10 @@ if(NATIVE&&BGP()&&BGP().isNotificationAccessEnabled&&!localStorage.getItem('ari_
 /* ---------- Start ---------- */
 refreshReady();
 loadSet();
+// "Immer mit PC-Bildschirm starten": sofort beim Start dorthin wechseln (bleibt in der App, siehe
+// goPcScreen). Klappt es nicht (PC nicht erreichbar), auf dem PC-Tab bleiben, damit die Fehlermeldung
+// dort sichtbar ist, statt stillschweigend beim normalen Chat zu landen.
+if(cfg.autoPcView==='1'&&sync.token&&sync.origin){goTab('pc');goPcScreen().then(ok=>{if(!ok)goTab('pc');});}
 addMsg('a','Hallo! Ich bin A.R.I – diese App läuft auch ohne PC. '+(cfg.keys[cfg.provider]?'Sag oder tipp mir, was ich tun soll.':'Trage zuerst in den Einstellungen einen KI-Schlüssel ein (oder übernimm die Datei vom PC).'));
 if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 })();
