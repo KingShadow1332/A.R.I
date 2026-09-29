@@ -1053,7 +1053,7 @@ if(NATIVE){try{const AP=Capacitor.Plugins.App;AP.addListener('appUrlOpen',e=>han
 /* ---------- App-Update ueber GitHub (nur in der installierten Android-App) ---------- */
 // Prueft beim Start und stuendlich version.json neben der App-Seite. Ist die Version neuer, laedt die App die
 // neue ARI.apk von derselben Adresse und startet die Installation (Android fragt einmal "Aktualisieren?").
-const UPDATE_BASE='https://kingshadow1332.github.io/app/';
+const UPDATE_BASE='https://kingshadow1332.github.io/A.R.I/app/';
 let updInfo=null;
 async function appBuild(){try{const i=await Capacitor.Plugins.App.getInfo();return {build:parseInt(i.build,10)||0,version:i.version||''};}catch(e){return null;}}
 async function checkUpdate(manual){
