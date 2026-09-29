@@ -85,7 +85,8 @@ moveNavInd(TAB_ORDER[0]);
   mainEl.addEventListener('touchcancel',reset,{passive:true});
 })();
 setInterval(()=>{const d=new Date();$('#clock').firstChild.nodeValue=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-  $('#clock small').textContent=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}).toUpperCase();},1000);
+  $('#clock small').textContent=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}).toUpperCase();
+  const psc=$('#pcSimClock');if(psc)psc.textContent=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});},1000);
 
 /* ---------- Werkzeuge (laufen komplett auf dem Handy) ---------- */
 const TOOLS=[
