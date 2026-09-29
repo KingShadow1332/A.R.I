@@ -1,7 +1,7 @@
 {
-    "version":  32,
-    "name":  "1.6.3",
+    "version":  33,
+    "name":  "1.6.4",
     "zip":  "ari-pc.zip",
-    "sha256":  "b5feef8b98c9e30d03426394c5833b616d67041c133cb4d6efa9e9cf5fbe2280",
-    "notes":  "Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der nackten Programmdateien"
+    "sha256":  "cf79684b5b1aaacb4651afeeb2a2ab217d5ccb39cb0d9f5017700b16e188a548",
+    "notes":  "Neues Fenster nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify - schick gestaltete Bestaetigungsseite statt nacktem Text\nNeu: \u0027spiel [Film/Serie] ab\u0027 oeffnet den Titel automatisch beim passenden Streaming-Anbieter (merkt sich das dauerhaft im Gehirn)"
 }
