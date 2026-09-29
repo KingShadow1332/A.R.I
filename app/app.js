@@ -632,14 +632,35 @@ function pcSimSetNavHeight(){
 }
 function pcSimSetActive(on){
   document.body.classList.toggle('pc-sim-active',!!on);
-  if(on)pcSimSetNavHeight();
+  if(!on)pcSimSetFullscreen(false);
   clearInterval(pcSimTimer);pcSimTimer=null;
   if(on){pcSimPoll();pcSimTimer=setInterval(pcSimPoll,4000);}
+}
+let pcSimFsPlaceholder=null;
+function pcSimSetFullscreen(on){
+  const box=$('#pcSimBox');if(!box)return;
+  const btn=$('#pcSimFsBtn');
+  const isFs=box.classList.contains('pc-sim-fullscreen');
+  if(on&&!isFs){
+    pcSimFsPlaceholder=document.createComment('pc-sim-box');
+    box.parentNode.insertBefore(pcSimFsPlaceholder,box);
+    document.body.appendChild(box);
+    box.classList.add('pc-sim-fullscreen');
+    pcSimSetNavHeight();
+    if(btn){btn.textContent='⤡';btn.title='Vollbild verlassen';}
+  }else if(!on&&isFs){
+    box.classList.remove('pc-sim-fullscreen');
+    if(pcSimFsPlaceholder&&pcSimFsPlaceholder.parentNode){pcSimFsPlaceholder.parentNode.insertBefore(box,pcSimFsPlaceholder);pcSimFsPlaceholder.remove();}
+    pcSimFsPlaceholder=null;
+    if(btn){btn.textContent='⛶';btn.title='Vollbild';}
+  }
 }
 $('#pcSimOn').addEventListener('change',e=>{
   cfg.pcSimOn=e.target.checked?'1':'0';saveCfg();
   pcSimSetActive(e.target.checked);
 });
+$('#pcSimFsBtn').addEventListener('click',()=>pcSimSetFullscreen(!$('#pcSimBox').classList.contains('pc-sim-fullscreen')));
+$$('nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='pc')pcSimSetFullscreen(false);}));
 window.addEventListener('resize',()=>{if(cfg.pcSimOn==='1')pcSimSetNavHeight();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cfg.pcSimOn==='1')pcSimPoll();});
 
