@@ -1,0 +1,125 @@
+/* --- Variablen (Farben/Fonts) --- */
+:root{
+  --pink:#ff2d78;
+  --pink-2:#ff6aa8;
+  --cyan:#29d3f5;
+  --cyan-2:#7ff0ff;
+  --bg-0:#03040a;
+  --bg-1:#080a14;
+  --bg-2:#0f0d1e;
+  --text:#e6ecf5;
+  --text-dim:rgba(230,236,245,.58);
+  --text-dim2:rgba(230,236,245,.36);
+  --success:#39ff9e;
+  --warning:#ffd23d;
+  --danger:#ff5a5a;
+  --font-display:'Chakra Petch',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --cut:16px;
+  --glass:linear-gradient(155deg, rgba(255,255,255,.05), rgba(255,255,255,0) 40%);
+  --panel-bg:linear-gradient(165deg, rgba(20,16,32,.72), rgba(8,9,17,.78));
+  --panel-border:color-mix(in srgb, var(--pink) 24%, rgba(255,255,255,.08));
+  --ease:cubic-bezier(.22,.9,.3,1);
+}
+
+/* --- Orb / Planet / Ringe --- */
+
+@keyframes orbSpin{to{transform:rotate(360deg)}}
+
+@keyframes orbSpinRev{to{transform:rotate(-360deg)}}
+
+@keyframes orbBreathe{0%,100%{opacity:.7; transform:scale(1)}50%{opacity:1; transform:scale(1.05)}}
+
+@keyframes orbRipple{0%{transform:scale(.8); opacity:.5}100%{transform:scale(1.34); opacity:0}}
+
+@keyframes orbBands{to{transform:translateX(-30px)}}
+
+@keyframes orbBar{0%,100%{transform:scaleY(.16)}50%{transform:scaleY(1)}}
+
+@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+
+.orb{
+  position:relative; z-index:1; width:250px; height:250px; margin:8px 0 4px; cursor:pointer; outline:none;
+  --glow:.45; --spd:5.5s; --wave:0; --sweep:6s; --sweepOp:.55; --bars:0;
+  --r1:9s; --r2:13s; --r3:17s; --r4:21s;
+  --am:var(--pink);
+  animation:orbFloat 7s ease-in-out infinite;
+}
+
+.orb:focus-visible{filter:drop-shadow(0 0 0 2px var(--cyan))}
+
+.orb-glow-pink{position:absolute; inset:-14%; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, var(--am) 0%, color-mix(in srgb, var(--pink) 20%, transparent) 34%, transparent 64%);
+  filter:blur(34px); opacity:var(--glow); animation:orbBreathe var(--spd) ease-in-out infinite;
+}
+
+.orb-glow-cyan{position:absolute; inset:-6%; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, color-mix(in srgb, var(--cyan) 50%, transparent) 0%, transparent 58%);
+  filter:blur(26px); opacity:.5;
+}
+
+.ring-wrap{position:absolute; inset:var(--i); transform:rotate(-17deg) scaleY(var(--sy))}
+
+.ring-wrap .ring-border{position:absolute; inset:0; border-radius:50%; border:var(--bw,1px) solid var(--bc); box-shadow:0 0 16px var(--sw)}
+
+.ring-wrap .ring-spin{position:absolute; inset:0; animation:orbSpin var(--spin) linear infinite}
+
+.ring-wrap .ring-sweep{position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0turn, transparent 0 10%, var(--bc2,var(--bc)) 19%, transparent 30%, transparent 60%, var(--bc2,var(--bc)) 70%, transparent 82%);
+  -webkit-mask:radial-gradient(circle, transparent 96%, #000 97%); mask:radial-gradient(circle, transparent 96%, #000 97%);
+}
+
+.moon-orbit{position:absolute; inset:-24%; transform:rotate(-17deg) scaleY(.3); pointer-events:none}
+
+.moon-orbit .spin{position:absolute; inset:0; animation:orbSpin var(--r2) linear infinite}
+
+.moon-orbit .spin-rev{position:absolute; inset:0; animation:orbSpinRev var(--r4) linear infinite}
+
+.moon{position:absolute; width:7px; height:7px; margin-left:-3.5px; border-radius:50%}
+
+.moon-a{top:-3px; left:50%; background:#fff; box-shadow:0 0 14px var(--cyan-2)}
+
+.moon-b{bottom:-3px; left:50%; width:5px; height:5px; margin-left:-2.5px; background:var(--pink-2); box-shadow:0 0 12px var(--pink)}
+
+.sphere{position:absolute; inset:29%; border-radius:50%}
+
+.sphere-core{
+  background:radial-gradient(circle at 34% 28%, #ffffff 0%, #ffd6ec 9%, var(--am) 40%, #8c1550 70%, #210b22 100%);
+  box-shadow:0 0 60px color-mix(in srgb, var(--pink) 55%, transparent), inset -14px -12px 40px rgba(10,4,16,.85), inset 12px 10px 34px color-mix(in srgb, var(--cyan) 32%, transparent);
+}
+
+.sphere-bands{overflow:hidden; opacity:.22; -webkit-mask:radial-gradient(circle, #000 96%, transparent 98%); mask:radial-gradient(circle, #000 96%, transparent 98%)}
+
+.sphere-bands div{position:absolute; top:-20%; left:-60%; width:220%; height:140%;
+  background:repeating-linear-gradient(96deg, rgba(255,255,255,.6) 0 2px, transparent 2px 13px, color-mix(in srgb, var(--cyan) 55%, transparent) 13px 15px, transparent 15px 30px);
+  animation:orbBands 9s linear infinite;
+}
+
+.sphere-shade{background:radial-gradient(circle at 72% 74%, rgba(4,2,10,.72), transparent 62%)}
+
+.sphere-rim{border:1px solid color-mix(in srgb, var(--cyan-2) 35%, transparent); box-shadow:0 0 22px color-mix(in srgb, var(--cyan) 35%, transparent)}
+
+.sphere-sweep{
+  background:conic-gradient(from 0deg, color-mix(in srgb, var(--cyan-2) 55%, transparent), transparent 22%);
+  -webkit-mask:radial-gradient(circle, transparent 86%, #000 92%); mask:radial-gradient(circle, transparent 86%, #000 92%);
+  animation:orbSpin var(--sweep) linear infinite; opacity:var(--sweepOp);
+}
+
+.orb-wave{position:absolute; inset:24%; border-radius:50%; opacity:var(--wave)}
+
+.orb-wave.a{border:1px solid color-mix(in srgb, var(--cyan-2) 40%, transparent); animation:orbRipple 2.4s ease-out infinite}
+
+.orb-wave.b{border:1px solid color-mix(in srgb, var(--pink) 45%, transparent); animation:orbRipple 2.4s ease-out 1.2s infinite}
+
+.orb-label{position:absolute; left:0; right:0; top:4%; display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none}
+
+.orb-label .name{font:700 21px/1 var(--font-display); letter-spacing:.32em; color:var(--pink-2); text-shadow:0 0 20px color-mix(in srgb, var(--pink) 85%, transparent)}
+
+.orb-label .state{font:500 9px/1 var(--font-mono); letter-spacing:.26em; color:var(--text-dim)}
+
+.orb-bars{position:absolute; left:0; right:0; bottom:6%; display:flex; align-items:flex-end; justify-content:center; gap:3px; height:22px; opacity:var(--bars); transition:opacity .25s ease; pointer-events:none}
+
+.orb-bars span{width:2px; height:100%; transform-origin:bottom; background:linear-gradient(180deg, var(--cyan-2), color-mix(in srgb, var(--pink) 70%, transparent)); animation:orbBar ease-in-out infinite}
+/* --- Astro (statisch, leichte Schwebe-Animation) --- */
+.pc-sim-astro{animation:pcSimAstroFloat 3.6s ease-in-out infinite}
+@keyframes pcSimAstroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
