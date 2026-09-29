@@ -4,7 +4,7 @@ A.R.I läuft als Command Center auf dem PC und als eigenständige App auf dem Ha
 
 ## 🖥️ Für den PC
 
-1. **[ari-pc.zip herunterladen](https://kingshadow1332.github.io/app/pc/ari-pc.zip)**
+1. **[ari-pc.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc.zip)**
 2. Entpacken (z. B. auf den Desktop)
 3. `START-ARI.bat` doppelklicken
 
@@ -12,7 +12,7 @@ A.R.I sucht beim Start selbst nach neueren Versionen und bietet ein Update per K
 
 ## 🐧 Für Linux (Ubuntu/Debian, X11) — ⚠️ ungetestet
 
-1. **[ari-linux.zip herunterladen](https://kingshadow1332.github.io/app/pc/ari-linux.zip)** und entpacken
+1. **[ari-linux.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip)** und entpacken
 2. Im Terminal im entpackten Ordner: `bash linux/install.sh`
 3. Fertig — „A.R.I Assistant“ steht im Programmmenü (und optional auf dem Desktop, mit Icon)
 
@@ -21,7 +21,7 @@ Unter **Wayland** sind Tasten-/Maussteuerung und Bildschirm-Ansicht eingeschrän
 
 ## 📱 Fürs Handy (Android)
 
-1. **[ARI.apk herunterladen](https://kingshadow1332.github.io/app/ARI.apk)**
+1. **[ARI.apk herunterladen](https://kingshadow1332.github.io/A.R.I/app/ARI.apk)**
 2. Datei öffnen und installieren (Android fragt einmal nach Erlaubnis für „Unbekannte Apps“ bzw. blockiert es kurz über den Play-Protect-Schutz — dort „Trotzdem installieren“ wählen)
 3. App öffnen, mit dem PC koppeln (QR-Code am PC unter Einstellungen → HANDY)
 
@@ -31,8 +31,8 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 
 | | Version | Download |
 |---|---|---|
-| PC (Windows) | 1.6.1 | [ari-pc.zip](https://kingshadow1332.github.io/app/pc/ari-pc.zip) |
-| PC (Linux) | 1.6.1 | [ari-linux.zip](https://kingshadow1332.github.io/app/pc/ari-linux.zip) |
-| Handy | 1.7.3 | [ARI.apk](https://kingshadow1332.github.io/app/ARI.apk) |
+| PC (Windows) | 1.6.2 | [ari-pc.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc.zip) |
+| PC (Linux) | 1.6.2 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
+| Handy | 1.7.4 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
