@@ -1,7 +1,7 @@
 {
-    "versionCode":  37,
-    "versionName":  "1.7.10",
+    "versionCode":  38,
+    "versionName":  "1.7.11",
     "apk":  "ARI.apk",
-    "notes":  "PC-Simulation ist jetzt echte Vollbild-Ansicht (deckt den ganzen Bildschirm ab, nur die untere Navigation bleibt sichtbar zum Verlassen)",
+    "notes":  "PC-Simulation zeigt jetzt einen eigenen Kopfbereich mit A.R.I-Logo und Uhrzeit.",
     "sizeMb":  5.9
 }
