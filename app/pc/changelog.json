@@ -4,21 +4,21 @@
                       {
                           "value":  [
                                         "@{value=System.Object[]; Count=2}",
-                                        "@{version=30; name=1.6.1; notes=Wettlauf-Fehler beim Speichern behoben: gleichzeitige Speichervorgaenge (z.B. Kalender-Login + Handy-Abfrage) konnten sich gegenseitig ueberschreiben und Einstellungen loeschen\nNach Kalender-Neuverbinden wird jetzt auch Gmail automatisch neu versucht statt einen alten Fehler zu zeigen}"
+                                        "@{version=31; name=1.6.2; notes=Interne Umstellung: Projekt-Adresse bei GitHub geaendert (kein sichtbarer Unterschied fuer dich)}"
                                     ],
                           "Count":  2
                       },
                       {
-                          "version":  31,
-                          "name":  "1.6.2",
-                          "notes":  "Interne Umstellung: Projekt-Adresse bei GitHub geaendert (kein sichtbarer Unterschied fuer dich)"
+                          "version":  32,
+                          "name":  "1.6.3",
+                          "notes":  "Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der nackten Programmdateien"
                       }
                   ],
         "Count":  2
     },
     {
-        "version":  32,
-        "name":  "1.6.3",
-        "notes":  "Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der nackten Programmdateien"
+        "version":  33,
+        "name":  "1.6.4",
+        "notes":  "Neues Fenster nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify - schick gestaltete Bestaetigungsseite statt nacktem Text\nNeu: \u0027spiel [Film/Serie] ab\u0027 oeffnet den Titel automatisch beim passenden Streaming-Anbieter (merkt sich das dauerhaft im Gehirn)"
     }
 ]
