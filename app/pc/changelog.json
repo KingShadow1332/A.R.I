@@ -28,5 +28,10 @@
     "version": 34,
     "name": "1.6.5",
     "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' ermittelt den Streaming-Anbieter jetzt durch eine echte Recherche (JustWatch) statt durch eine Schaetzung."
+  },
+  {
+    "version": 35,
+    "name": "1.6.6",
+    "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' verlinkt jetzt direkt zur Titelseite beim Streaming-Anbieter (nicht mehr nur zu einer Suche) - ein Klick zum Abspielen."
   }
 ]
