@@ -625,15 +625,21 @@ async function pcSimPoll(){
   }catch(e){}
 }
 let pcSimTimer=null;
+function pcSimSetNavHeight(){
+  const navEl=document.querySelector('nav');
+  if(navEl)document.documentElement.style.setProperty('--nav-h',navEl.offsetHeight+'px');
+}
 function pcSimSetActive(on){
+  document.body.classList.toggle('pc-sim-active',!!on);
+  if(on)pcSimSetNavHeight();
   clearInterval(pcSimTimer);pcSimTimer=null;
   if(on){pcSimPoll();pcSimTimer=setInterval(pcSimPoll,4000);}
 }
 $('#pcSimOn').addEventListener('change',e=>{
   cfg.pcSimOn=e.target.checked?'1':'0';saveCfg();
-  $('#pcSimBox').style.display=e.target.checked?'block':'none';
   pcSimSetActive(e.target.checked);
 });
+window.addEventListener('resize',()=>{if(cfg.pcSimOn==='1')pcSimSetNavHeight();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cfg.pcSimOn==='1')pcSimPoll();});
 
 /* ---------- Termine / Benachrichtigungen (kommen vom verbundenen PC, gleiche Karten wie im Hub) ---------- */
@@ -892,7 +898,7 @@ function loadSet(){
   $('#gStatus').textContent=gOn()?'✓ Bei Google angemeldet – Termine und Mails laufen direkt über Google, ohne PC.':'Nicht angemeldet.';
   $('#gLogout').style.display=gOn()?'':'none';
   $$('#sGMail .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.gMail||'1')));
-  $('#pcSimOn').checked=cfg.pcSimOn==='1';$('#pcSimBox').style.display=cfg.pcSimOn==='1'?'block':'none';
+  $('#pcSimOn').checked=cfg.pcSimOn==='1';
   pcSimSetActive(cfg.pcSimOn==='1');
 }
 $('#sProv').onchange=()=>{cfg.provider=$('#sProv').value;$('#sKey').value=cfg.keys[cfg.provider]||'';saveCfg();sync.dirtySet=true;saveSync();syncSoon();};
