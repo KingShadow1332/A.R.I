@@ -5,7 +5,7 @@ const NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNative
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 
 /* ---------- Zustand ---------- */
-const cfg=Object.assign({provider:'groq',keys:{},fb:'',fbKey:'',lang:'de-DE',tts:'1',pcRoute:'auto',autoPcView:'0',gClientId:'516097970054-g630cvf7uslcoijbvblo4m4pcagamj35.apps.googleusercontent.com'},store.get('ari-app-cfg',{}));
+const cfg=Object.assign({provider:'groq',keys:{},fb:'',fbKey:'',lang:'de-DE',tts:'1',pcRoute:'auto',pcSimOn:'0',gClientId:'516097970054-g630cvf7uslcoijbvblo4m4pcagamj35.apps.googleusercontent.com'},store.get('ari-app-cfg',{}));
 cfg.keys=cfg.keys||{};
 let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
@@ -532,12 +532,9 @@ $('#brAdd').onclick=()=>{const t=$('#brNew').value.trim();if(t.length<4)return;r
 function renderPcs(){
   const box=$('#pcSaved');box.textContent='';
   pcs.forEach((p,i)=>{const r=document.createElement('div');r.className='row';r.style.marginTop='8px';
-    const go=document.createElement('button');go.className='btn';go.textContent='▣ '+p.name;go.onclick=()=>{
-      let url=p.url;if(sync.token&&sync.origin===p.url)url+='#t='+encodeURIComponent(sync.token);
-      $('#pcScreenFrame').src=url;$('#pcScreenOv').style.display='flex';
-    };
+    const nm=document.createElement('div');nm.className='btn';nm.style.flex='1';nm.style.pointerEvents='none';nm.textContent='▣ '+p.name;
     const del=document.createElement('button');del.className='btn dng';del.style.flex='0 0 52px';del.textContent='✕';del.onclick=()=>{pcs.splice(i,1);store.set('ari-app-pcs',pcs);renderPcs();};
-    r.append(go,del);box.appendChild(r);});
+    r.append(nm,del);box.appendChild(r);});
 }
 // PC im WLAN suchen (nur nativ), zwei Wege gleichzeitig, weil UDP-Broadcast nicht jeder Router/Mesh
 // weiterleitet: 1) schneller UDP-Broadcast, den der Hub direkt beantwortet, 2) Subnetz-Scan per HTTP
@@ -584,32 +581,12 @@ $('#pcPair').onclick=async()=>{
   msg.textContent='Koppeln …';$('#pcCode').value='';
   pairFromLink(a,c);
 };
-// "PC-BILDSCHIRM OEFFNEN": zeigt den echten PC-Bildschirm (dieselbe Seite "/" wie am PC selbst,
-// nicht die vereinfachte "/phone"-Ansicht) in einem eingebetteten iframe innerhalb der App - kein
-// location.href auf Top-Ebene, das wuerde Android sonst manchmal im externen Browser statt in der
-// App oeffnen. Nimmt den bereits gekoppelten PC (sync.origin), sonst Suche per WLAN.
-async function goPcScreen(){
-  let v=sync.origin;
-  if(!v){
-    $('#pcMsg').textContent='Suche PC im WLAN …';
-    const ips=await discoverPc();
-    if(ips.length)v='http://'+ips[0]+':5000';
-    else{$('#pcMsg').textContent='Kein PC im WLAN gefunden – erst per QR-Code oder Koppelcode verbinden.';return false;}
-  }
-  let u;try{u=new URL(v);}catch(e){$('#pcMsg').textContent='Ungültige Adresse.';return false;}
-  let url=u.toString();
-  const nm='PC ('+u.hostname+')';
-  if(!pcs.some(p=>p.url===url)){pcs.push({name:nm,url});store.set('ari-app-pcs',pcs);}
-  // Schon gekoppelt (sync.token)? Dann direkt am PC-Bildschirm anmelden, statt dort nochmal zu koppeln -
-  // ist der Token dort ungueltig, faengt die Bildschirm-Seite das selbst per 401 -> eigene Kopplung ab.
-  if(sync.token)url+='#t='+encodeURIComponent(sync.token);
-  $('#pcScreenFrame').src=url;
-  $('#pcScreenOv').style.display='flex';
-  return true;
-}
-$('#pcGo').onclick=goPcScreen;
-$('#pcScreenClose').onclick=()=>{$('#pcScreenOv').style.display='none';$('#pcScreenFrame').src='about:blank';};
-$('#autoPcView').addEventListener('change',e=>{cfg.autoPcView=e.target.checked?'1':'0';saveCfg();});
+// "PC-Simulation": rein optische Nachbildung (Planet + Astro, dieselbe CSS-Animation wie am PC),
+// keine Live-Verbindung/Spiegelung mehr - laeuft dadurch garantiert fluessig und ohne WLAN.
+$('#pcSimOn').addEventListener('change',e=>{
+  cfg.pcSimOn=e.target.checked?'1':'0';saveCfg();
+  $('#pcSimBox').style.display=e.target.checked?'block':'none';
+});
 
 /* ---------- Termine / Benachrichtigungen (kommen vom verbundenen PC, gleiche Karten wie im Hub) ---------- */
 /*GOOGLE-BEGIN*/
@@ -867,7 +844,7 @@ function loadSet(){
   $('#gStatus').textContent=gOn()?'✓ Bei Google angemeldet – Termine und Mails laufen direkt über Google, ohne PC.':'Nicht angemeldet.';
   $('#gLogout').style.display=gOn()?'':'none';
   $$('#sGMail .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.gMail||'1')));
-  $('#autoPcView').checked=cfg.autoPcView==='1';
+  $('#pcSimOn').checked=cfg.pcSimOn==='1';$('#pcSimBox').style.display=cfg.pcSimOn==='1'?'block':'none';
 }
 $('#sProv').onchange=()=>{cfg.provider=$('#sProv').value;$('#sKey').value=cfg.keys[cfg.provider]||'';saveCfg();sync.dirtySet=true;saveSync();syncSoon();};
 $('#sKey').onchange=()=>{cfg.keys[cfg.provider]=$('#sKey').value.trim();saveCfg();sync.dirtyKeys=true;saveSync();syncSoon();};
@@ -1246,10 +1223,6 @@ if(NATIVE&&BGP()&&BGP().isNotificationAccessEnabled&&!localStorage.getItem('ari_
 /* ---------- Start ---------- */
 refreshReady();
 loadSet();
-// "Immer mit PC-Bildschirm starten": sofort beim Start dorthin wechseln (bleibt in der App, siehe
-// goPcScreen). Klappt es nicht (PC nicht erreichbar), auf dem PC-Tab bleiben, damit die Fehlermeldung
-// dort sichtbar ist, statt stillschweigend beim normalen Chat zu landen.
-if(cfg.autoPcView==='1'&&sync.token&&sync.origin){goTab('pc');goPcScreen().then(ok=>{if(!ok)goTab('pc');});}
 addMsg('a','Hallo! Ich bin A.R.I – diese App läuft auch ohne PC. '+(cfg.keys[cfg.provider]?'Sag oder tipp mir, was ich tun soll.':'Trage zuerst in den Einstellungen einen KI-Schlüssel ein (oder übernimm die Datei vom PC).'));
 if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 })();
