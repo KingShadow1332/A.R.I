@@ -2,12 +2,12 @@
   {
     "version": 29,
     "name": "1.6.0",
-    "notes": "Musik-Benachrichtigungen (z. B. Spotify) werden nicht mehr fälschlich als Nachrichten weitergeleitet, doppelte Benachrichtigungen werden erkannt und unterdrückt. Weggeklickte Handy-Benachrichtigungen verschwinden jetzt auch auf dem jeweils anderen Gerät. Benachrichtigungen lassen sich per Wischgeste als Spam markieren. Neue Option zum Ein- und Ausschalten der PC-Bildschirmansicht in den Einstellungen."
+    "notes": "Musik-Benachrichtigungen (z. B. Spotify) werden nicht mehr faelschlich als Nachrichten weitergeleitet, doppelte Benachrichtigungen werden erkannt und unterdrueckt. Weggeklickte Handy-Benachrichtigungen verschwinden jetzt auch auf dem jeweils anderen Geraet. Benachrichtigungen lassen sich per Wischgeste als Spam markieren. Neue Option zum Ein- und Ausschalten der PC-Bildschirmansicht in den Einstellungen."
   },
   {
     "version": 30,
     "name": "1.6.1",
-    "notes": "Fehlerbehebung: Gleichzeitige Schreibvorgänge in den Einstellungen konnten sich in seltenen Fällen gegenseitig überschreiben. Speichervorgänge laufen jetzt abgesichert nacheinander ab."
+    "notes": "Fehlerbehebung: Gleichzeitige Schreibvorgaenge in den Einstellungen konnten sich in seltenen Faellen gegenseitig ueberschreiben. Speichervorgaenge laufen jetzt abgesichert nacheinander ab."
   },
   {
     "version": 31,
@@ -17,16 +17,16 @@
   {
     "version": 32,
     "name": "1.6.3",
-    "notes": "Das Download-Paket enthält jetzt den Installer (ARI-Setup.exe) statt nur der einzelnen Programmdateien."
+    "notes": "Das Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der einzelnen Programmdateien."
   },
   {
     "version": 33,
     "name": "1.6.4",
-    "notes": "Neu gestaltete Bestätigungsseite nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify. Neuer Sprachbefehl „Spiel [Film/Serie] ab“ öffnet den Titel beim passenden Streaming-Anbieter und merkt sich die Zuordnung."
+    "notes": "Neu gestaltete Bestaetigungsseite nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify. Neuer Sprachbefehl 'Spiel [Film/Serie] ab' oeffnet den Titel beim passenden Streaming-Anbieter und merkt sich die Zuordnung."
   },
   {
     "version": 34,
     "name": "1.6.5",
-    "notes": "Der Sprachbefehl „Spiel [Film/Serie] ab“ ermittelt den Streaming-Anbieter jetzt durch eine echte Recherche (JustWatch) statt durch eine Schätzung."
+    "notes": "Der Sprachbefehl 'Spiel [Film/Serie] ab' ermittelt den Streaming-Anbieter jetzt durch eine echte Recherche (JustWatch) statt durch eine Schaetzung."
   }
 ]
