@@ -1,7 +1,7 @@
 {
-    "versionCode":  31,
-    "versionName":  "1.7.4",
+    "versionCode":  32,
+    "versionName":  "1.7.5",
     "apk":  "ARI.apk",
-    "notes":  "Interne Umstellung: Projekt-Adresse bei GitHub geaendert (kein sichtbarer Unterschied fuer dich)",
+    "notes":  "Neuer Schalter \u0027Immer mit PC-Bildschirm starten\u0027 (Einstellungen \u003e PC): App zeigt beim Oeffnen direkt den PC-Bildschirm, bleibt dabei in der App",
     "sizeMb":  5.9
 }
