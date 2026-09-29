@@ -1,7 +1,7 @@
 {
-    "versionCode":  32,
-    "versionName":  "1.7.5",
+    "versionCode":  33,
+    "versionName":  "1.7.6",
     "apk":  "ARI.apk",
-    "notes":  "Neuer Schalter \u0027Immer mit PC-Bildschirm starten\u0027 (Einstellungen \u003e PC): App zeigt beim Oeffnen direkt den PC-Bildschirm, bleibt dabei in der App",
+    "notes":  "Fehlerbehebung: Updates am Handy schlugen mit \u0027nicht erlaubt\u0027 fehl (eine fest einprogrammierte Sicherheits-Adresse zeigte noch auf die alte, vor der Umbenennung gueltige Adresse)",
     "sizeMb":  5.9
 }
