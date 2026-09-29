@@ -1,7 +1,7 @@
 {
-    "versionCode":  36,
-    "versionName":  "1.7.9",
+    "versionCode":  37,
+    "versionName":  "1.7.10",
     "apk":  "ARI.apk",
-    "notes":  "PC-Simulation jetzt 1:1 wie am PC: System Status (CPU/RAM), Medien (Spotify) und Aktive Tasks mit echten Live-Werten, dabei aber optimiert (nur zwei winzige Datenabfragen statt der ganzen Seite)",
+    "notes":  "PC-Simulation ist jetzt echte Vollbild-Ansicht (deckt den ganzen Bildschirm ab, nur die untere Navigation bleibt sichtbar zum Verlassen)",
     "sizeMb":  5.9
 }
