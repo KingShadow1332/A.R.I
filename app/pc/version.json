@@ -1,7 +1,7 @@
 {
-    "version":  31,
-    "name":  "1.6.2",
+    "version":  32,
+    "name":  "1.6.3",
     "zip":  "ari-pc.zip",
-    "sha256":  "0efbcc7412494741e4a600e61f0ec0f6094f4d2dea4cfeb4b7901f6877ab9f22",
-    "notes":  "Interne Umstellung: Projekt-Adresse bei GitHub geaendert (kein sichtbarer Unterschied fuer dich)"
+    "sha256":  "b5feef8b98c9e30d03426394c5833b616d67041c133cb4d6efa9e9cf5fbe2280",
+    "notes":  "Download-Paket enthaelt jetzt den Installer (ARI-Setup.exe) statt nur der nackten Programmdateien"
 }
