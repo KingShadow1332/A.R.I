@@ -1,7 +1,7 @@
 {
-    "version":  33,
-    "name":  "1.6.4",
+    "version":  34,
+    "name":  "1.6.5",
     "zip":  "ari-pc.zip",
-    "sha256":  "cf79684b5b1aaacb4651afeeb2a2ab217d5ccb39cb0d9f5017700b16e188a548",
-    "notes":  "Neues Fenster nach dem Verbinden mit Google (Kalender/Gmail) oder Spotify - schick gestaltete Bestaetigungsseite statt nacktem Text\nNeu: \u0027spiel [Film/Serie] ab\u0027 oeffnet den Titel automatisch beim passenden Streaming-Anbieter (merkt sich das dauerhaft im Gehirn)"
+    "sha256":  "ebac499c6dc7bd20515d4a0fc111614994fad27fd81f32b96dce615e083c6b5a",
+    "notes":  "\u0027Spiel [Film] ab\u0027 recherchiert jetzt echt bei JustWatch, wo der Titel laeuft, statt nur zu raten"
 }
