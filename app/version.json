@@ -1,7 +1,7 @@
 {
-    "versionCode":  35,
-    "versionName":  "1.7.8",
+    "versionCode":  36,
+    "versionName":  "1.7.9",
     "apk":  "ARI.apk",
-    "notes":  "PC-Bildschirm ersetzt durch leichte, rein optische Simulation (Planet + Astro) statt Live-Spiegelung - laeuft dadurch fluessig und ohne WLAN/Verbindung\nNeuer Schalter \u0027PC-Simulation anzeigen\u0027 in Einstellungen \u003e PC (ersetzt vorherigen Auto-Start-Schalter)",
+    "notes":  "PC-Simulation jetzt 1:1 wie am PC: System Status (CPU/RAM), Medien (Spotify) und Aktive Tasks mit echten Live-Werten, dabei aber optimiert (nur zwei winzige Datenabfragen statt der ganzen Seite)",
     "sizeMb":  5.9
 }
