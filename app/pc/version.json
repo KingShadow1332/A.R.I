@@ -1,7 +1,7 @@
 {
-    "version":  35,
-    "name":  "1.6.6",
+    "version":  36,
+    "name":  "1.6.7",
     "zip":  "ari-pc.zip",
-    "sha256":  "0927fdba9671e3cb309afd9c35ae6f788d1bae2e1644d9796fba0a4481a3e51f",
-    "notes":  "\u0027Spiel [Film] ab\u0027 verlinkt jetzt direkt zur Titelseite beim Streaming-Anbieter (nicht mehr nur eine Suche) - ein Klick zum Abspielen"
+    "sha256":  "d41909832d710892f18af4b3b9b0eb4fb2048940568dd0a012b353a216c7de91",
+    "notes":  "Erlaubt der Handy-App jetzt, die kleinen Status-/Medien-Daten fuer die PC-Simulation abzurufen (CORS-Freigabe fuer /status und /media)"
 }
