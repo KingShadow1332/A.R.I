@@ -1,7 +1,7 @@
 {
-    "version":  36,
-    "name":  "1.6.7",
+    "version":  37,
+    "name":  "1.6.8",
     "zip":  "ari-pc.zip",
-    "sha256":  "d41909832d710892f18af4b3b9b0eb4fb2048940568dd0a012b353a216c7de91",
-    "notes":  "Erlaubt der Handy-App jetzt, die kleinen Status-/Medien-Daten fuer die PC-Simulation abzurufen (CORS-Freigabe fuer /status und /media)"
+    "sha256":  "ce7c3741d7bf5f3680fd67d838b0febdae91620223e4ff1e6c79e49d0edad57d",
+    "notes":  "Die PC-Simulation in der Handy-App hat jetzt einen eigenen Vollbild-Knopf statt eines automatischen Vollbilds beim Einschalten."
 }
