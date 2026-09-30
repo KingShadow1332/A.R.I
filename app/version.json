@@ -1,7 +1,7 @@
 {
-    "versionCode":  43,
-    "versionName":  "1.7.16",
+    "versionCode":  44,
+    "versionName":  "1.7.17",
     "apk":  "ARI.apk",
-    "notes":  "CPU/RAM-Ringe sind jetzt dicker mit gleichmaessigem Glow ueber die ganze Laenge und einem leuchtenden Punkt am aktuellen Fuellstand. Neue Panels (Kalender, Benachrichtigungen, Speicher/Netzwerk) und Anordnen-Modus aus der PC-Simulation.",
+    "notes":  "Medien-Fortschrittspunkt bewegt sich jetzt korrekt mit (blieb bisher immer ganz links stehen). CPU/RAM/Speicher-Werte animieren jetzt sanft. Panel-Groessen im Anordnen-Modus wirken jetzt auf alle Panel-Arten.",
     "sizeMb":  5.9
 }
