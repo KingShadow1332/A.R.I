@@ -1,7 +1,7 @@
 {
-    "version":  49,
-    "name":  "1.6.20",
+    "version":  50,
+    "name":  "1.6.21",
     "zip":  "ari-pc.zip",
-    "sha256":  "1529dc03978f970d8e36df652f8ff5e751bf151f4b2264d29c69458fbfb22d95",
-    "notes":  "Korrektur: der auslastungsabhaengige Glow an den CPU/RAM-Ringen fehlte in der Handy-App noch (war beim letzten Mal nur am PC-HUD nachgezogen worden)."
+    "sha256":  "04498c6eca4baae82b35f54ba3ab85703306b79f7c92b4b1d3943c8de7d7d3b8",
+    "notes":  "CPU/RAM-Ringe: dicker, gleichmaessiger Glow ueber die ganze Laenge (nicht mehr nur an den Enden), leuchtender Punkt am aktuellen Fuellstand, groesserer Ring. Astro: Essen/Getraenke lassen sich jetzt auch wegschleudern (fliegen mit Schwung, prallen ab, landen auf einer Kachel)."
 }
