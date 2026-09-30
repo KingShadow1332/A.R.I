@@ -1,7 +1,7 @@
 {
-    "versionCode":  42,
-    "versionName":  "1.7.15",
+    "versionCode":  43,
+    "versionName":  "1.7.16",
     "apk":  "ARI.apk",
-    "notes":  "PC-Simulation: Kalender, Benachrichtigungen und eine Speicher-/Netzwerk-Verlaufsgrafik ergaenzt (wie am PC-HUD), dazu ein Anordnen-Modus (Reihenfolge/Groesse je Panel, per Stift-Knopf). Ausserdem leuchten die CPU/RAM-Ringe jetzt je nach Auslastung unterschiedlich stark.",
+    "notes":  "CPU/RAM-Ringe sind jetzt dicker mit gleichmaessigem Glow ueber die ganze Laenge und einem leuchtenden Punkt am aktuellen Fuellstand. Neue Panels (Kalender, Benachrichtigungen, Speicher/Netzwerk) und Anordnen-Modus aus der PC-Simulation.",
     "sizeMb":  5.9
 }
