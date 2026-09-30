@@ -1,7 +1,7 @@
 {
-    "version":  50,
-    "name":  "1.6.21",
+    "version":  51,
+    "name":  "1.6.22",
     "zip":  "ari-pc.zip",
-    "sha256":  "04498c6eca4baae82b35f54ba3ab85703306b79f7c92b4b1d3943c8de7d7d3b8",
-    "notes":  "CPU/RAM-Ringe: dicker, gleichmaessiger Glow ueber die ganze Laenge (nicht mehr nur an den Enden), leuchtender Punkt am aktuellen Fuellstand, groesserer Ring. Astro: Essen/Getraenke lassen sich jetzt auch wegschleudern (fliegen mit Schwung, prallen ab, landen auf einer Kachel)."
+    "sha256":  "676c611513c8328255e38937873a1b5635db4f94c7f4ecfa12ad7af16af2e107",
+    "notes":  "Astro-Wurf-Feature wiederhergestellt (war verloren gegangen). Neue Patch-Notes-Liste in den Einstellungen (komplette Versionshistorie zum Durchblaettern). Einstellungen etwas kompakter."
 }
