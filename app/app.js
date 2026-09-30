@@ -586,6 +586,22 @@ $('#pcPair').onclick=async()=>{
 // aber optimiert - keine schwere Live-Seite/iframe mehr, stattdessen nur zwei winzige JSON-Abfragen
 // (/status, /media, dieselben, die der echte PC-HUD auch benutzt) statt der ganzen Seite.
 function fmtTime(sec){sec=Math.max(0,Math.round(sec));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');}
+const pcSimEaseOut=t=>1-Math.pow(1-t,3);
+function pcSimTweenPercent(el,to,suffix){
+  if(!el)return;
+  suffix=suffix||'';
+  const from=parseFloat(el.dataset.v);
+  el.dataset.v=to;
+  if(isNaN(from)||Math.round(from)===Math.round(to)){el.textContent=Math.round(to)+suffix;return;}
+  if(el._raf)cancelAnimationFrame(el._raf);
+  const t0=performance.now(),dur=600;
+  const step=now=>{
+    const t=Math.min(1,(now-t0)/dur);
+    el.textContent=Math.round(from+(to-from)*pcSimEaseOut(t))+suffix;
+    el._raf=t<1?requestAnimationFrame(step):0;
+  };
+  el._raf=requestAnimationFrame(step);
+}
 const pcSimHist={mem:[],net:[]};
 function pcSimSpark(el,data,color){
   if(!el)return;
@@ -621,12 +637,12 @@ async function pcSimPoll(){
       $('#pcSimGaugeCpu').style.setProperty('--pct',s.cpu_percent||0);
       $('#pcSimGaugeCpuGlow').style.setProperty('--pct',s.cpu_percent||0);
       $('#pcSimGaugeCpuTip').style.setProperty('--pct',s.cpu_percent||0);
-      $('#pcSimCpuVal').textContent=Math.round(s.cpu_percent||0);
+      pcSimTweenPercent($('#pcSimCpuVal'),s.cpu_percent||0);
       $('#pcSimCpuSub').textContent=(s.cpu_freq_ghz||0)+' GHz';
       $('#pcSimGaugeRam').style.setProperty('--pct',s.ram_percent||0);
       $('#pcSimGaugeRamGlow').style.setProperty('--pct',s.ram_percent||0);
       $('#pcSimGaugeRamTip').style.setProperty('--pct',s.ram_percent||0);
-      $('#pcSimRamVal').textContent=Math.round(s.ram_percent||0);
+      pcSimTweenPercent($('#pcSimRamVal'),s.ram_percent||0);
       $('#pcSimRamSub').textContent=(s.ram_used_gb||0)+'/'+(s.ram_total_gb||0)+' GB';
       $('#pcSimStatNet').textContent='↓'+(s.net_down_mbps||0)+' ↑'+(s.net_up_mbps||0);
       $('#pcSimStatUptime').textContent=s.uptime_str||'--';
@@ -634,7 +650,7 @@ async function pcSimPoll(){
       const procs=s.processes||[];
       $('#pcSimTaskCount').textContent=procs.length+' PROZESSE';
       $('#pcSimTaskList').innerHTML=procs.map(p=>`<div class="task-row"><span class="task-name">${p.name}</span><span>${Math.round(p.cpu_percent||0)}%</span><span></span><span>${Math.round(p.ram_mb||0)}MB</span></div>`).join('');
-      $('#pcSimMemVal').textContent=Math.round(s.ram_percent||0)+'%';
+      pcSimTweenPercent($('#pcSimMemVal'),s.ram_percent||0,'%');
       $('#pcSimNetVal').textContent='↓'+(s.net_down_mbps||0);
       pcSimHist.mem.push(s.ram_percent||0);pcSimHist.net.push(s.net_down_mbps||0);
       if(pcSimHist.mem.length>24)pcSimHist.mem.shift();
@@ -651,6 +667,8 @@ async function pcSimPoll(){
         if(t.image){$('#pcSimMediaCover').src=t.image;$('#pcSimMediaCover').style.display='';$('#pcSimMediaCoverPh').style.display='none';}
         const pct=t.duration_ms?Math.min(100,(t.progress_ms||0)/t.duration_ms*100):0;
         $('#pcSimMediaFill').style.width=pct+'%';
+        const mbar=$('#pcSimMediaBar'),mknob=$('#pcSimMediaKnob');
+        if(mbar&&mknob)mknob.style.transform='translate3d('+(pct/100*mbar.offsetWidth).toFixed(2)+'px,0,0)';
         $('#pcSimMediaPos').textContent=fmtTime((t.progress_ms||0)/1000);
         $('#pcSimMediaDur').textContent=fmtTime((t.duration_ms||0)/1000);
       } else {
