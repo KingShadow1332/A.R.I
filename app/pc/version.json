@@ -1,7 +1,7 @@
 {
-    "version":  46,
-    "name":  "1.6.17",
+    "version":  47,
+    "name":  "1.6.18",
     "zip":  "ari-pc.zip",
-    "sha256":  "f53e59e42f9ab4748ff06161c936c5a855fbe9ba460b2af489a704ddfe3fd44b",
-    "notes":  "Keine festen Wartezeiten mehr beim Neustart: der neue Prozess probiert wiederholt (statt einmalig), bis der alte Prozess den Port wirklich freigegeben hat, und macht sofort weiter statt eine geschaetzte Zeit abzuwarten. Gleiches Prinzip beim automatischen Update mit offenem HUD."
+    "sha256":  "f5246d7088550b065b1116f3a2c68155c0188b594fa5edd735d375d5c00815f5",
+    "notes":  "Sagst du nur \u0027Ari\u0027 ohne Befehl, antwortet A.R.I jetzt gesprochen (z.B. \u0027Sie wuenschen?\u0027, \u0027Wie kann ich Ihnen helfen?\u0027 - zufaellig aus ueber 10 foermlichen Anreden) statt nur mit einem Ton."
 }
