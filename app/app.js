@@ -586,12 +586,35 @@ $('#pcPair').onclick=async()=>{
 // aber optimiert - keine schwere Live-Seite/iframe mehr, stattdessen nur zwei winzige JSON-Abfragen
 // (/status, /media, dieselben, die der echte PC-HUD auch benutzt) statt der ganzen Seite.
 function fmtTime(sec){sec=Math.max(0,Math.round(sec));return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');}
+const pcSimHist={mem:[],net:[]};
+function pcSimSpark(el,data,color){
+  if(!el)return;
+  const w=120,h=26,max=Math.max(1,...data);
+  const pts=data.map((v,i)=>[data.length>1?i/(data.length-1)*w:w,h-(v/max)*h*0.86-2]);
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+const PCSIM_CAL_PAL=['#e8c468','#3fa9ff','#b58cff','#5ec8b8','#ff2d78','#39ff9e'];
+function pcSimColor(seed){let h=0;for(const c of String(seed))h=(h*31+c.charCodeAt(0))>>>0;return PCSIM_CAL_PAL[h%PCSIM_CAL_PAL.length];}
+function pcSimRenderCal(){
+  const list=$('#pcSimCalList');if(!list)return;
+  const ev=((calCache&&calCache.events)||[]).slice(0,6);
+  $('#pcSimCalTag').textContent=ev.length?ev.length+' TERMINE':'KEINE';
+  if(!ev.length){list.innerHTML='<li class="pcsim-empty">Keine anstehenden Termine.</li>';return;}
+  list.innerHTML=ev.map(e=>{
+    const start=new Date(e.start),color=pcSimColor(e.title||'?');
+    const day=String(start.getDate()).padStart(2,'0'),mon=start.toLocaleDateString('de-DE',{month:'short'}).replace('.','').toUpperCase();
+    const when=e.allDay?'Ganztägig':start.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    return `<li class="pcsim-row"><span class="badge" style="--rc:${color}">${day}<br>${mon}</span><span class="body"><span class="t1">${escHtml(e.title||'')}</span><span class="t2">${escHtml(when)}</span></span></li>`;
+  }).join('');
+}
 async function pcSimPoll(){
   if(cfg.pcSimOn!=='1'||!sync.token||!sync.origin||document.hidden)return;
   try{
-    const [rs,rm]=await Promise.all([
+    const [rs,rm,rn]=await Promise.all([
       fetch(sync.origin+'/status',{headers:{'X-Ari-Token':sync.token}}),
       fetch(sync.origin+'/media',{headers:{'X-Ari-Token':sync.token}}),
+      fetch(sync.origin+'/phone/notifications?since=0',{headers:{'X-Ari-Token':sync.token}}),
     ]);
     if(rs.ok){
       const s=await rs.json();
@@ -607,6 +630,13 @@ async function pcSimPoll(){
       const procs=s.processes||[];
       $('#pcSimTaskCount').textContent=procs.length+' PROZESSE';
       $('#pcSimTaskList').innerHTML=procs.map(p=>`<div class="task-row"><span class="task-name">${p.name}</span><span>${Math.round(p.cpu_percent||0)}%</span><span></span><span>${Math.round(p.ram_mb||0)}MB</span></div>`).join('');
+      $('#pcSimMemVal').textContent=Math.round(s.ram_percent||0)+'%';
+      $('#pcSimNetVal').textContent='↓'+(s.net_down_mbps||0);
+      pcSimHist.mem.push(s.ram_percent||0);pcSimHist.net.push(s.net_down_mbps||0);
+      if(pcSimHist.mem.length>24)pcSimHist.mem.shift();
+      if(pcSimHist.net.length>24)pcSimHist.net.shift();
+      pcSimSpark($('#pcSimMemSpark'),pcSimHist.mem,'#7ff0ff');
+      pcSimSpark($('#pcSimNetSpark'),pcSimHist.net,'#ff6aa8');
     }
     if(rm.ok){
       const m=await rm.json();
@@ -623,6 +653,17 @@ async function pcSimPoll(){
         $('#pcSimMediaTitle').textContent='Nichts aktiv';$('#pcSimMediaArtist').textContent='–';
       }
     }
+    if(rn.ok){
+      const n=await rn.json();
+      const items=(n.items||[]).slice(-8).reverse();
+      const tag=$('#pcSimNotifTag'),list=$('#pcSimNotifList');
+      if(tag)tag.textContent=items.length?items.length+' NEU':'KEINE';
+      if(list)list.innerHTML=items.length?items.map(it=>{
+        const color=pcSimColor(it.app||'?'),initial=(String(it.app||'?').charAt(0)||'?').toUpperCase();
+        return `<li class="pcsim-row"><span class="badge" style="--rc:${color}">${escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span></span></li>`;
+      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';
+    }
+    pcSimRenderCal();
   }catch(e){}
 }
 let pcSimTimer=null;
@@ -661,6 +702,50 @@ $('#pcSimOn').addEventListener('change',e=>{
 });
 $('#pcSimFsBtn').addEventListener('click',()=>pcSimSetFullscreen(!$('#pcSimBox').classList.contains('pc-sim-fullscreen')));
 $$('nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='pc')pcSimSetFullscreen(false);}));
+
+/* Panels der PC-Simulation anordnen: Reihenfolge per Pfeiltasten, Groesse per
+   Zyklus-Knopf (normal -> kompakt -> gross) - reicht auf dem Handy (Einspaltig)
+   fuer "anpassbar", ein freies 2D-Drag/Resize wie am grossen PC-Bildschirm
+   passt nicht auf einen einspaltigen Scrollbereich. */
+const PCSIM_LAYOUT_KEY='ari-app-pcsim-layout';
+function pcSimLoadLayout(){try{return store.get(PCSIM_LAYOUT_KEY,{order:[],sizes:{}});}catch(e){return{order:[],sizes:{}};}}
+function pcSimSaveLayout(l){try{store.set(PCSIM_LAYOUT_KEY,l);}catch(e){}}
+function pcSimApplyLayout(){
+  const wrap=$('#pcSimPanels');if(!wrap)return;
+  const l=pcSimLoadLayout();
+  const panels=Array.from(wrap.querySelectorAll('.panel[data-pid]'));
+  if(l.order&&l.order.length){
+    l.order.forEach(pid=>{const el=panels.find(p=>p.dataset.pid===pid);if(el)wrap.appendChild(el);});
+  }
+  panels.forEach(p=>{const sz=(l.sizes||{})[p.dataset.pid];if(sz&&sz!=='normal')p.dataset.size=sz;else delete p.dataset.size;});
+}
+function pcSimSaveCurrentOrder(){
+  const wrap=$('#pcSimPanels');if(!wrap)return;
+  const l=pcSimLoadLayout();
+  l.order=Array.from(wrap.querySelectorAll('.panel[data-pid]')).map(p=>p.dataset.pid);
+  pcSimSaveLayout(l);
+}
+const pcSimPanelsEl=$('#pcSimPanels');
+if(pcSimPanelsEl)pcSimPanelsEl.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-act]');if(!btn)return;
+  const panel=btn.closest('.panel[data-pid]');if(!panel)return;
+  const act=btn.dataset.act;
+  if(act==='up'){const prev=panel.previousElementSibling;if(prev)panel.parentNode.insertBefore(panel,prev);pcSimSaveCurrentOrder();}
+  else if(act==='down'){const next=panel.nextElementSibling;if(next)panel.parentNode.insertBefore(next,panel);pcSimSaveCurrentOrder();}
+  else if(act==='size'){
+    const order=['normal','compact','large'];
+    const cur=panel.dataset.size||'normal';
+    const nextSize=order[(order.indexOf(cur)+1)%order.length];
+    if(nextSize==='normal')delete panel.dataset.size;else panel.dataset.size=nextSize;
+    const l=pcSimLoadLayout();l.sizes=l.sizes||{};l.sizes[panel.dataset.pid]=nextSize;pcSimSaveLayout(l);
+  }
+});
+$('#pcSimEditBtn').addEventListener('click',()=>{
+  const box=$('#pcSimBox');const on=!box.classList.contains('pcsim-edit');
+  box.classList.toggle('pcsim-edit',on);
+  $('#pcSimEditBtn').classList.toggle('on',on);
+});
+pcSimApplyLayout();
 window.addEventListener('resize',()=>{if(cfg.pcSimOn==='1')pcSimSetNavHeight();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cfg.pcSimOn==='1')pcSimPoll();});
 
