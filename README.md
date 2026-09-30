@@ -31,9 +31,9 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 
 | | Version | Download |
 |---|---|---|
-| PC (Windows) | 1.6.20 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
-| PC (Linux) | 1.6.20 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
-| Handy | 1.7.15 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
+| PC (Windows) | 1.6.21 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
+| PC (Linux) | 1.6.21 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
+| Handy | 1.7.16 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
 
