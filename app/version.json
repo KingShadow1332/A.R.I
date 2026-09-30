@@ -1,7 +1,7 @@
 {
-    "versionCode":  39,
-    "versionName":  "1.7.12",
+    "versionCode":  40,
+    "versionName":  "1.7.13",
     "apk":  "ARI.apk",
-    "notes":  "Neuer Vollbild-Knopf fuer die PC-Simulation (statt automatisch beim Einschalten) - deckt jetzt wirklich den ganzen Bildschirm ab, nicht nur den Reiter.",
+    "notes":  "Neuer Bereich in den Einstellungen: Unterstuetzen (PayPal) - hilft, A.R.I offiziell in die App-Stores zu bringen.",
     "sizeMb":  5.9
 }
