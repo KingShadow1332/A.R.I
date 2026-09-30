@@ -13,5 +13,6 @@
   {"version": 40, "name": "1.6.11", "notes": "Ein automatisches Update wird jetzt auch direkt im HUD sichtbar (Patch Notes erscheinen nach einem automatischen Neustart, auch wenn das HUD-Fenster die ganze Zeit offen war) - nicht mehr nur als Windows-Benachrichtigung."},
   {"version": 41, "name": "1.6.12", "notes": "Korrektur: die Patch-Notes-Anzeige nach einem automatischen Update griff nicht, wenn das HUD-Fenster schon vor dem Update offen war (lief noch mit dem alten Programmstand). Das HUD laedt sich nach einem automatischen Update jetzt selbst neu - danach erscheinen die Patch Notes zuverlaessig, wie beim manuellen Update."},
   {"version": 42, "name": "1.6.13", "notes": "Neuer Bereich in den Einstellungen: Unterstuetzen (PayPal) - hilft, A.R.I offiziell in die App-Stores zu bringen. README auf GitHub ebenfalls ergaenzt."},
-  {"version": 43, "name": "1.6.14", "notes": "Der Unterstuetzen-Text ist jetzt allgemeiner formuliert (nicht nur App-Store-Gebuehren)."}
+  {"version": 43, "name": "1.6.14", "notes": "Der Unterstuetzen-Text ist jetzt allgemeiner formuliert (nicht nur App-Store-Gebuehren)."},
+  {"version": 44, "name": "1.6.15", "notes": "Ein automatisches Update laeuft jetzt (bei offenem HUD-Fenster) mit genau demselben Lade-/Fortschrittsfenster wie ein manuell angestossenes Update, statt still im Hintergrund. Ausserdem prueft der Hintergrund-Updater jetzt alle 5 Minuten statt stuendlich, damit Updates schneller ankommen."}
 ]
