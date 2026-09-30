@@ -592,7 +592,7 @@ function pcSimSpark(el,data,color){
   const w=120,h=26,max=Math.max(1,...data);
   const pts=data.map((v,i)=>[data.length>1?i/(data.length-1)*w:w,h-(v/max)*h*0.86-2]);
   const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="overflow:visible"><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px ${color})"/></svg>`;
 }
 const PCSIM_CAL_PAL=['#e8c468','#3fa9ff','#b58cff','#5ec8b8','#ff2d78','#39ff9e'];
 function pcSimColor(seed){let h=0;for(const c of String(seed))h=(h*31+c.charCodeAt(0))>>>0;return PCSIM_CAL_PAL[h%PCSIM_CAL_PAL.length];}
@@ -619,9 +619,13 @@ async function pcSimPoll(){
     if(rs.ok){
       const s=await rs.json();
       $('#pcSimGaugeCpu').style.setProperty('--pct',s.cpu_percent||0);
+      $('#pcSimGaugeCpuGlow').style.setProperty('--pct',s.cpu_percent||0);
+      $('#pcSimGaugeCpuTip').style.setProperty('--pct',s.cpu_percent||0);
       $('#pcSimCpuVal').textContent=Math.round(s.cpu_percent||0);
       $('#pcSimCpuSub').textContent=(s.cpu_freq_ghz||0)+' GHz';
       $('#pcSimGaugeRam').style.setProperty('--pct',s.ram_percent||0);
+      $('#pcSimGaugeRamGlow').style.setProperty('--pct',s.ram_percent||0);
+      $('#pcSimGaugeRamTip').style.setProperty('--pct',s.ram_percent||0);
       $('#pcSimRamVal').textContent=Math.round(s.ram_percent||0);
       $('#pcSimRamSub').textContent=(s.ram_used_gb||0)+'/'+(s.ram_total_gb||0)+' GB';
       $('#pcSimStatNet').textContent='↓'+(s.net_down_mbps||0)+' ↑'+(s.net_up_mbps||0);
