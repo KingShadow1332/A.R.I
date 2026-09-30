@@ -1,7 +1,7 @@
 {
-    "version":  41,
-    "name":  "1.6.12",
+    "version":  42,
+    "name":  "1.6.13",
     "zip":  "ari-pc.zip",
-    "sha256":  "b87fad3596f2a4b4a8b08d42bab70be9b3c710db87120d4a4c3016e5eabed92a",
-    "notes":  "Korrektur: die Patch-Notes-Anzeige nach einem automatischen Update griff nicht, wenn das HUD-Fenster schon vor dem Update offen war (lief noch mit dem alten Programmstand). Das HUD laedt sich nach einem automatischen Update jetzt selbst neu - danach erscheinen die Patch Notes zuverlaessig, wie beim manuellen Update."
+    "sha256":  "e088f7c9a373f5f447affd60070bf6c4632ecc1aa67c082f3d0be62d7fc65644",
+    "notes":  "Neuer Bereich in den Einstellungen: Unterstuetzen (PayPal) - hilft, A.R.I offiziell in die App-Stores zu bringen. README auf GitHub ebenfalls ergaenzt."
 }
