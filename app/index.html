@@ -534,6 +534,7 @@ main{touch-action:pan-y}
             <div class="pc-sim-head-brand"><span class="pc-sim-head-name">A.R.I</span><span class="pc-sim-head-sub">SYSTEM SIMULATION</span></div>
             <div class="pc-sim-head-actions">
               <div class="pc-sim-head-clock" id="pcSimClock">--:--</div>
+              <button type="button" class="pc-sim-fs-btn" id="pcSimEditBtn" title="Anordnen">✎</button>
               <button type="button" class="pc-sim-fs-btn" id="pcSimFsBtn" title="Vollbild">⛶</button>
             </div>
           </div>
@@ -580,8 +581,9 @@ main{touch-action:pan-y}
               </g>
             </svg>
           </div>
-            <div style="padding:0 12px 12px;display:flex;flex-direction:column;gap:12px">
-              <div class="panel">
+            <div style="padding:0 12px 12px;display:flex;flex-direction:column;gap:12px" id="pcSimPanels">
+              <div class="panel" data-pid="status">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
                 <div class="panel-h"><span class="ico">◇</span><span class="t">SYSTEM STATUS</span></div>
                 <div class="gauges">
                   <div>
@@ -609,7 +611,8 @@ main{touch-action:pan-y}
                   <div class="statcell"><div class="l">SYSTEM</div><div class="v" id="pcSimStatSystem" style="color:var(--success)">--</div></div>
                 </div>
               </div>
-              <div class="panel">
+              <div class="panel" data-pid="media">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
                 <div class="panel-h cy"><span class="ico">▶</span><span class="t">MEDIEN</span><span class="tag">SPOTIFY</span></div>
                 <div class="media">
                   <div class="media-cover"><img id="pcSimMediaCover" alt="" style="display:none"><span id="pcSimMediaCoverPh">♪</span></div>
@@ -621,9 +624,28 @@ main{touch-action:pan-y}
                   </div>
                 </div>
               </div>
-              <div class="panel">
+              <div class="panel" data-pid="tasks">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
                 <div class="panel-h"><span class="ico">◎</span><span class="t">AKTIVE TASKS</span><span class="tag" id="pcSimTaskCount">-- PROZESSE</span></div>
                 <div class="tasks" id="pcSimTaskList" style="min-height:0"></div>
+              </div>
+              <div class="panel" data-pid="cal">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h"><span class="ico">▤</span><span class="t">KALENDER</span><span class="tag" id="pcSimCalTag">--</span></div>
+                <ul class="pcsim-list" id="pcSimCalList"></ul>
+              </div>
+              <div class="panel" data-pid="notif">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h cy"><span class="ico">◈</span><span class="t">BENACHRICHTIGUNGEN</span><span class="tag" id="pcSimNotifTag">--</span></div>
+                <ul class="pcsim-list" id="pcSimNotifList"></ul>
+              </div>
+              <div class="panel" data-pid="net">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h"><span class="ico">▨</span><span class="t">SPEICHER / NETZWERK</span></div>
+                <div class="pcsim-netmem">
+                  <div class="pcsim-netmem-row"><span class="l">RAM</span><span class="v" id="pcSimMemVal">--%</span><div class="pcsim-spark" id="pcSimMemSpark"></div></div>
+                  <div class="pcsim-netmem-row"><span class="l">NETZ</span><span class="v" id="pcSimNetVal">--</span><div class="pcsim-spark" id="pcSimNetSpark"></div></div>
+                </div>
               </div>
             </div>
           </div>
