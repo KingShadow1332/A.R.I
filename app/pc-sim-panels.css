@@ -63,11 +63,13 @@
   background:conic-gradient(var(--gc) calc(var(--pct)*1%), transparent 0);
   -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px));
   mask:radial-gradient(farthest-side, transparent calc(100% - 9px), #000 calc(100% - 8px));
-  filter:drop-shadow(0 0 8px color-mix(in srgb, var(--gc) 55%, transparent));
+  /* Glow skaliert mit der Auslastung selbst (--pct) - je voller der Ring, desto
+     staerker/weiter leuchtet er, statt eines immer gleich starken Leuchtens. */
+  filter:drop-shadow(0 0 calc(2px + var(--pct)*0.13px) color-mix(in srgb, var(--gc) calc(30% + var(--pct)*0.5%), transparent));
   /* --pct ist unten als <number> registriert, dadurch animiert der Browser
      den Fuellstand wirklich fluessig statt beim naechsten Wert zu springen
      (transition:background allein interpoliert conic-gradient-Stops nicht). */
-  transition:--pct 1.6s var(--ease);
+  transition:--pct 1.6s var(--ease), filter 1.6s var(--ease);
 }
 
 #pcSimBox .gauge-inner{position:absolute; inset:14px; border-radius:50%; border:1px solid rgba(255,255,255,.06); box-shadow:inset 0 0 18px rgba(0,0,0,.4)}
