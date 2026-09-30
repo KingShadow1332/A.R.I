@@ -1,7 +1,7 @@
 {
-    "version":  47,
-    "name":  "1.6.18",
+    "version":  48,
+    "name":  "1.6.19",
     "zip":  "ari-pc.zip",
-    "sha256":  "f5246d7088550b065b1116f3a2c68155c0188b594fa5edd735d375d5c00815f5",
-    "notes":  "Sagst du nur \u0027Ari\u0027 ohne Befehl, antwortet A.R.I jetzt gesprochen (z.B. \u0027Sie wuenschen?\u0027, \u0027Wie kann ich Ihnen helfen?\u0027 - zufaellig aus ueber 10 foermlichen Anreden) statt nur mit einem Ton."
+    "sha256":  "9980e33df2c3d1e2538551b3b0c9ec0c5a8f0331f69020d162ea9b89e920f8bc",
+    "notes":  "PC-Simulation in der Handy-App: Kalender, Benachrichtigungen und eine Speicher-/Netzwerk-Verlaufsgrafik ergaenzt (wie am PC-HUD), dazu ein Anordnen-Modus (Reihenfolge/Groesse je Panel). CPU/RAM-Ringe leuchten jetzt passend zur Auslastung."
 }
