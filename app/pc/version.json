@@ -1,7 +1,7 @@
 {
-    "version":  37,
-    "name":  "1.6.8",
+    "version":  38,
+    "name":  "1.6.9",
     "zip":  "ari-pc.zip",
-    "sha256":  "ce7c3741d7bf5f3680fd67d838b0febdae91620223e4ff1e6c79e49d0edad57d",
-    "notes":  "Die PC-Simulation in der Handy-App hat jetzt einen eigenen Vollbild-Knopf statt eines automatischen Vollbilds beim Einschalten."
+    "sha256":  "8e9920752380603425f7fb9323b155a9c295d309ed961e01ccf623ee17ebde4d",
+    "notes":  "Beim Start prueft A.R.I jetzt zuverlaessiger, ob schon eine Instanz laeuft: laeuft sie gesund, wird nichts neu gestartet (im Autostart auch kein Browser-Fenster mehr). Blockiert ein haengengebliebener alter Prozess den Start, wird der automatisch beendet statt eine Fehlermeldung zu zeigen."
 }
