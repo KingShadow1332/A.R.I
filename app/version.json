@@ -1,7 +1,7 @@
 {
-    "versionCode":  41,
-    "versionName":  "1.7.14",
+    "versionCode":  42,
+    "versionName":  "1.7.15",
     "apk":  "ARI.apk",
-    "notes":  "Der Unterstuetzen-Text ist jetzt allgemeiner formuliert (nicht nur App-Store-Gebuehren).",
+    "notes":  "PC-Simulation: Kalender, Benachrichtigungen und eine Speicher-/Netzwerk-Verlaufsgrafik ergaenzt (wie am PC-HUD), dazu ein Anordnen-Modus (Reihenfolge/Groesse je Panel, per Stift-Knopf). Ausserdem leuchten die CPU/RAM-Ringe jetzt je nach Auslastung unterschiedlich stark.",
     "sizeMb":  5.9
 }
