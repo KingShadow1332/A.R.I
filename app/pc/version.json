@@ -1,7 +1,7 @@
 {
-    "version":  43,
-    "name":  "1.6.14",
+    "version":  44,
+    "name":  "1.6.15",
     "zip":  "ari-pc.zip",
-    "sha256":  "6482cbaafecb7ceb0fe78aa6b1e486cb9951122fe63b0f500065efa0575d4d4b",
-    "notes":  "Der Unterstuetzen-Text ist jetzt allgemeiner formuliert (nicht nur App-Store-Gebuehren)."
+    "sha256":  "11c83764f0e3630adf0960a60d8fb901bb38099b249f63a25a21ae840079b144",
+    "notes":  "Ein automatisches Update laeuft jetzt (bei offenem HUD-Fenster) mit genau demselben Lade-/Fortschrittsfenster wie ein manuell angestossenes Update, statt still im Hintergrund. Ausserdem prueft der Hintergrund-Updater jetzt alle 5 Minuten statt stuendlich, damit Updates schneller ankommen."
 }
