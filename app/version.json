@@ -1,7 +1,7 @@
 {
-    "versionCode":  40,
-    "versionName":  "1.7.13",
+    "versionCode":  41,
+    "versionName":  "1.7.14",
     "apk":  "ARI.apk",
-    "notes":  "Neuer Bereich in den Einstellungen: Unterstuetzen (PayPal) - hilft, A.R.I offiziell in die App-Stores zu bringen.",
+    "notes":  "Der Unterstuetzen-Text ist jetzt allgemeiner formuliert (nicht nur App-Store-Gebuehren).",
     "sizeMb":  5.9
 }
