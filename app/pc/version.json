@@ -1,7 +1,7 @@
 {
-    "version":  44,
-    "name":  "1.6.15",
+    "version":  45,
+    "name":  "1.6.16",
     "zip":  "ari-pc.zip",
-    "sha256":  "11c83764f0e3630adf0960a60d8fb901bb38099b249f63a25a21ae840079b144",
-    "notes":  "Ein automatisches Update laeuft jetzt (bei offenem HUD-Fenster) mit genau demselben Lade-/Fortschrittsfenster wie ein manuell angestossenes Update, statt still im Hintergrund. Ausserdem prueft der Hintergrund-Updater jetzt alle 5 Minuten statt stuendlich, damit Updates schneller ankommen."
+    "sha256":  "044b70faea0e7dcf56267227b7287f44ddd7a6d02b303046a5fd7d048250df8d",
+    "notes":  "Fehler behoben: der automatische Neustart nach einem Update kam nie an, weil der Start des neuen Prozesses hinter einer Wartezeit steckte, die der sich beendende alte Prozess vorher abgewuergt hat. A.R.I kommt nach einem Update jetzt zuverlaessig von selbst wieder hoch."
 }
