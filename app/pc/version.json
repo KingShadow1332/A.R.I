@@ -1,7 +1,7 @@
 {
-    "version":  40,
-    "name":  "1.6.11",
+    "version":  41,
+    "name":  "1.6.12",
     "zip":  "ari-pc.zip",
-    "sha256":  "d8025d98f0e917709fa6af02d55a63a31e68f2a51bc9ab467d9a76d6356c3c95",
-    "notes":  "Ein automatisches Update wird jetzt auch direkt im HUD sichtbar (Patch Notes erscheinen nach einem automatischen Neustart, auch wenn das HUD-Fenster die ganze Zeit offen war) - nicht mehr nur als Windows-Benachrichtigung."
+    "sha256":  "b87fad3596f2a4b4a8b08d42bab70be9b3c710db87120d4a4c3016e5eabed92a",
+    "notes":  "Korrektur: die Patch-Notes-Anzeige nach einem automatischen Update griff nicht, wenn das HUD-Fenster schon vor dem Update offen war (lief noch mit dem alten Programmstand). Das HUD laedt sich nach einem automatischen Update jetzt selbst neu - danach erscheinen die Patch Notes zuverlaessig, wie beim manuellen Update."
 }
