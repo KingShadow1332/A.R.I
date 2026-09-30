@@ -1,7 +1,7 @@
 {
-    "version":  38,
-    "name":  "1.6.9",
+    "version":  39,
+    "name":  "1.6.10",
     "zip":  "ari-pc.zip",
-    "sha256":  "8e9920752380603425f7fb9323b155a9c295d309ed961e01ccf623ee17ebde4d",
-    "notes":  "Beim Start prueft A.R.I jetzt zuverlaessiger, ob schon eine Instanz laeuft: laeuft sie gesund, wird nichts neu gestartet (im Autostart auch kein Browser-Fenster mehr). Blockiert ein haengengebliebener alter Prozess den Start, wird der automatisch beendet statt eine Fehlermeldung zu zeigen."
+    "sha256":  "fe6cefb27057b412b315c760d5a1e1952972dfb6e27af338c997000e9413c0b8",
+    "notes":  "Automatische Updates werden jetzt sichtbar gemeldet (Windows-Benachrichtigung: Update gefunden, Update installiert). Der Neustart nach einem Update funktioniert jetzt zuverlaessiger (vorher konnte es passieren, dass A.R.I nach einem automatischen Update nicht von selbst wieder hochkam)."
 }
