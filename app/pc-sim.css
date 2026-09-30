@@ -52,6 +52,7 @@ body.pc-sim-active #pcSimBox{display:block}
   color:var(--cyan-2); font-size:16px; line-height:1;
 }
 .pc-sim-fs-btn:active{background:color-mix(in srgb, var(--cyan) 18%, rgba(255,255,255,.03))}
+.pc-sim-fs-btn.on{border-color:var(--pink); color:var(--pink); background:color-mix(in srgb, var(--pink) 14%, transparent)}
 
 /* --- Orb / Planet / Ringe --- */
 
