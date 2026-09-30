@@ -1,7 +1,7 @@
 {
-    "version":  48,
-    "name":  "1.6.19",
+    "version":  49,
+    "name":  "1.6.20",
     "zip":  "ari-pc.zip",
-    "sha256":  "9980e33df2c3d1e2538551b3b0c9ec0c5a8f0331f69020d162ea9b89e920f8bc",
-    "notes":  "PC-Simulation in der Handy-App: Kalender, Benachrichtigungen und eine Speicher-/Netzwerk-Verlaufsgrafik ergaenzt (wie am PC-HUD), dazu ein Anordnen-Modus (Reihenfolge/Groesse je Panel). CPU/RAM-Ringe leuchten jetzt passend zur Auslastung."
+    "sha256":  "1529dc03978f970d8e36df652f8ff5e751bf151f4b2264d29c69458fbfb22d95",
+    "notes":  "Korrektur: der auslastungsabhaengige Glow an den CPU/RAM-Ringen fehlte in der Handy-App noch (war beim letzten Mal nur am PC-HUD nachgezogen worden)."
 }
