@@ -589,8 +589,12 @@ main{touch-action:pan-y}
                   <div>
                     <div class="gauge-label">CPU</div>
                     <div class="gauge-ring-wrap">
-                      <div class="gauge-track"></div>
-                      <div class="gauge-fill" id="pcSimGaugeCpu" style="--pct:0;--gc:var(--pink)"></div>
+                      <svg class="gauge-svg" viewBox="0 0 100 100">
+                        <circle class="gauge-track-c" cx="50" cy="50" r="42"/>
+                        <circle class="gauge-glow-c" id="pcSimGaugeCpuGlow" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--pink)"/>
+                        <circle class="gauge-fill-c" id="pcSimGaugeCpu" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--pink)"/>
+                      </svg>
+                      <div class="gauge-tip" id="pcSimGaugeCpuTip" style="--pct:0;--gc:var(--pink)"></div>
                       <div class="gauge-inner"></div>
                       <div class="gauge-center"><span><span class="gauge-val" id="pcSimCpuVal">--</span><span class="gauge-unit">%</span></span><span class="gauge-sub" id="pcSimCpuSub">-- GHz</span></div>
                     </div>
@@ -598,8 +602,12 @@ main{touch-action:pan-y}
                   <div>
                     <div class="gauge-label">RAM</div>
                     <div class="gauge-ring-wrap">
-                      <div class="gauge-track"></div>
-                      <div class="gauge-fill" id="pcSimGaugeRam" style="--pct:0;--gc:var(--cyan)"></div>
+                      <svg class="gauge-svg" viewBox="0 0 100 100">
+                        <circle class="gauge-track-c" cx="50" cy="50" r="42"/>
+                        <circle class="gauge-glow-c" id="pcSimGaugeRamGlow" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--cyan)"/>
+                        <circle class="gauge-fill-c" id="pcSimGaugeRam" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--cyan)"/>
+                      </svg>
+                      <div class="gauge-tip" id="pcSimGaugeRamTip" style="--pct:0;--gc:var(--cyan)"></div>
                       <div class="gauge-inner"></div>
                       <div class="gauge-center"><span><span class="gauge-val" id="pcSimRamVal">--</span><span class="gauge-unit">%</span></span><span class="gauge-sub" id="pcSimRamSub">--/-- GB</span></div>
                     </div>
