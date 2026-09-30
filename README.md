@@ -31,14 +31,14 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 
 | | Version | Download |
 |---|---|---|
-| PC (Windows) | 1.6.13 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
-| PC (Linux) | 1.6.13 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
-| Handy | 1.7.13 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
+| PC (Windows) | 1.6.14 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
+| PC (Linux) | 1.6.14 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
+| Handy | 1.7.14 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
 
 ## ☕ Unterstützen
 
-A.R.I ist kostenlos. Wenn du es in den offiziellen App-Stores (Google Play, evtl. Apple) veröffentlicht sehen willst, hilft jede Spende bei den Store-Gebühren (Google Play: einmalig 25$, Apple: 99$/Jahr):
+A.R.I ist kostenlos und bleibt es. Wenn du die Weiterentwicklung unterstützen möchtest — z. B. die Veröffentlichung in den App-Stores (Google Play, evtl. Apple) oder einfach die Zeit, die reingeht — freue ich mich über jede Spende:
 
 **[paypal.me/KingSadow](https://paypal.me/KingSadow)**
