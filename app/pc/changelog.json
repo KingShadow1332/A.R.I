@@ -24,5 +24,6 @@
   {"version": 51, "name": "1.6.22", "notes": "Astro-Wurf-Feature wiederhergestellt (war verloren gegangen). Neue Patch-Notes-Liste in den Einstellungen (komplette Versionshistorie zum Durchblaettern). Einstellungen etwas kompakter."},
   {"version": 52, "name": "1.6.23", "notes": "Neu: Benachrichtigungs-Feld, eigenes Fenster ohne Browser, lokale Spracherkennung, Serverstatus fuer Spiele, Kacheln wie in der Hand verschieben, schneller und sparsamer, Start-Menue-Eintrag Ari Assistent, optionale anonyme Statistik."},
   {"version": 53, "name": "1.6.24", "notes": "Neu: Alarmton bei zu hoher CPU-/GPU-Temperatur, Export-Knopf im eigenen Fenster repariert, Update-Fehler durch gesperrte Dateien behoben, anonyme Nutzungsstatistik (abschaltbar), Statistik-Ansicht im DEV-Bereich."},
-  {"version": 54, "name": "1.6.25", "notes": "Neu: waehlbare Klangpakete (Standard: Weich), Liste der gesperrten Apps/Absender mit Rueckgaengig-Knopf, Temperatur-Alarm stoppt zuverlaessig, CPU-Temperatur auch bei jedem Startweg (Admin-Uebergabe), Statistik-Ansicht im DEV-Bereich."}
+  {"version": 54, "name": "1.6.25", "notes": "Neu: waehlbare Klangpakete (Standard: Weich), Liste der gesperrten Apps/Absender mit Rueckgaengig-Knopf, Temperatur-Alarm stoppt zuverlaessig, CPU-Temperatur auch bei jedem Startweg (Admin-Uebergabe), Statistik-Ansicht im DEV-Bereich."},
+  {"version": 55, "name": "1.6.26", "notes": "Neu: Statistik-Vorschau lesbar (nur was gesendet wird), Klangpakete, Sperr-Liste fuer Apps und Absender, Admin-Uebergabe fuer die CPU-Temperatur."}
 ]
