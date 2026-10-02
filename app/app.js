@@ -1349,9 +1349,9 @@ async function doUpdate(){track('update_install');
   }
 }
 if(NATIVE){$('#updPanel').style.display='';}
-{const row=$('#betaRow'),tg=$('#updVer');const devOn=()=>{try{return localStorage.getItem('ari_dev')==='1'||isBeta();}catch(e){return false;}};
+{const row=$('#betaRow'),tg=document.querySelector('header .logo');const devOn=()=>{try{return localStorage.getItem('ari_dev')==='1'||isBeta();}catch(e){return false;}};
 if(row&&devOn())row.style.display='flex';
-// Entwickler-Zugang: 5x auf das Versions-Etikett tippen, dann das gleiche Dev-Passwort wie im PC-HUD (nur der SHA-256-Hash steckt in der App)
+// Entwickler-Zugang: 5x auf das A.R.I-Logo oben tippen, dann das gleiche Dev-Passwort wie im PC-HUD (nur der SHA-256-Hash steckt in der App)
 const DEV_HASH='15200a1b9681095bdf23698fe79043c210be5040d945a1df527ce834eecf8e5d';
 const askDev=()=>new Promise(res=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7)';
 o.innerHTML='<form autocomplete="off" style="background:#14111f;border:1px solid #444;border-radius:14px;padding:18px;width:min(320px,86vw)"><div style="font:600 12px monospace;letter-spacing:.14em;margin-bottom:10px">DEV-PASSWORT</div><input type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #555;background:#0c0a15;color:#fff;font-size:16px"><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><button type="button" class="btn" data-x>ABBRECHEN</button><button type="submit" class="btn pri">OK</button></div></form>';
