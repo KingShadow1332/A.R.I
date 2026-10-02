@@ -617,6 +617,7 @@ main{touch-action:pan-y}
                   <div class="statcell"><div class="l">NETZWERK MB/S</div><div class="v" id="pcSimStatNet" style="color:var(--cyan)">--</div></div>
                   <div class="statcell"><div class="l">UPTIME</div><div class="v" id="pcSimStatUptime" style="color:var(--text)">--</div></div>
                   <div class="statcell"><div class="l">SYSTEM</div><div class="v" id="pcSimStatSystem" style="color:var(--success)">--</div></div>
+                  <div class="statcell" id="pcSimStatGpuTempCell" style="display:none"><div class="l">GPU TEMP</div><div class="v" id="pcSimStatGpuTemp" style="color:var(--pink)">--</div></div>
                 </div>
               </div>
               <div class="panel" data-pid="media">
@@ -739,9 +740,18 @@ main{touch-action:pan-y}
       <div class="set-section-body">
         <div class="panel" id="updPanel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">APP-UPDATE</span><span class="tag" id="updVer">–</span></div>
           <div class="dim" id="updText">Prüft beim Start automatisch, ob es eine neue Version gibt.</div>
+          <label class="dim" id="betaRow" style="display:none;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="betaChan" style="margin-top:3px"> <span>Beta-Kanal: Test-Versionen vor allen anderen bekommen (kann Fehler haben)</span></label>
           <div class="row" style="margin-top:10px"><button class="btn" id="updCheck">NACH UPDATES SUCHEN</button><button class="btn pri" id="updGo" style="display:none">JETZT AKTUALISIEREN</button></div>
           <div class="dim2" id="updProg" style="margin-top:8px"></div>
         </div>
+      </div>
+    </details>
+    <details class="set-section" id="statsSec" style="display:none">
+      <summary>📊 ANONYME STATISTIK</summary>
+      <div class="set-section-body">
+        <label class="dim" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="statsCb" style="margin-top:3px"> <span>Anonyme Nutzungsstatistik senden – zählt nur, welche Funktionen wie oft benutzt werden, nie Inhalte. Zufällige ID, keine IP-Speicherung. Beim Abschalten werden die Daten gelöscht.</span></label>
+        <div class="row" style="margin-top:10px"><button class="btn" id="statsPv">WAS WIRD GESENDET?</button><button class="btn" id="statsDel">MEINE DATEN LÖSCHEN</button></div>
+        <div class="dim2" id="statsMsg" style="margin-top:8px"></div>
       </div>
     </details>
     <details class="set-section">
