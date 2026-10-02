@@ -1,7 +1,7 @@
 {
-    "version":  54,
-    "name":  "1.6.25",
+    "version":  55,
+    "name":  "1.6.26",
     "zip":  "ari-pc.zip",
-    "sha256":  "7897242f0a2b98130dda78d306f86cd564bc5707bbdd4765ecb9c8502a5586b9",
-    "notes":  "Neu: waehlbare Klangpakete (Standard: Weich), Liste der gesperrten Apps/Absender mit Rueckgaengig-Knopf, Temperatur-Alarm stoppt zuverlaessig, CPU-Temperatur auch bei jedem Startweg (Admin-Uebergabe), Statistik-Ansicht im DEV-Bereich."
+    "sha256":  "554f84b7a81f73b7592eb34775faa6d7a1a16bd67a24e9f5e1d15281f0430215",
+    "notes":  "Neu: Statistik-Vorschau lesbar (nur was gesendet wird), Klangpakete, Sperr-Liste fuer Apps und Absender, Admin-Uebergabe fuer die CPU-Temperatur."
 }
