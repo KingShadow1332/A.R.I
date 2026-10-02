@@ -1,7 +1,7 @@
 {
-    "versionCode":  49,
-    "versionName":  "1.49",
+    "versionCode":  51,
+    "versionName":  "1.51",
     "apk":  "ARI.apk",
-    "notes":  "BETA: Statistik-Vorschau lesbar (nur was gesendet wird).",
+    "notes":  "BETA: Einfuehrung beim ersten Start, Beta-Updates direkt in der App installierbar.",
     "sizeMb":  5.9
 }
