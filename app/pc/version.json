@@ -2,6 +2,6 @@
     "version":  52,
     "name":  "1.6.23",
     "zip":  "ari-pc.zip",
-    "sha256":  "8394226bfc3d78a7354ceb1904a50c33c04fa865fa06a92d476306dc99c8ee40",
+    "sha256":  "cada6719c82456ca68a7bc2e1e537b174f700e1df9f472ddb2bb64767ab74d6a",
     "notes":  "Neu: Benachrichtigungs-Feld, eigenes Fenster ohne Browser, lokale Spracherkennung, Serverstatus fuer Spiele, Kacheln wie in der Hand verschieben, schneller und sparsamer, Start-Menue-Eintrag Ari Assistent, optionale anonyme Statistik."
 }
