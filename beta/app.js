@@ -1368,6 +1368,62 @@ async function doUpdate(){track('update_install');
 }
 if(NATIVE){$('#updPanel').style.display='';}
 
+/* ---------- Einführung beim ersten Start (und jederzeit wiederholbar: Einstellungen > DATEN) ---------- */
+const TOUR_STEPS=[
+  {t:'Willkommen bei A.R.I',x:'Ich bin dein persönlicher KI-Assistent – auf dem Handy und zusammen mit deinem PC. In wenigen Schritten zeige ich dir, wie alles funktioniert. Du kannst jederzeit überspringen.'},
+  {tab:'chat',sel:'#msg',parent:true,t:'Schreiben oder sprechen',x:'Tippe hier einen Befehl ein oder drücke das Mikrofon 🎤 und sprich einfach. Frag mich etwas, lass dir Routen planen oder Dinge merken.'},
+  {tab:'chat',sel:'#t-chat .chips',t:'Schnellbefehle',x:'Mit diesen Knöpfen startest du häufige Fragen mit einem Tipp – du musst nur noch das Ende ergänzen.'},
+  {tab:'set',sel:'#sKey',open:true,t:'Zuerst: KI-Schlüssel',x:'Damit ich antworten kann, brauche ich einen kostenlosen Schlüssel von einem KI-Anbieter (z. B. Groq oder Gemini). Wähle oben den Anbieter und trage hier den Schlüssel ein. Er bleibt nur auf diesem Handy.'},
+  {tab:'pc',sel:'#qrScan',t:'Mit dem PC verbinden',x:'Wenn du A.R.I auch am PC nutzt: Am PC unter Einstellungen → HANDY den QR-Code zeigen und hier scannen. Dann steuerst du deinen PC (Musik, Lautstärke, Programme) per Sprache vom Handy aus.'},
+  {tab:'cal',sel:'nav [data-t=cal]',t:'Termine & Mails',x:'Hier siehst du deine Termine und wichtige E-Mails. Melde dich dazu in den Einstellungen mit Google an.'},
+  {tab:'brain',sel:'nav [data-t=brain]',t:'Das Gehirn',x:'Alles, was ich mir über dich merken soll (Vorlieben, Namen, Gewohnheiten), steht hier. Du kannst es jederzeit ansehen, ändern und löschen.'},
+  {tab:'set',sel:'#notifFwdMsg',open:true,t:'Handy-Meldungen am PC',x:'Wenn du möchtest, schicke ich Benachrichtigungen deines Handys (z. B. WhatsApp) an den PC. Das erlaubst du einmal in den Android-Einstellungen – und kannst Apps jederzeit als Spam sperren.'},
+  {tab:'set',sel:'#updPanel',open:true,t:'Updates',x:'Die App sucht beim Start selbst nach neuen Versionen. Mit „Jetzt aktualisieren“ installierst du sie mit einem Tipp.'},
+  {tab:'chat',t:'Fertig!',x:'Das war es schon. Sag einfach „Hallo“ oder stell mir eine Frage. Diese Einführung findest du jederzeit wieder unter Einstellungen → DATEN → „Einführung ansehen“.'}
+];
+let tourI=0,tourEl=null;
+function tourEnd(){try{localStorage.setItem('ari_tour_done','1');}catch(e){}if(tourEl){tourEl.remove();tourEl=null;}goTab('chat');}
+function tourShow(i){
+  tourI=Math.max(0,Math.min(TOUR_STEPS.length-1,i));const st=TOUR_STEPS[tourI];
+  if(st.tab)goTab(st.tab);
+  let target=st.sel?$(st.sel):null;
+  if(target&&st.parent)target=target.parentElement;
+  if(target&&!target.getClientRects().length)target=null;   // nicht sichtbar (z. B. Android-only-Bereich im Browser) -> Karte ohne Markierung
+  if(target&&st.open){const d=target.closest('details');if(d)d.open=true;}
+  if(!tourEl){tourEl=document.createElement('div');tourEl.id='tourOv';tourEl.style.cssText='position:fixed;inset:0;z-index:99990;';document.body.appendChild(tourEl);}
+  const last=tourI===TOUR_STEPS.length-1;
+  const dots=TOUR_STEPS.map((_,k)=>'<i style="display:inline-block;width:'+(k===tourI?'16':'6')+'px;height:6px;border-radius:3px;margin:0 2px;background:'+(k===tourI?'#ff2d78':'rgba(255,255,255,.25)')+'"></i>').join('');
+  const render=()=>{
+    let hole='';let pos='mid';
+    if(target){const r=target.getBoundingClientRect();
+      hole='<div style="position:fixed;left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px;border-radius:12px;border:2px solid #ff2d78;box-shadow:0 0 0 9999px rgba(2,2,8,.78),0 0 22px rgba(255,45,120,.6);pointer-events:none;transition:all .25s"></div>';
+      pos=(r.top+r.height/2>innerHeight*0.5)?'top':'bottom';}
+    else hole='<div style="position:fixed;inset:0;background:rgba(2,2,8,.78)"></div>';
+    const cardPos=pos==='top'?'top:calc(env(safe-area-inset-top) + 14px)':pos==='bottom'?'bottom:calc(env(safe-area-inset-bottom) + 84px)':'top:50%;transform:translateY(-50%)';
+    tourEl.innerHTML=hole+'<div style="position:fixed;left:14px;right:14px;'+cardPos+';max-width:440px;margin:0 auto;border-radius:16px;border:1px solid rgba(255,45,120,.5);background:linear-gradient(165deg,#1a1626,#0a0912);padding:18px 18px 14px;color:#e8e6f5;box-shadow:0 20px 60px -10px #000">'+
+      '<div style="font:700 12px var(--font-mono,monospace);letter-spacing:.14em;color:#fff">'+st.t.toUpperCase()+'</div>'+
+      '<div style="margin-top:8px;font-size:13.5px;line-height:1.55;opacity:.92">'+st.x+'</div>'+
+      '<div style="margin-top:12px;text-align:center">'+dots+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px">'+(tourI>0?'<button type="button" class="btn" id="tourBack" style="flex:0 0 auto">ZURÜCK</button>':'')+
+      '<button type="button" class="btn pri" id="tourNext" style="flex:1">'+(last?'LOS GEHT’S':'WEITER')+'</button></div>'+
+      (last?'':'<div style="text-align:center;margin-top:10px"><a href="#" id="tourSkip" style="color:inherit;opacity:.6;font-size:12px">Einführung überspringen</a></div>')+'</div>';
+    const nx=$('#tourNext'),bk=$('#tourBack'),sk=$('#tourSkip');
+    if(nx)nx.onclick=()=>last?tourEnd():tourShow(tourI+1);if(bk)bk.onclick=()=>tourShow(tourI-1);if(sk)sk.onclick=e=>{e.preventDefault();tourEnd();};
+  };
+  if(target){try{target.scrollIntoView({block:'center'});}catch(e){}setTimeout(render,320);}else render();
+}
+function tourStart(){tourShow(0);}
+window.addEventListener('resize',()=>{if(tourEl)tourShow(tourI);});
+{const btn=document.getElementById('tourReplay');if(btn)btn.onclick=()=>{goTab('chat');tourStart();};
+setTimeout(()=>{
+  let done=false;try{done=localStorage.getItem('ari_tour_done')==='1';}catch(e){}
+  if(done)return;
+  // Wer die App schon eingerichtet hat (Schluessel/PC/Anmeldung vorhanden), bekommt die Einfuehrung nicht aufgezwungen
+  const hasKey=Object.values(cfg.keys||{}).some(v=>v&&(Array.isArray(v)?v.some(Boolean):true));
+  if(hasKey||(pcs&&pcs.length)||(sync&&sync.origin)||gTok){try{localStorage.setItem('ari_tour_done','1');}catch(e){}return;}
+  const pr=document.getElementById('pair');if(pr&&getComputedStyle(pr).display!=='none')return;
+  tourStart();
+},1800);}
 /* ---------- DEV-Bereich (nur nach Freischaltung per Logo-Tipp + Passwort) ---------- */
 async function devRefresh(){
   const box=$('#devInfo');if(!box)return;
@@ -1380,6 +1436,7 @@ async function devRefresh(){
 const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
 on('#devUpd',async()=>{msg('Suche …');try{await checkUpdate(true);msg('Update-Prüfung fertig (Ergebnis siehe APP-UPDATE).');}catch(e){msg('Fehler: '+e.message);}});
 on('#devReload',()=>location.reload());
+on('#devTour',()=>{goTab('chat');tourStart();});
 on('#devStSend',async()=>{msg('Sende …');const ok=await statsSend();msg(ok?'Statistik gesendet.':'Nicht gesendet (aus, keine Adresse oder kein Internet).');});
 on('#devStPv',()=>statsPreviewShow());
 on('#devStOpen',async()=>{const ep=await statsEndpoint(),k=($('#devKey').value||'').trim();if(!ep||!k){msg('Adresse oder Schlüssel fehlt.');return;}window.open(ep+'/?key='+encodeURIComponent(k),'_system');});
