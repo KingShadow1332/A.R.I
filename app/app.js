@@ -2,6 +2,78 @@
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+/* ---------- Anonyme Nutzungsstatistik (Opt-in) ----------
+   Zaehlt nur Funktionsnamen pro Tag - nie Inhalte. Zufaellige ID, keine IP-Speicherung. Ohne Einwilligung
+   (oder ohne Empfaenger-Adresse in stats-config.json) wird nichts gezaehlt oder gesendet. */
+const STS={get(k,d){try{const v=localStorage.getItem('ari_st_'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('ari_st_'+k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem('ari_st_'+k);}catch(e){}}};
+function statsId(){let id=STS.get('id',null);if(!id||!/^[a-f0-9-]{16,40}$/.test(id)){id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>(Math.random()*16|0).toString(16));STS.set('id',id);}return id;}
+const statsDay=()=>new Date().toISOString().slice(0,10);
+function track(name){
+  if(STS.get('consent',null)!==true||!/^[a-z0-9_:.-]{1,40}$/.test(name))return;
+  const days=STS.get('days',{}),t=statsDay();const d=days[t]=days[t]||{};
+  if(!(name in d)&&Object.keys(d).length>=100)return;
+  d[name]=(d[name]||0)+1;STS.set('days',days);
+}
+let statsEp=null,statsEpAt=0;
+async function statsEndpoint(){
+  const ov=STS.get('ep_override','');if(/^http:\/\/(127[.]0[.]0[.]1|localhost)(:\d+)?$/.test(ov))return ov;   // nur fuer Entwickler-Tests
+  if(statsEp!==null&&Date.now()-statsEpAt<600000)return statsEp;
+  try{const r=await fetch('https://kingshadow1332.github.io/A.R.I/app/stats-config.json?t='+Date.now(),{cache:'no-store'});const d=await r.json();const ep=String(d.endpoint||'').trim().replace(/\/+$/,'');statsEp=/^https:\/\/[A-Za-z0-9.-]+(:\d+)?(\/[\w.\/-]*)?$/.test(ep)?ep:'';}catch(e){statsEp='';}
+  statsEpAt=Date.now();return statsEp;
+}
+async function statsPayload(){
+  const days=STS.get('days',{}),cut=new Date(Date.now()-14*86400000).toISOString().slice(0,10);
+  for(const k of Object.keys(days))if(k<cut)delete days[k];STS.set('days',days);
+  let v='';try{if(NATIVE){const i=await Capacitor.Plugins.App.getInfo();v=String(i.version||'');}}catch(e){}
+  return {id:statsId(),v:v||'web',platform:NATIVE?'android':'web',lang:navigator.language||'',days};
+}
+async function statsSend(){
+  if(STS.get('consent',null)!==true)return false;const ep=await statsEndpoint();if(!ep)return false;
+  try{const r=await fetch(ep+'/ingest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(await statsPayload())});return r.ok;}catch(e){return false;}
+}
+async function statsForget(){
+  const ep=await statsEndpoint();let ok=true;
+  if(ep){try{const r=await fetch(ep+'/forget',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:statsId()})});ok=r.ok;}catch(e){ok=false;}}
+  if(ok){STS.del('id');STS.set('days',{});}return ok;
+}
+async function statsSetConsent(v){
+  STS.set('consent',v);
+  if(v){track('app_start');statsSend();}else{await statsForget();STS.set('days',{});}
+  statsRefreshUI();
+}
+async function statsRefreshUI(){
+  const f=document.getElementById('statsSec');if(!f)return;const ep=await statsEndpoint();
+  f.style.display=ep?'':'none';const cb=document.getElementById('statsCb');if(cb)cb.checked=STS.get('consent',null)===true;
+}
+async function statsPreviewShow(){
+  const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(2,2,6,.8);padding:20px';
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  o.innerHTML='<div style="position:relative;width:100%;max-width:420px;max-height:80vh;overflow:auto;border-radius:14px;border:1px solid #ff2d78;background:#0d0b16;padding:20px 22px;color:#e8e6f5"><button type="button" id="stPvX" style="position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:6px;border:1px solid #29d3f5;background:none;color:#29d3f5">✕</button><div style="font:700 12px monospace;letter-spacing:.14em;padding-left:36px">DAS WIRD GESENDET</div><div style="font-size:12px;opacity:.75;margin:10px 0">Genau diese Angaben – nichts sonst: zufällige ID, Version, Plattform, Sprache und je Tag, wie oft eine Funktion benutzt wurde. Keine Texte, Namen, Mails oder IP-Adresse.</div><pre style="font-size:11px;white-space:pre-wrap;word-break:break-all;background:rgba(255,255,255,.05);padding:10px;border-radius:8px;margin:0">'+esc(JSON.stringify(await statsPayload(),null,2))+'</pre></div>';
+  document.body.appendChild(o);const close=()=>o.remove();o.querySelector('#stPvX').onclick=close;o.onclick=e=>{if(e.target===o)close();};
+}
+function statsAsk(){
+  if(document.getElementById('ariStatsAsk'))return;
+  const o=document.createElement('div');o.id='ariStatsAsk';o.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;background:rgba(2,2,6,.78);padding:20px';
+  o.innerHTML='<div style="width:100%;max-width:400px;border-radius:16px;border:1px solid #ff2d78;background:linear-gradient(160deg,#1a1626,#0a0912);padding:20px 20px 16px;color:#e8e6f5"><div style="font:700 13px monospace;letter-spacing:.12em;color:#fff">HILFST DU, A.R.I ZU VERBESSERN?</div><div style="margin-top:10px;font-size:13px;line-height:1.55;opacity:.88">A.R.I kann <b>anonym</b> zählen, welche Funktionen wie oft benutzt werden.</div><ul style="margin:10px 0 0 18px;padding:0;font-size:12.5px;line-height:1.55;opacity:.85"><li>Nur Funktionsnamen und Zähler – <b>nie Inhalte</b></li><li>Zufällige ID, keine Speicherung deiner IP-Adresse</li><li>Jederzeit abschaltbar (Einstellungen), dann werden deine Daten gelöscht</li></ul><button type="button" class="btn pri" id="stYes" style="width:100%;margin-top:14px">JA, ANONYM TEILNEHMEN</button><button type="button" class="btn" id="stNo" style="width:100%;margin-top:8px">NEIN, DANKE</button><div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px"><a href="#" id="stWhat" style="color:inherit;opacity:.7">Was wird gesendet?</a><a href="#" id="stLater" style="color:inherit;opacity:.7">Später fragen</a></div></div>';
+  document.body.appendChild(o);const close=()=>o.remove();
+  o.querySelector('#stYes').onclick=()=>{close();statsSetConsent(true);};
+  o.querySelector('#stNo').onclick=()=>{close();statsSetConsent(false);};
+  o.querySelector('#stWhat').onclick=e=>{e.preventDefault();statsPreviewShow();};
+  o.querySelector('#stLater').onclick=e=>{e.preventDefault();try{sessionStorage.setItem('ari_st_later','1');}catch(x){}close();};
+}
+async function statsAskCheck(){
+  if(document.getElementById('ariStatsAsk')||STS.get('consent',null)!==null)return;
+  try{if(sessionStorage.getItem('ari_st_later'))return;}catch(e){}
+  if(await statsEndpoint())statsAsk();
+}
+setTimeout(statsAskCheck,15000);setInterval(statsAskCheck,60000);
+setTimeout(()=>track('app_start'),3000);
+setTimeout(statsRefreshUI,2000);
+window.addEventListener('load',()=>{const cb=document.getElementById('statsCb');if(cb)cb.onchange=()=>statsSetConsent(cb.checked);
+  const pv=document.getElementById('statsPv');if(pv)pv.onclick=()=>statsPreviewShow();
+  const dl=document.getElementById('statsDel');if(dl)dl.onclick=async()=>{const m=document.getElementById('statsMsg');const ok=await statsForget();m.textContent=ok?'Gelöscht.':'Löschen fehlgeschlagen (kein Internet?).';setTimeout(()=>{m.textContent='';},5000);};});
+setTimeout(statsSend,30000);setInterval(statsSend,3*3600*1000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)statsSend();});
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 
 /* ---------- Zustand ---------- */
@@ -16,7 +88,7 @@ const saveBrain=()=>store.set('ari-app-brain',brain);
 /* ---------- Tabs / Uhr ---------- */
 const TAB_ORDER=$$('nav button').map(b=>b.dataset.t);
 function moveNavInd(t){const ind=$('#navInd');if(!ind)return;const i=TAB_ORDER.indexOf(t);if(i<0)return;ind.style.transform='translateX('+(i*100)+'%)';}
-function goTab(t){$$('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));moveNavInd(t);if(t==='brain')renderBrain();if(t==='pc')renderPcs();if(t==='cal')loadCalData();}
+function goTab(t){track('tab_'+t);$$('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));moveNavInd(t);if(t==='brain')renderBrain();if(t==='pc')renderPcs();if(t==='cal')loadCalData();}
 $$('nav button').forEach(b=>b.onclick=()=>goTab(b.dataset.t));
 moveNavInd(TAB_ORDER[0]);
 // Wischen zwischen den Reitern (Chat/Termine/Gehirn/PC/Einst.): der Inhalt und die Unterstreichung
@@ -169,7 +241,7 @@ function keyList(p){const k=[cfg.keys[p]||''];if(p==='groq')(sync.groqAll||[]).s
 async function runWithKeys(p,keys,h,small,q){let last;for(const k of keys){try{return await runProvider(p,k,h,small,q);}catch(e){last=e;if(!isLimit(e))throw e;}}throw last;}
 const isLimit=e=>e&&(e.status===429||/rate|quota|limit|overload|exhaust/i.test(String(e.message)));
 const PC_RE=/\b(pc|rechner|computer|laptop)\b|lautst[aä]rke|\bleiser\b|\blauter\b|\bstumm\b|screenshot|bildschirmfoto|minimier|maximier/i;
-async function askPc(){
+async function askPc(){track('chat_via_pc');
   const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),70000);
   try{
     const r=await hubFetch('/phone/api/chat',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({messages:hist.slice(-10).map(m=>({role:m.role,content:m.content}))}),signal:ctrl.signal});
@@ -180,7 +252,7 @@ async function askPc(){
   }catch(e){return {err:e&&e.name==='AbortError'?'keine Antwort':'keine Verbindung'};}
   finally{clearTimeout(to);}
 }
-async function ask(text){
+async function ask(text){track('chat');
   links=[];
   const q=text.toLowerCase();
   // Ohne KI: Uhrzeit/Datum
@@ -254,7 +326,7 @@ $('#send').onclick=()=>{const v=$('#msg').value;$('#msg').value='';send(v);};
 $('#msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#send').click();}});
 $$('.chips .btn[data-q]').forEach(b=>b.onclick=()=>{const q=b.dataset.q;if(q.endsWith(' ')){$('#msg').value=q;$('#msg').focus();}else send(q);});
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-async function nativeMic(){
+async function nativeMic(){track('voice_in');
   const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SpeechRecognition;
   if(!P){addMsg('a','Spracheingabe ist in dieser App nicht verfügbar – nutze das Mikrofon deiner Tastatur.');return;}
   try{
@@ -638,7 +710,7 @@ async function pcSimPoll(){
       $('#pcSimGaugeCpuGlow').style.setProperty('--pct',s.cpu_percent||0);
       $('#pcSimGaugeCpuTip').style.setProperty('--pct',s.cpu_percent||0);
       pcSimTweenPercent($('#pcSimCpuVal'),s.cpu_percent||0);
-      $('#pcSimCpuSub').textContent=(s.cpu_freq_ghz||0)+' GHz';
+      $('#pcSimCpuSub').textContent=(s.cpu_freq_ghz||0)+' GHz'+(s.cpu_temp_c!=null?' · '+Math.round(s.cpu_temp_c)+'°C':'');
       $('#pcSimGaugeRam').style.setProperty('--pct',s.ram_percent||0);
       $('#pcSimGaugeRamGlow').style.setProperty('--pct',s.ram_percent||0);
       $('#pcSimGaugeRamTip').style.setProperty('--pct',s.ram_percent||0);
@@ -647,6 +719,11 @@ async function pcSimPoll(){
       $('#pcSimStatNet').textContent='↓'+(s.net_down_mbps||0)+' ↑'+(s.net_up_mbps||0);
       $('#pcSimStatUptime').textContent=s.uptime_str||'--';
       $('#pcSimStatSystem').textContent=(s.system_status||'--').toUpperCase();
+      if(s.gpu_temp_c!=null){
+        $('#pcSimStatGpuTempCell').style.display='';
+        $('#pcSimStatGpuTemp').textContent=Math.round(s.gpu_temp_c)+'°C';
+        $('.statcells').classList.add('has-gpu');
+      }
       const procs=s.processes||[];
       $('#pcSimTaskCount').textContent=procs.length+' PROZESSE';
       $('#pcSimTaskList').innerHTML=procs.map(p=>`<div class="task-row"><span class="task-name">${p.name}</span><span>${Math.round(p.cpu_percent||0)}%</span><span></span><span>${Math.round(p.ram_mb||0)}MB</span></div>`).join('');
@@ -1224,14 +1301,17 @@ if(NATIVE){try{const AP=Capacitor.Plugins.App;AP.addListener('appUrlOpen',e=>han
 /* ---------- App-Update ueber GitHub (nur in der installierten Android-App) ---------- */
 // Prueft beim Start und stuendlich version.json neben der App-Seite. Ist die Version neuer, laedt die App die
 // neue ARI.apk von derselben Adresse und startet die Installation (Android fragt einmal "Aktualisieren?").
-const UPDATE_BASE='https://kingshadow1332.github.io/A.R.I/app/';
+// Update-Kanal: "stable" (alle) oder "beta" (nur Test-Geraete). Die Web-App unter .../beta/ nutzt automatisch beta.
+const UPDATE_ROOT='https://kingshadow1332.github.io/A.R.I/';
+const isBeta=()=>{try{return localStorage.getItem('ari_channel')==='beta'||/[/]beta[/]/.test(location.pathname);}catch(e){return false;}};
+const updateBase=()=>UPDATE_ROOT+(isBeta()?'beta/':'app/');
 let updInfo=null;
 async function appBuild(){try{const i=await Capacitor.Plugins.App.getInfo();return {build:parseInt(i.build,10)||0,version:i.version||''};}catch(e){return null;}}
 async function checkUpdate(manual){
   if(!NATIVE){if(manual){$('#updText').textContent='Updates gibt es nur in der installierten Android-App. Die Web-App aktualisiert sich beim Neuladen selbst.';}return;}
   const cur=await appBuild();if(cur){$('#updVer').textContent='VERSION '+cur.version;}
   try{
-    const r=await fetch(UPDATE_BASE+'version.json?t='+Date.now(),{cache:'no-store'});
+    const r=await fetch(updateBase()+'version.json?t='+Date.now(),{cache:'no-store'});
     const d=await r.json();
     if(cur&&d.versionCode>cur.build){
       updInfo=d;
@@ -1258,11 +1338,11 @@ function showPatchNotes(title,notes){
   o.innerHTML='<div style="max-width:460px;width:90%;max-height:80vh;overflow:auto;padding:20px 24px;border:1px solid #00d4ff;border-radius:10px;background:#0b1620;color:#dff6ff"><div style="letter-spacing:.2em;font-size:12px;opacity:.7">PATCH NOTES</div><div style="font-size:18px;margin:4px 0 12px">'+esc(title)+'</div><ul style="margin:0 0 16px 18px;padding:0;line-height:1.6;font-size:14px">'+items.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul><button type="button" id="ariPatchOk" style="width:100%;padding:10px;border:1px solid #00d4ff;background:transparent;color:#dff6ff;border-radius:6px">OK</button></div>';
   document.body.appendChild(o);const close=()=>o.remove();o.querySelector('#ariPatchOk').onclick=close;o.onclick=e=>{if(e.target===o)close();};
 }
-async function doUpdate(){
+async function doUpdate(){track('update_install');
   if(!updInfo)return;const P=Capacitor.Plugins.ApkInstaller;$('#updProg').textContent='Lade …';$('#updBannerText').textContent='Lade Update …';
   try{
     P.addListener('progress',e=>{const t='Lade '+e.percent+' %';$('#updProg').textContent=t;$('#updBannerText').textContent=t;});
-    await P.install({url:UPDATE_BASE+(updInfo.apk||'ARI.apk')});
+    await P.install({url:updateBase()+(updInfo.apk||'ARI.apk')});
     $('#updProg').textContent='Installation gestartet – bestätige „Aktualisieren“.';
   }catch(e){
     if(String(e&&e.message||e).includes('permission')){$('#updProg').textContent='Erlaube A.R.I einmal „Apps installieren“ in dem Fenster, das sich geöffnet hat – und tippe dann nochmal auf Aktualisieren.';}
@@ -1270,6 +1350,18 @@ async function doUpdate(){
   }
 }
 if(NATIVE){$('#updPanel').style.display='';}
+{const row=$('#betaRow'),tg=$('#updVer');const devOn=()=>{try{return localStorage.getItem('ari_dev')==='1'||isBeta();}catch(e){return false;}};
+if(row&&devOn())row.style.display='flex';
+// Entwickler-Zugang: 5x auf das Versions-Etikett tippen, dann das gleiche Dev-Passwort wie im PC-HUD (nur der SHA-256-Hash steckt in der App)
+const DEV_HASH='15200a1b9681095bdf23698fe79043c210be5040d945a1df527ce834eecf8e5d';
+const askDev=()=>new Promise(res=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7)';
+o.innerHTML='<form autocomplete="off" style="background:#14111f;border:1px solid #444;border-radius:14px;padding:18px;width:min(320px,86vw)"><div style="font:600 12px monospace;letter-spacing:.14em;margin-bottom:10px">DEV-PASSWORT</div><input type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #555;background:#0c0a15;color:#fff;font-size:16px"><div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><button type="button" class="btn" data-x>ABBRECHEN</button><button type="submit" class="btn pri">OK</button></div></form>';
+document.body.appendChild(o);const inp=o.querySelector('input');const done=v=>{o.remove();res(v);};
+o.querySelector('form').onsubmit=e=>{e.preventDefault();done(inp.value);};o.querySelector('[data-x]').onclick=()=>done(null);setTimeout(()=>inp.focus(),30);});
+const sha256=async t=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');};
+if(tg){let n=0,t=0;tg.addEventListener('click',()=>{const now=Date.now();n=now-t<2500?n+1:1;t=now;if(n>=5){n=0;askDev().then(async pw=>{if(!pw)return;let ok=false;try{ok=(await sha256(pw))===DEV_HASH;}catch(e){}
+if(ok){try{localStorage.setItem('ari_dev','1');}catch(e){}if(row)row.style.display='flex';alert('Entwickler-Modus freigeschaltet.');}else alert('Falsches Passwort.');});}});}}
+{const bc=$('#betaChan');if(bc){bc.checked=isBeta();bc.onchange=()=>{try{bc.checked?localStorage.setItem('ari_channel','beta'):localStorage.removeItem('ari_channel');}catch(e){}$('#updVer').textContent=bc.checked?'BETA':'–';checkUpdate(true);};}}
 $('#updCheck').onclick=()=>checkUpdate(true);$('#updGo').onclick=doUpdate;$('#updBannerGo').onclick=doUpdate;$('#updBannerLater').onclick=()=>{$('#updBanner').style.display='none';};
 if(NATIVE){setTimeout(()=>checkUpdate(false),1500);setInterval(()=>checkUpdate(false),3600*1000);}
 /* ---------- QR-Code vom PC scannen ---------- */
