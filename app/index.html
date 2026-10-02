@@ -740,10 +740,21 @@ main{touch-action:pan-y}
       <div class="set-section-body">
         <div class="panel" id="updPanel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">APP-UPDATE</span><span class="tag" id="updVer">–</span></div>
           <div class="dim" id="updText">Prüft beim Start automatisch, ob es eine neue Version gibt.</div>
-          <label class="dim" id="betaRow" style="display:none;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="betaChan" style="margin-top:3px"> <span>Beta-Kanal: Test-Versionen vor allen anderen bekommen (kann Fehler haben)</span></label>
           <div class="row" style="margin-top:10px"><button class="btn" id="updCheck">NACH UPDATES SUCHEN</button><button class="btn pri" id="updGo" style="display:none">JETZT AKTUALISIEREN</button></div>
           <div class="dim2" id="updProg" style="margin-top:8px"></div>
         </div>
+      </div>
+    </details>
+    <details class="set-section" id="devSecM" style="display:none">
+      <summary>🛠 DEV</summary>
+      <div class="set-section-body">
+        <div class="dim" id="devInfo" style="font-family:var(--font-mono);font-size:11px;line-height:1.7;white-space:pre-wrap">wird geladen …</div>
+        <div style="margin-top:10px"><label class="dim" id="betaRow" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="betaChan" style="margin-top:3px"> <span>Beta-Kanal: Test-Versionen vor allen anderen bekommen (kann Fehler haben)</span></label></div>
+        <div class="row" style="margin-top:10px"><button class="btn" id="devUpd">UPDATE-PRÜFUNG ERZWINGEN</button><button class="btn" id="devReload">APP NEU LADEN</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="devStSend">STATISTIK JETZT SENDEN</button><button class="btn" id="devStPv">STATISTIK-VORSCHAU</button></div>
+        <input type="password" id="devKey" placeholder="Admin-Schlüssel der Statistik" autocomplete="new-password" spellcheck="false" style="width:100%;box-sizing:border-box;margin-top:10px">
+        <div class="row" style="margin-top:8px"><button class="btn" id="devStOpen">STATISTIK-SEITE ÖFFNEN</button><button class="btn" id="devOff">DEV-MODUS AUS</button></div>
+        <div class="dim2" id="devMsg" style="margin-top:8px"></div>
       </div>
     </details>
     <details class="set-section" id="statsSec" style="display:none">
