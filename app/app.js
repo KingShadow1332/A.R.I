@@ -45,10 +45,28 @@ async function statsRefreshUI(){
   const f=document.getElementById('statsSec');if(!f)return;const ep=await statsEndpoint();
   f.style.display=ep?'':'none';const cb=document.getElementById('statsCb');if(cb)cb.checked=STS.get('consent',null)===true;
 }
+function statsReadable(p, esc) {
+  const NAMES = { app_start: 'A.R.I gestartet', chat_pc: 'Chat am PC', chat_phone: 'Chat vom Handy', chat: 'Chat', chat_via_pc: 'Chat über den PC', voice_in: 'Spracheingabe', voice_out: 'Sprachausgabe', update_install: 'Update installiert',
+    'ui:settings_open': 'Einstellungen geöffnet', 'ui:brain_open': 'Gehirn geöffnet', 'ui:calendar_day': 'Kalender-Tag geklickt', 'ui:layout_edit': 'Layout bearbeitet', 'ui:voice_ptt': 'Push-to-Talk', 'ui:input_text': 'Text eingegeben',
+    'ui:input_voice': 'Sprache eingegeben', 'ui:export_settings': 'Einstellungen exportiert', 'ui:import_settings': 'Einstellungen importiert', 'ui:tour_start': 'Tour gestartet', 'ui:patch_notes': 'Patchnotizen geöffnet',
+    'ui:media_control': 'Medien-Steuerung', 'ui:notif_dismiss': 'Benachrichtigung entfernt', 'ui:notif_spam': 'Als Spam markiert', 'ui:gamemode_toggle': 'Spielmodus umgeschaltet', 'ui:mute_toggle': 'Stumm umgeschaltet', 'ui:wake_toggle': 'Wake-Word umgeschaltet' };
+  const nice = f => NAMES[f] || (f.indexOf('tool:') === 0 ? 'Werkzeug: ' + f.slice(5) : f.indexOf('tab_') === 0 ? 'Reiter: ' + f.slice(4) : f.replace(/^ui:/, '').replace(/_/g, ' '));
+  const plat = { 'pc-win': 'Windows-PC', 'pc-linux': 'Linux-PC', android: 'Android-Handy', web: 'Browser' };
+  const fmtDay = d => { const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(d); return m ? m[3] + '.' + m[2] + '.' + m[1] : d; };
+  const row = (k, v) => '<div style="display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12.5px"><span style="opacity:.7">' + esc(k) + '</span><span style="text-align:right">' + esc(v) + '</span></div>';
+  let h = '<div style="margin-bottom:12px">' + row('Zufällige Kennung', String(p.id || '').slice(0, 8) + ' …') + row('Version', p.v || '—') + row('Gerät', plat[p.platform] || p.platform || '—') + row('Sprache', p.lang || '—') + '</div>';
+  const days = Object.keys(p.days || {}).sort().reverse();
+  if (!days.length) return h + '<div style="opacity:.65;font-size:12.5px">Noch keine Nutzungszahlen gesammelt.</div>';
+  days.forEach(d => {
+    const items = Object.entries(p.days[d]).sort((a, b) => b[1] - a[1]);
+    h += '<div style="margin-top:12px;font-size:10px;letter-spacing:.12em;opacity:.65">' + esc(fmtDay(d)) + '</div>' + items.map(([f]) => row(nice(f), '✓')).join('');
+  });
+  return h;
+}
 async function statsPreviewShow(){
   const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(2,2,6,.8);padding:20px';
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  o.innerHTML='<div style="position:relative;width:100%;max-width:420px;max-height:80vh;overflow:auto;border-radius:14px;border:1px solid #ff2d78;background:#0d0b16;padding:20px 22px;color:#e8e6f5"><button type="button" id="stPvX" style="position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:6px;border:1px solid #29d3f5;background:none;color:#29d3f5">✕</button><div style="font:700 12px monospace;letter-spacing:.14em;padding-left:36px">DAS WIRD GESENDET</div><div style="font-size:12px;opacity:.75;margin:10px 0">Genau diese Angaben – nichts sonst: zufällige ID, Version, Plattform, Sprache und je Tag, wie oft eine Funktion benutzt wurde. Keine Texte, Namen, Mails oder IP-Adresse.</div><pre style="font-size:11px;white-space:pre-wrap;word-break:break-all;background:rgba(255,255,255,.05);padding:10px;border-radius:8px;margin:0">'+esc(JSON.stringify(await statsPayload(),null,2))+'</pre></div>';
+  o.innerHTML='<div style="position:relative;width:100%;max-width:420px;max-height:80vh;overflow:auto;border-radius:14px;border:1px solid #ff2d78;background:#0d0b16;padding:20px 22px;color:#e8e6f5"><button type="button" id="stPvX" style="position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:6px;border:1px solid #29d3f5;background:none;color:#29d3f5">✕</button><div style="font:700 12px monospace;letter-spacing:.14em;padding-left:36px">DAS WIRD GESENDET</div><div style="font-size:12px;opacity:.75;margin:10px 0">Genau diese Angaben – nichts sonst: zufällige ID, Version, Plattform, Sprache und je Tag, wie oft eine Funktion benutzt wurde. Keine Texte, Namen, Mails oder IP-Adresse.</div><div>'+statsReadable(await statsPayload(),esc)+'</div></div>';
   document.body.appendChild(o);const close=()=>o.remove();o.querySelector('#stPvX').onclick=close;o.onclick=e=>{if(e.target===o)close();};
 }
 function statsAsk(){
@@ -1350,6 +1368,62 @@ async function doUpdate(){track('update_install');
 }
 if(NATIVE){$('#updPanel').style.display='';}
 
+/* ---------- Einführung beim ersten Start (und jederzeit wiederholbar: Einstellungen > DATEN) ---------- */
+const TOUR_STEPS=[
+  {t:'Willkommen bei A.R.I',x:'Ich bin dein persönlicher KI-Assistent – auf dem Handy und zusammen mit deinem PC. In wenigen Schritten zeige ich dir, wie alles funktioniert. Du kannst jederzeit überspringen.'},
+  {tab:'chat',sel:'#msg',parent:true,t:'Schreiben oder sprechen',x:'Tippe hier einen Befehl ein oder drücke das Mikrofon 🎤 und sprich einfach. Frag mich etwas, lass dir Routen planen oder Dinge merken.'},
+  {tab:'chat',sel:'#t-chat .chips',t:'Schnellbefehle',x:'Mit diesen Knöpfen startest du häufige Fragen mit einem Tipp – du musst nur noch das Ende ergänzen.'},
+  {tab:'set',sel:'#sKey',open:true,t:'Zuerst: KI-Schlüssel',x:'Damit ich antworten kann, brauche ich einen kostenlosen Schlüssel von einem KI-Anbieter (z. B. Groq oder Gemini). Wähle oben den Anbieter und trage hier den Schlüssel ein. Er bleibt nur auf diesem Handy.'},
+  {tab:'pc',sel:'#qrScan',t:'Mit dem PC verbinden',x:'Wenn du A.R.I auch am PC nutzt: Am PC unter Einstellungen → HANDY den QR-Code zeigen und hier scannen. Dann steuerst du deinen PC (Musik, Lautstärke, Programme) per Sprache vom Handy aus.'},
+  {tab:'cal',sel:'nav [data-t=cal]',t:'Termine & Mails',x:'Hier siehst du deine Termine und wichtige E-Mails. Melde dich dazu in den Einstellungen mit Google an.'},
+  {tab:'brain',sel:'nav [data-t=brain]',t:'Das Gehirn',x:'Alles, was ich mir über dich merken soll (Vorlieben, Namen, Gewohnheiten), steht hier. Du kannst es jederzeit ansehen, ändern und löschen.'},
+  {tab:'set',sel:'#notifFwdMsg',open:true,t:'Handy-Meldungen am PC',x:'Wenn du möchtest, schicke ich Benachrichtigungen deines Handys (z. B. WhatsApp) an den PC. Das erlaubst du einmal in den Android-Einstellungen – und kannst Apps jederzeit als Spam sperren.'},
+  {tab:'set',sel:'#updPanel',open:true,t:'Updates',x:'Die App sucht beim Start selbst nach neuen Versionen. Mit „Jetzt aktualisieren“ installierst du sie mit einem Tipp.'},
+  {tab:'chat',t:'Fertig!',x:'Das war es schon. Sag einfach „Hallo“ oder stell mir eine Frage. Diese Einführung findest du jederzeit wieder unter Einstellungen → DATEN → „Einführung ansehen“.'}
+];
+let tourI=0,tourEl=null;
+function tourEnd(){try{localStorage.setItem('ari_tour_done','1');}catch(e){}if(tourEl){tourEl.remove();tourEl=null;}goTab('chat');}
+function tourShow(i){
+  tourI=Math.max(0,Math.min(TOUR_STEPS.length-1,i));const st=TOUR_STEPS[tourI];
+  if(st.tab)goTab(st.tab);
+  let target=st.sel?$(st.sel):null;
+  if(target&&st.parent)target=target.parentElement;
+  if(target&&!target.getClientRects().length)target=null;   // nicht sichtbar (z. B. Android-only-Bereich im Browser) -> Karte ohne Markierung
+  if(target&&st.open){const d=target.closest('details');if(d)d.open=true;}
+  if(!tourEl){tourEl=document.createElement('div');tourEl.id='tourOv';tourEl.style.cssText='position:fixed;inset:0;z-index:99990;';document.body.appendChild(tourEl);}
+  const last=tourI===TOUR_STEPS.length-1;
+  const dots=TOUR_STEPS.map((_,k)=>'<i style="display:inline-block;width:'+(k===tourI?'16':'6')+'px;height:6px;border-radius:3px;margin:0 2px;background:'+(k===tourI?'#ff2d78':'rgba(255,255,255,.25)')+'"></i>').join('');
+  const render=()=>{
+    let hole='';let pos='mid';
+    if(target){const r=target.getBoundingClientRect();
+      hole='<div style="position:fixed;left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px;border-radius:12px;border:2px solid #ff2d78;box-shadow:0 0 0 9999px rgba(2,2,8,.78),0 0 22px rgba(255,45,120,.6);pointer-events:none;transition:all .25s"></div>';
+      pos=(r.top+r.height/2>innerHeight*0.5)?'top':'bottom';}
+    else hole='<div style="position:fixed;inset:0;background:rgba(2,2,8,.78)"></div>';
+    const cardPos=pos==='top'?'top:calc(env(safe-area-inset-top) + 14px)':pos==='bottom'?'bottom:calc(env(safe-area-inset-bottom) + 84px)':'top:50%;transform:translateY(-50%)';
+    tourEl.innerHTML=hole+'<div style="position:fixed;left:14px;right:14px;'+cardPos+';max-width:440px;margin:0 auto;border-radius:16px;border:1px solid rgba(255,45,120,.5);background:linear-gradient(165deg,#1a1626,#0a0912);padding:18px 18px 14px;color:#e8e6f5;box-shadow:0 20px 60px -10px #000">'+
+      '<div style="font:700 12px var(--font-mono,monospace);letter-spacing:.14em;color:#fff">'+st.t.toUpperCase()+'</div>'+
+      '<div style="margin-top:8px;font-size:13.5px;line-height:1.55;opacity:.92">'+st.x+'</div>'+
+      '<div style="margin-top:12px;text-align:center">'+dots+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px">'+(tourI>0?'<button type="button" class="btn" id="tourBack" style="flex:0 0 auto">ZURÜCK</button>':'')+
+      '<button type="button" class="btn pri" id="tourNext" style="flex:1">'+(last?'LOS GEHT’S':'WEITER')+'</button></div>'+
+      (last?'':'<div style="text-align:center;margin-top:10px"><a href="#" id="tourSkip" style="color:inherit;opacity:.6;font-size:12px">Einführung überspringen</a></div>')+'</div>';
+    const nx=$('#tourNext'),bk=$('#tourBack'),sk=$('#tourSkip');
+    if(nx)nx.onclick=()=>last?tourEnd():tourShow(tourI+1);if(bk)bk.onclick=()=>tourShow(tourI-1);if(sk)sk.onclick=e=>{e.preventDefault();tourEnd();};
+  };
+  if(target){try{target.scrollIntoView({block:'center'});}catch(e){}setTimeout(render,320);}else render();
+}
+function tourStart(){tourShow(0);}
+window.addEventListener('resize',()=>{if(tourEl)tourShow(tourI);});
+{const btn=document.getElementById('tourReplay');if(btn)btn.onclick=()=>{goTab('chat');tourStart();};
+setTimeout(()=>{
+  let done=false;try{done=localStorage.getItem('ari_tour_done')==='1';}catch(e){}
+  if(done)return;
+  // Wer die App schon eingerichtet hat (Schluessel/PC/Anmeldung vorhanden), bekommt die Einfuehrung nicht aufgezwungen
+  const hasKey=Object.values(cfg.keys||{}).some(v=>v&&(Array.isArray(v)?v.some(Boolean):true));
+  if(hasKey||(pcs&&pcs.length)||(sync&&sync.origin)||gTok){try{localStorage.setItem('ari_tour_done','1');}catch(e){}return;}
+  const pr=document.getElementById('pair');if(pr&&getComputedStyle(pr).display!=='none')return;
+  tourStart();
+},1800);}
 /* ---------- DEV-Bereich (nur nach Freischaltung per Logo-Tipp + Passwort) ---------- */
 async function devRefresh(){
   const box=$('#devInfo');if(!box)return;
@@ -1362,6 +1436,7 @@ async function devRefresh(){
 const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
 on('#devUpd',async()=>{msg('Suche …');try{await checkUpdate(true);msg('Update-Prüfung fertig (Ergebnis siehe APP-UPDATE).');}catch(e){msg('Fehler: '+e.message);}});
 on('#devReload',()=>location.reload());
+on('#devTour',()=>{goTab('chat');tourStart();});
 on('#devStSend',async()=>{msg('Sende …');const ok=await statsSend();msg(ok?'Statistik gesendet.':'Nicht gesendet (aus, keine Adresse oder kein Internet).');});
 on('#devStPv',()=>statsPreviewShow());
 on('#devStOpen',async()=>{const ep=await statsEndpoint(),k=($('#devKey').value||'').trim();if(!ep||!k){msg('Adresse oder Schlüssel fehlt.');return;}window.open(ep+'/?key='+encodeURIComponent(k),'_system');});
