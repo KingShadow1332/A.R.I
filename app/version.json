@@ -1,7 +1,7 @@
 {
-    "versionCode":  46,
-    "versionName":  "1.46",
+    "versionCode":  47,
+    "versionName":  "1.47",
     "apk":  "ARI.apk",
-    "notes":  "Anonyme Statistik standardmaessig an, Beta-Schalter mit Dev-Passwort.",
+    "notes":  "Entwickler-Zugang per 5x Tippen auf das A.R.I-Logo mit Dev-Passwort.",
     "sizeMb":  5.9
 }
