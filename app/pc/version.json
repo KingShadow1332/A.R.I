@@ -1,7 +1,7 @@
 {
-    "version":  53,
-    "name":  "1.6.24",
+    "version":  54,
+    "name":  "1.6.25",
     "zip":  "ari-pc.zip",
-    "sha256":  "1a01be01bb42969a004b84909a759e6e5c2cb6a48f0e43a5e91fe8f2a017b370",
-    "notes":  "Neu: Alarmton bei zu hoher CPU-/GPU-Temperatur, Export-Knopf im eigenen Fenster repariert, Update-Fehler durch gesperrte Dateien behoben, anonyme Nutzungsstatistik (abschaltbar), Statistik-Ansicht im DEV-Bereich."
+    "sha256":  "7897242f0a2b98130dda78d306f86cd564bc5707bbdd4765ecb9c8502a5586b9",
+    "notes":  "Neu: waehlbare Klangpakete (Standard: Weich), Liste der gesperrten Apps/Absender mit Rueckgaengig-Knopf, Temperatur-Alarm stoppt zuverlaessig, CPU-Temperatur auch bei jedem Startweg (Admin-Uebergabe), Statistik-Ansicht im DEV-Bereich."
 }
