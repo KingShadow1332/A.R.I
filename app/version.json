@@ -1,7 +1,7 @@
 {
-    "versionCode":  48,
-    "versionName":  "1.48",
+    "versionCode":  51,
+    "versionName":  "1.51",
     "apk":  "ARI.apk",
-    "notes":  "Neuer DEV-Bereich (5x auf das A.R.I-Logo tippen, Dev-Passwort): Beta-Kanal, Versionsinfo, Statistik-Tests.",
+    "notes":  "BETA: Einfuehrung beim ersten Start, Beta-Updates direkt in der App installierbar.",
     "sizeMb":  5.9
 }
