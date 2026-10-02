@@ -1349,8 +1349,25 @@ async function doUpdate(){track('update_install');
   }
 }
 if(NATIVE){$('#updPanel').style.display='';}
-{const row=$('#betaRow'),tg=document.querySelector('header .logo');const devOn=()=>{try{return localStorage.getItem('ari_dev')==='1'||isBeta();}catch(e){return false;}};
-if(row&&devOn())row.style.display='flex';
+
+/* ---------- DEV-Bereich (nur nach Freischaltung per Logo-Tipp + Passwort) ---------- */
+async function devRefresh(){
+  const box=$('#devInfo');if(!box)return;
+  let v='?';try{if(NATIVE){const i=await Capacitor.Plugins.App.getInfo();v=i.version+' ('+i.build+')';}else v='Web';}catch(e){}
+  let b='';try{const c=await appBuild();b=c?' · Build '+c.version:'';}catch(e){}
+  const ep=await statsEndpoint();
+  box.textContent='App-Version: '+v+b+'\nKanal: '+(isBeta()?'BETA':'normal')+'\nUpdate-Quelle: '+updateBase()+'\nStatistik: '+(STS.get('consent',true)===true?'an':'aus')+' · ID '+statsId().slice(0,8)+'\nStatistik-Adresse: '+(ep||'— keine —');
+}
+{const msg=t=>{const m=$('#devMsg');if(m){m.textContent=t;setTimeout(()=>{if(m.textContent===t)m.textContent='';},6000);}};
+const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
+on('#devUpd',async()=>{msg('Suche …');try{await checkUpdate(true);msg('Update-Prüfung fertig (Ergebnis siehe APP-UPDATE).');}catch(e){msg('Fehler: '+e.message);}});
+on('#devReload',()=>location.reload());
+on('#devStSend',async()=>{msg('Sende …');const ok=await statsSend();msg(ok?'Statistik gesendet.':'Nicht gesendet (aus, keine Adresse oder kein Internet).');});
+on('#devStPv',()=>statsPreviewShow());
+on('#devStOpen',async()=>{const ep=await statsEndpoint(),k=($('#devKey').value||'').trim();if(!ep||!k){msg('Adresse oder Schlüssel fehlt.');return;}window.open(ep+'/?key='+encodeURIComponent(k),'_system');});
+on('#devOff',()=>{try{localStorage.removeItem('ari_dev');localStorage.removeItem('ari_channel');}catch(e){}location.reload();});}
+{const row=$('#devSecM'),tg=document.querySelector('header .logo');const devOn=()=>{try{return localStorage.getItem('ari_dev')==='1'||isBeta();}catch(e){return false;}};
+if(row&&devOn()){row.style.display='';devRefresh();}
 // Entwickler-Zugang: 5x auf das A.R.I-Logo oben tippen, dann das gleiche Dev-Passwort wie im PC-HUD (nur der SHA-256-Hash steckt in der App)
 const DEV_HASH='15200a1b9681095bdf23698fe79043c210be5040d945a1df527ce834eecf8e5d';
 const askDev=()=>new Promise(res=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7)';
@@ -1359,7 +1376,7 @@ document.body.appendChild(o);const inp=o.querySelector('input');const done=v=>{o
 o.querySelector('form').onsubmit=e=>{e.preventDefault();done(inp.value);};o.querySelector('[data-x]').onclick=()=>done(null);setTimeout(()=>inp.focus(),30);});
 const sha256=async t=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');};
 if(tg){let n=0,t=0;tg.addEventListener('click',()=>{const now=Date.now();n=now-t<2500?n+1:1;t=now;if(n>=5){n=0;askDev().then(async pw=>{if(!pw)return;let ok=false;try{ok=(await sha256(pw))===DEV_HASH;}catch(e){}
-if(ok){try{localStorage.setItem('ari_dev','1');}catch(e){}if(row)row.style.display='flex';alert('Entwickler-Modus freigeschaltet.');}else alert('Falsches Passwort.');});}});}}
+if(ok){try{localStorage.setItem('ari_dev','1');}catch(e){}if(row){row.style.display='';devRefresh();row.open=true;}alert('Entwickler-Modus freigeschaltet - Einstellungen > DEV.');}else alert('Falsches Passwort.');});}});}}
 {const bc=$('#betaChan');if(bc){bc.checked=isBeta();bc.onchange=()=>{try{bc.checked?localStorage.setItem('ari_channel','beta'):localStorage.removeItem('ari_channel');}catch(e){}$('#updVer').textContent=bc.checked?'BETA':'–';checkUpdate(true);};}}
 $('#updCheck').onclick=()=>checkUpdate(true);$('#updGo').onclick=doUpdate;$('#updBannerGo').onclick=doUpdate;$('#updBannerLater').onclick=()=>{$('#updBanner').style.display='none';};
 if(NATIVE){setTimeout(()=>checkUpdate(false),1500);setInterval(()=>checkUpdate(false),3600*1000);}
