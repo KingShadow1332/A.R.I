@@ -1,7 +1,7 @@
 {
-    "versionCode":  44,
-    "versionName":  "1.7.17",
+    "versionCode":  45,
+    "versionName":  "1.45",
     "apk":  "ARI.apk",
-    "notes":  "Medien-Fortschrittspunkt bewegt sich jetzt korrekt mit (blieb bisher immer ganz links stehen). CPU/RAM/Speicher-Werte animieren jetzt sanft. Panel-Groessen im Anordnen-Modus wirken jetzt auf alle Panel-Arten.",
+    "notes":  "Neu: Benachrichtigungs-Feld, Beta-Kanal (Entwickler), anonyme Statistik (optional), schnellere App.",
     "sizeMb":  5.9
 }
