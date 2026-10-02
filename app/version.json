@@ -1,7 +1,7 @@
 {
-    "versionCode":  45,
-    "versionName":  "1.45",
+    "versionCode":  46,
+    "versionName":  "1.46",
     "apk":  "ARI.apk",
-    "notes":  "Neu: Benachrichtigungs-Feld, Beta-Kanal (Entwickler), anonyme Statistik (optional), schnellere App.",
+    "notes":  "Anonyme Statistik standardmaessig an, Beta-Schalter mit Dev-Passwort.",
     "sizeMb":  5.9
 }
