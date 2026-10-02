@@ -21,5 +21,6 @@
   {"version": 48, "name": "1.6.19", "notes": "PC-Simulation in der Handy-App: Kalender, Benachrichtigungen und eine Speicher-/Netzwerk-Verlaufsgrafik ergaenzt (wie am PC-HUD), dazu ein Anordnen-Modus (Reihenfolge/Groesse je Panel). CPU/RAM-Ringe leuchten jetzt passend zur Auslastung."},
   {"version": 49, "name": "1.6.20", "notes": "Korrektur: der auslastungsabhaengige Glow an den CPU/RAM-Ringen fehlte in der Handy-App noch (war beim letzten Mal nur am PC-HUD nachgezogen worden)."},
   {"version": 50, "name": "1.6.21", "notes": "CPU/RAM-Ringe: dicker, gleichmaessiger Glow ueber die ganze Laenge (nicht mehr nur an den Enden), leuchtender Punkt am aktuellen Fuellstand, groesserer Ring. Astro: Essen/Getraenke lassen sich jetzt auch wegschleudern (fliegen mit Schwung, prallen ab, landen auf einer Kachel)."},
-  {"version": 51, "name": "1.6.22", "notes": "Astro-Wurf-Feature wiederhergestellt (war verloren gegangen). Neue Patch-Notes-Liste in den Einstellungen (komplette Versionshistorie zum Durchblaettern). Einstellungen etwas kompakter."}
+  {"version": 51, "name": "1.6.22", "notes": "Astro-Wurf-Feature wiederhergestellt (war verloren gegangen). Neue Patch-Notes-Liste in den Einstellungen (komplette Versionshistorie zum Durchblaettern). Einstellungen etwas kompakter."},
+  {"version": 52, "name": "1.6.23", "notes": "Neu: Benachrichtigungs-Feld, eigenes Fenster ohne Browser, lokale Spracherkennung, Serverstatus fuer Spiele, Kacheln wie in der Hand verschieben, schneller und sparsamer, Start-Menue-Eintrag Ari Assistent, optionale anonyme Statistik."}
 ]
