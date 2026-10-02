@@ -38,7 +38,7 @@ async function statsForget(){
 }
 async function statsSetConsent(v){
   STS.set('consent',v);
-  if(v){track('app_start');statsSend();}else{await statsForget();STS.set('days',{});}
+  if(v){track('app_start');statsSend();}
   statsRefreshUI();
 }
 async function statsRefreshUI(){
@@ -70,8 +70,7 @@ setTimeout(statsAskCheck,15000);setInterval(statsAskCheck,60000);
 setTimeout(()=>track('app_start'),3000);
 setTimeout(statsRefreshUI,2000);
 window.addEventListener('load',()=>{const cb=document.getElementById('statsCb');if(cb)cb.onchange=()=>statsSetConsent(cb.checked);
-  const pv=document.getElementById('statsPv');if(pv)pv.onclick=()=>statsPreviewShow();
-  const dl=document.getElementById('statsDel');if(dl)dl.onclick=async()=>{const m=document.getElementById('statsMsg');const ok=await statsForget();m.textContent=ok?'Gelöscht.':'Löschen fehlgeschlagen (kein Internet?).';setTimeout(()=>{m.textContent='';},5000);};});
+  const pv=document.getElementById('statsPv');if(pv)pv.onclick=()=>statsPreviewShow();});
 setTimeout(statsSend,30000);setInterval(statsSend,3*3600*1000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)statsSend();});
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
