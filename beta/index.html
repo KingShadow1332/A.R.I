@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>A.R.I</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#03040a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#ff2d78;--pink-2:#ff6aa8;--cyan:#29d3f5;--cyan-2:#7ff0ff;
+  --bg-0:#03040a;--bg-1:#080a14;--bg-2:#0f0d1e;
+  --text:#e6ecf5;--text-dim:rgba(230,236,245,.62);--text-dim2:rgba(230,236,245,.38);
+  --success:#39ff9e;--warning:#ffd23d;--danger:#ff5a5a;
+  --font-display:'Chakra Petch',sans-serif;--font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --cut:12px;
+  --panel-bg:linear-gradient(165deg,rgba(20,16,32,.78),rgba(8,9,17,.82));
+  --panel-border:color-mix(in srgb,var(--pink) 26%,rgba(255,255,255,.08));
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:
+    radial-gradient(700px 500px at 10% -5%,color-mix(in srgb,var(--cyan) 12%,transparent),transparent 60%),
+    radial-gradient(700px 600px at 105% 5%,color-mix(in srgb,var(--pink) 11%,transparent),transparent 58%),
+    linear-gradient(180deg,var(--bg-2),var(--bg-1) 45%,var(--bg-0));
+  color:var(--text);font:14px/1.45 var(--font-mono);display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top);-webkit-font-smoothing:antialiased;
+}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.3;z-index:0;
+  background-image:linear-gradient(color-mix(in srgb,var(--cyan) 4%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--pink) 3%,transparent) 1px,transparent 1px);
+  background-size:36px 36px}
+header{position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 16px 10px;border-bottom:1px solid color-mix(in srgb,var(--pink) 18%,transparent)}
+header .logo{font:700 18px var(--font-display);letter-spacing:.42em;color:var(--pink);text-shadow:0 0 14px color-mix(in srgb,var(--pink) 55%,transparent)}
+header .sub{font-size:8.5px;letter-spacing:.2em;color:var(--text-dim2)}
+#clock{margin-left:auto;text-align:right;font:600 17px var(--font-display);letter-spacing:.08em}
+#clock small{display:block;font:500 9px var(--font-mono);letter-spacing:.14em;color:var(--text-dim2)}
+#conn{font-size:9px;letter-spacing:.14em;display:flex;align-items:center;gap:5px;color:var(--danger)}
+#conn::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+#conn.on{color:var(--success)}
+main{position:relative;z-index:1;flex:1;min-height:0}
+section{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:12px 14px 16px;gap:12px;-webkit-overflow-scrolling:touch}
+section.on{display:flex}
+.panel{position:relative;flex:none;padding:13px 14px 14px;border:1px solid var(--panel-border);background:var(--panel-bg);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(255,255,255,.05) inset;
+  clip-path:polygon(0 var(--cut),var(--cut) 0,calc(100% - var(--cut)) 0,100% var(--cut),100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
+.panel-h{display:flex;align-items:center;gap:8px;padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid color-mix(in srgb,var(--pink) 18%,transparent)}
+.panel-h .ico{color:var(--pink);font-size:12px;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--pink) 60%,transparent))}
+.panel-h .t{font:700 11.5px var(--font-mono);letter-spacing:.22em;color:var(--pink)}
+.panel-h.cy .t,.panel-h.cy .ico{color:var(--cyan);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--cyan) 55%,transparent))}
+.panel-h .tag{margin-left:auto;font:500 9px var(--font-mono);letter-spacing:.1em;color:var(--text-dim2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--cyan) 6%,rgba(255,255,255,.03));border:1px solid color-mix(in srgb,var(--cyan) 30%,transparent);color:var(--text);
+  border-radius:8px;padding:12px 10px;font:600 12px var(--font-mono);letter-spacing:.08em;min-height:44px}
+.btn:active{background:color-mix(in srgb,var(--cyan) 22%,transparent)}
+.btn.pri{border-color:var(--pink);color:var(--pink-2);background:color-mix(in srgb,var(--pink) 10%,transparent)}
+.btn.dng{border-color:color-mix(in srgb,var(--danger) 60%,transparent);color:var(--danger)}
+.btn.on{background:color-mix(in srgb,var(--pink) 22%,transparent);border-color:var(--pink);color:#fff}
+input[type=text],input:not([type]),input[type=search]{background:rgba(255,255,255,.04);border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);color:var(--text);border-radius:8px;padding:12px;font:14px var(--font-mono);width:100%;min-height:44px}
+input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px color-mix(in srgb,var(--cyan) 16%,transparent)}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.dim{color:var(--text-dim);font-size:12px}.dim2{color:var(--text-dim2);font-size:11px}
+/* Pair */
+#pair{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;justify-content:center;gap:12px;padding:26px;background:var(--bg-0)}
+#pair h2{font:700 30px var(--font-display);letter-spacing:.5em;color:var(--pink)}
+#code{font-size:28px;letter-spacing:.4em;text-align:center}
+/* Orb */
+.orbwrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0}
+.hero-visual{position:relative; display:flex; flex-direction:column; align-items:center; margin:4px 0}
+.hero-glow{
+  position:absolute; top:-40px; left:50%; width:360px; height:360px; z-index:0; pointer-events:none;
+  transform:translateX(-50%) rotate(0deg) scale(1);
+  background:
+    radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--pink) 26%, transparent), transparent 55%),
+    radial-gradient(circle at 68% 66%, color-mix(in srgb, var(--cyan) 18%, transparent), transparent 55%),
+    radial-gradient(circle at 50% 85%, color-mix(in srgb, var(--pink-2) 14%, transparent), transparent 60%);
+  filter:blur(34px);
+  animation:heroDrift 14s ease-in-out infinite;
+}
+@keyframes heroDrift{
+  0%,100%{transform:translateX(-50%) rotate(0deg) scale(1)}
+  50%{transform:translateX(-50%) rotate(10deg) scale(1.1)}
+}
+
+@keyframes orbSpin{to{transform:rotate(360deg)}}
+@keyframes orbSpinRev{to{transform:rotate(-360deg)}}
+@keyframes orbBreathe{0%,100%{opacity:.7; transform:scale(1)}50%{opacity:1; transform:scale(1.05)}}
+@keyframes orbRipple{0%{transform:scale(.8); opacity:.5}100%{transform:scale(1.34); opacity:0}}
+@keyframes orbBands{to{transform:translateX(-30px)}}
+@keyframes orbBar{0%,100%{transform:scaleY(.16)}50%{transform:scaleY(1)}}
+@keyframes orbCaret{0%,48%{opacity:1}52%,100%{opacity:0}}
+@keyframes orbFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.orb{
+  position:relative; z-index:1; width:250px; height:250px; margin:8px 0 4px; cursor:pointer; outline:none;
+  --glow:.45; --spd:5.5s; --wave:0; --sweep:6s; --sweepOp:.55; --bars:0;
+  --r1:9s; --r2:13s; --r3:17s; --r4:21s;
+  --am:var(--pink);
+  animation:orbFloat 7s ease-in-out infinite;
+}
+.orb:focus-visible{filter:drop-shadow(0 0 0 2px var(--cyan))}
+.orb-glow-pink{position:absolute; inset:-14%; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, var(--am) 0%, color-mix(in srgb, var(--pink) 20%, transparent) 34%, transparent 64%);
+  filter:blur(34px); opacity:var(--glow); animation:orbBreathe var(--spd) ease-in-out infinite;
+}
+.orb-glow-cyan{position:absolute; inset:-6%; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, color-mix(in srgb, var(--cyan) 50%, transparent) 0%, transparent 58%);
+  filter:blur(26px); opacity:.5;
+}
+.ring-wrap{position:absolute; inset:var(--i); transform:rotate(-17deg) scaleY(var(--sy))}
+.ring-wrap .ring-border{position:absolute; inset:0; border-radius:50%; border:var(--bw,1px) solid var(--bc); box-shadow:0 0 16px var(--sw)}
+.ring-wrap .ring-spin{position:absolute; inset:0; animation:orbSpin var(--spin) linear infinite}
+.ring-wrap .ring-sweep{position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0turn, transparent 0 10%, var(--bc2,var(--bc)) 19%, transparent 30%, transparent 60%, var(--bc2,var(--bc)) 70%, transparent 82%);
+  -webkit-mask:radial-gradient(circle, transparent 96%, #000 97%); mask:radial-gradient(circle, transparent 96%, #000 97%);
+}
+/* Weicher Uebergang statt hartem Schnitt an der Stelle, wo der Ring hinter
+   dem Planeten "verschwindet": ein reiner clip-path an der 50%-Linie schneidet
+   auch den Leucht-Schatten (box-shadow) hart ab, statt ihn ausblenden zu
+   lassen — das sah an den Ring-Spitzen wie ein Abschneiden aus. Eine
+   Verlaufsmaske laesst Rand+Glow stattdessen ueber ein paar Prozent ausfaden. */
+.ring-back{
+  -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 42%, transparent 50%);
+  mask-image:linear-gradient(to bottom, #000 0%, #000 42%, transparent 50%);
+}
+.ring-front{
+  -webkit-mask-image:linear-gradient(to bottom, transparent 50%, #000 58%, #000 100%);
+  mask-image:linear-gradient(to bottom, transparent 50%, #000 58%, #000 100%);
+}
+.moon-orbit{position:absolute; inset:-24%; transform:rotate(-17deg) scaleY(.3); pointer-events:none}
+.moon-orbit .spin{position:absolute; inset:0; animation:orbSpin var(--r2) linear infinite}
+.moon-orbit .spin-rev{position:absolute; inset:0; animation:orbSpinRev var(--r4) linear infinite}
+.moon{position:absolute; width:7px; height:7px; margin-left:-3.5px; border-radius:50%}
+.moon-a{top:-3px; left:50%; background:#fff; box-shadow:0 0 14px var(--cyan-2)}
+.moon-b{bottom:-3px; left:50%; width:5px; height:5px; margin-left:-2.5px; background:var(--pink-2); box-shadow:0 0 12px var(--pink)}
+.sphere{position:absolute; inset:29%; border-radius:50%}
+.sphere-core{
+  background:radial-gradient(circle at 34% 28%, #ffffff 0%, #ffd6ec 9%, var(--am) 40%, #8c1550 70%, #210b22 100%);
+  box-shadow:0 0 60px color-mix(in srgb, var(--pink) 55%, transparent), inset -14px -12px 40px rgba(10,4,16,.85), inset 12px 10px 34px color-mix(in srgb, var(--cyan) 32%, transparent);
+}
+.sphere-bands{overflow:hidden; opacity:.22; -webkit-mask:radial-gradient(circle, #000 96%, transparent 98%); mask:radial-gradient(circle, #000 96%, transparent 98%)}
+.sphere-bands div{position:absolute; top:-20%; left:-60%; width:220%; height:140%;
+  background:repeating-linear-gradient(96deg, rgba(255,255,255,.6) 0 2px, transparent 2px 13px, color-mix(in srgb, var(--cyan) 55%, transparent) 13px 15px, transparent 15px 30px);
+  animation:orbBands 9s linear infinite;
+}
+.sphere-shade{background:radial-gradient(circle at 72% 74%, rgba(4,2,10,.72), transparent 62%)}
+.sphere-rim{border:1px solid color-mix(in srgb, var(--cyan-2) 35%, transparent); box-shadow:0 0 22px color-mix(in srgb, var(--cyan) 35%, transparent)}
+.sphere-sweep{
+  background:conic-gradient(from 0deg, color-mix(in srgb, var(--cyan-2) 55%, transparent), transparent 22%);
+  -webkit-mask:radial-gradient(circle, transparent 86%, #000 92%); mask:radial-gradient(circle, transparent 86%, #000 92%);
+  animation:orbSpin var(--sweep) linear infinite; opacity:var(--sweepOp);
+}
+.orb-wave{position:absolute; inset:24%; border-radius:50%; opacity:var(--wave)}
+.orb-wave.a{border:1px solid color-mix(in srgb, var(--cyan-2) 40%, transparent); animation:orbRipple 2.4s ease-out infinite}
+.orb-wave.b{border:1px solid color-mix(in srgb, var(--pink) 45%, transparent); animation:orbRipple 2.4s ease-out 1.2s infinite}
+.orb-label{position:absolute; left:0; right:0; top:4%; display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none}
+.orb-label .name{font:700 21px/1 var(--font-display); letter-spacing:.32em; color:var(--pink-2); text-shadow:0 0 20px color-mix(in srgb, var(--pink) 85%, transparent)}
+.orb-label .state{font:500 9px/1 var(--font-mono); letter-spacing:.26em; color:var(--text-dim)}
+.orb-bars{position:absolute; left:0; right:0; bottom:6%; display:flex; align-items:flex-end; justify-content:center; gap:3px; height:22px; opacity:var(--bars); transition:opacity .25s ease; pointer-events:none}
+.orb-bars span{width:2px; height:100%; transform-origin:bottom; background:linear-gradient(180deg, var(--cyan-2), color-mix(in srgb, var(--pink) 70%, transparent)); animation:orbBar ease-in-out infinite}
+.orb{width:210px; height:210px; margin:6px 0 4px; will-change:transform}
+.orb-glow-pink{filter:blur(40px)}
+.orb-glow-cyan{filter:blur(30px); opacity:.42}
+/* Ringkante: weicher Verlauf + leichte Weichzeichnung statt harter 1px-Linie */
+.ring-wrap .ring-border{
+  border-width:0;
+  background:
+    radial-gradient(closest-side, transparent 96.4%, var(--bc) 97.6%, var(--bc) 99.1%, transparent 99.9%);
+  box-shadow:0 0 22px var(--sw);
+  filter:blur(.45px);
+}
+.ring-wrap .ring-sweep{
+  filter:blur(1.1px);
+  -webkit-mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%);
+  mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%);
+}
+/* Uebergang hinter/vor dem Planeten: winkelbasierter Fade (conic) im
+   unverzerrten lokalen Koordinatensystem des Rings. Ein horizontaler
+   Linear-Fade schneidet genau an den Ringspitzen hart ab, weil dort die
+   Ellipse fast senkrecht laeuft — angular geblendet laufen die Spitzen
+   dagegen ueber ~40 Grad weich aus. */
+/* Der sichtbare "Schnitt" an den Ringspitzen kam vom Maskenpaar: hintere
+   und vordere Ringhaelfte waren am Uebergang BEIDE halbtransparent, in
+   Summe also nie voll deckend -> die Ringe liefen dort aus.
+   Loesung: die hintere Haelfte bleibt eine komplette, voll deckende
+   Ellipse (der Planet liegt darueber und verdeckt sie ohnehin), und nur
+   die vordere Haelfte wird weich eingeblendet. Die Blende liegt vor der
+   Planetenkugel, wo darunter volle Deckung herrscht — daher nirgends ein
+   Helligkeitseinbruch, aber ein sauberer Tiefeneindruck. */
+.ring-back{
+  -webkit-mask-image:none;
+  mask-image:none;
+}
+/* Ringspitzen: der Uebergang laeuft jetzt sehr lang, damit die Enden
+   nicht stumpf abbrechen, und die Sweep-Lichter werden weicher
+   ausgeblendet. */
+.ring-front{
+  -webkit-mask-image:linear-gradient(to bottom, transparent 26%, rgba(0,0,0,.12) 38%, rgba(0,0,0,.4) 48%, rgba(0,0,0,.78) 58%, #000 70%, #000 100%);
+  mask-image:linear-gradient(to bottom, transparent 26%, rgba(0,0,0,.12) 38%, rgba(0,0,0,.4) 48%, rgba(0,0,0,.78) 58%, #000 70%, #000 100%);
+}
+/* Planet: mehr Verlaufsstufen fuer einen weichen, runden Koerper —
+   heller Streiflichtkern, langer Mittelton, tiefer Terminator, und ein
+   kuehler Rand-Reflex, damit die Kugel nicht flach wirkt. */
+.sphere-core{
+  background:
+    radial-gradient(circle at 31% 25%, #ffffff 0%, #fff0f6 6%, #ffd3e4 12%, var(--pink-2) 22%, #ff6f9c 34%, var(--am) 50%, #b8285f 64%, #7a1a4c 76%, #3d1233 88%, #160a1d 100%),
+    radial-gradient(circle at 76% 80%, rgba(89,220,240,.16) 0%, transparent 42%);
+  box-shadow:
+    0 0 90px -8px rgba(255,77,133,.45),
+    inset -22px -20px 62px rgba(8,4,14,.88),
+    inset 16px 14px 50px rgba(89,220,240,.24),
+    inset 0 0 40px rgba(255,163,194,.12);
+}
+.sphere-core::after{
+  content:''; position:absolute; inset:0; border-radius:50%; pointer-events:none;
+  background:
+    radial-gradient(circle at 26% 20%, rgba(255,255,255,.5) 0%, rgba(255,255,255,.14) 16%, transparent 38%),
+    radial-gradient(circle at 62% 92%, rgba(169,242,255,.2) 0%, transparent 34%);
+  mix-blend-mode:screen; filter:blur(2px);
+}
+/* Baender: weiche, breite Schlieren statt 2px-Streifenraster */
+.sphere-bands{opacity:.3; -webkit-mask:radial-gradient(closest-side, #000 90%, transparent 99%); mask:radial-gradient(closest-side, #000 90%, transparent 99%)}
+.sphere-bands div{
+  background:
+    repeating-linear-gradient(96deg,
+      rgba(255,255,255,0) 0 6px,
+      rgba(255,255,255,.28) 14px 20px,
+      rgba(255,255,255,0) 28px 40px,
+      rgba(169,242,255,.22) 50px 58px,
+      rgba(255,255,255,0) 68px 82px);
+  filter:blur(3.5px);
+}
+.sphere-rim{
+  border:0; box-shadow:none;
+  background:radial-gradient(closest-side, transparent 95%, rgba(169,242,255,.45) 98%, transparent 100%);
+  filter:blur(.6px);
+}
+.sphere-sweep{
+  filter:blur(1.6px);
+  -webkit-mask:radial-gradient(closest-side, transparent 82%, #000 90%, #000 97%, transparent 100%);
+  mask:radial-gradient(closest-side, transparent 82%, #000 90%, #000 97%, transparent 100%);
+}
+.sphere-shade{background:radial-gradient(circle at 74% 76%, rgba(4,2,10,.7), transparent 66%)}
+.orb-wave.a, .orb-wave.b{filter:blur(.5px)}
+.moon-a{box-shadow:0 0 18px var(--cyan-2)}
+.orb-label .name{font-weight:600; letter-spacing:.3em; color:#fff; text-shadow:0 0 26px rgba(255,77,133,.85)}
+.orb-label .state{color:var(--text-dim); letter-spacing:.24em}
+.hero-glow{opacity:.4; filter:blur(38px)}
+.orb{width:min(220px,58vw)!important;height:auto!important;aspect-ratio:1/1;margin:14px auto 8px!important}
+.hero-visual{overflow:visible;width:100%}
+.orb-label{top:-5%!important}
+.orb.busy{--wave:1;--glow:.85;--spd:2s;--sweep:2.5s;--sweepOp:.9;--r1:4s;--r2:6s;--r3:8s;--r4:9s}
+.panel.orbpanel{backdrop-filter:none;-webkit-backdrop-filter:none;clip-path:none;overflow:hidden;border-radius:16px;padding:22px 14px 14px;background:linear-gradient(168deg,rgba(18,14,28,.85) 0%,rgba(9,8,16,.92) 58%,rgba(5,5,10,.96) 100%)}
+/* ===== AUFKLAPPBARE ABSCHNITTE (wie am PC) ===== */
+.set-section{border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);margin-bottom:12px;border-radius:10px;background:rgba(255,255,255,.015)}
+.set-section>summary{cursor:pointer;list-style:none;padding:12px 14px;font:700 11px var(--font-mono);letter-spacing:.12em;color:var(--text);display:flex;align-items:center}
+.set-section>summary::-webkit-details-marker{display:none}
+.set-section>summary::after{content:'+';margin-left:auto;color:var(--cyan);font-size:15px;line-height:1}
+.set-section[open]>summary{color:var(--pink);border-bottom:1px solid color-mix(in srgb,var(--pink) 20%,transparent)}
+.set-section[open]>summary::after{content:'−';color:var(--pink)}
+.set-section-body{padding:12px 14px 14px}
+.set-section-body .panel{border:none;background:none;padding:0;margin-bottom:14px}
+.set-section-body .panel:last-child{margin-bottom:0}
+/* ===== TERMINE / BENACHRICHTIGUNGEN (identisch zum PC-Hub) ===== */
+.notif-list,.termin-list{list-style:none;display:flex;flex-direction:column;gap:0;overflow-y:auto;padding-top:10px}
+.termin-item{--cc:var(--cal-color,var(--cyan));position:relative;display:flex;align-items:center;gap:12px;padding:14px 14px 10px 14px;margin-bottom:14px;margin-top:5px;border-radius:14px;overflow:visible;
+  border:1px solid color-mix(in srgb,var(--cc) 26%,transparent);
+  background:linear-gradient(120deg,color-mix(in srgb,var(--cc) 15%,transparent),color-mix(in srgb,var(--cc) 3%,transparent) 70%);background-size:220% 220%;
+  box-shadow:inset 3px 0 0 var(--cc),0 10px 24px -18px color-mix(in srgb,var(--cc) 80%,transparent);
+  animation:terminIn .5s ease both,terminGlow 4.5s ease-in-out .6s infinite,bgDrift 15s ease-in-out infinite}
+@keyframes terminIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes bgDrift{0%,100%{background-position:12% 22%}50%{background-position:88% 62%}}
+@keyframes terminGlow{0%,100%{box-shadow:inset 3px 0 0 var(--cc),0 10px 24px -18px color-mix(in srgb,var(--cc) 80%,transparent)}50%{box-shadow:inset 3px 0 0 var(--cc),0 10px 26px -15px color-mix(in srgb,var(--cc) 55%,transparent)}}
+.termin-item::after{content:'';position:absolute;left:0;top:0;width:90px;height:90px;border-radius:14px 0 60px 0;overflow:hidden;background:radial-gradient(circle at 0% 0%,color-mix(in srgb,var(--cc) 28%,transparent),transparent 70%);pointer-events:none}
+.termin-item .t-date{flex:none;width:44px;height:48px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid color-mix(in srgb,var(--cc) 40%,transparent);background:color-mix(in srgb,var(--cc) 14%,rgba(8,7,14,.6))}
+.termin-item .t-date b{font:700 17px/1 var(--font-display);color:var(--cc)}
+.termin-item .t-date span{font:600 8px/1 var(--font-mono);letter-spacing:.16em;color:var(--text-dim)}
+.termin-item .t-body{flex:1;min-width:0}
+.termin-item .ttitle{font-size:12.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.termin-item .when{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px;min-width:0}
+.termin-item .chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;min-width:0;padding:3px 9px;border-radius:999px;font:600 9px/1 var(--font-mono);letter-spacing:.08em;color:var(--cc);background:color-mix(in srgb,var(--cc) 14%,transparent);border:1px solid color-mix(in srgb,var(--cc) 30%,transparent);white-space:nowrap}
+.termin-item .chip .txt{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.termin-item .chip .dot{width:5px;height:5px;border-radius:50%;background:var(--cc);box-shadow:0 0 6px var(--cc);animation:chipDot 2.6s ease-in-out infinite}
+@keyframes chipDot{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.35)}}
+.termin-item .tsub{margin-top:5px;font-size:9.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.termin-item .t-rel{position:absolute;top:-9px;right:16px;z-index:3;font:700 8.5px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;padding:4px 10px;border-radius:999px;color:var(--cc);
+  background:color-mix(in srgb,#0a0712 78%,var(--cc) 22%);border:1px solid color-mix(in srgb,var(--cc) 45%,transparent);box-shadow:0 4px 12px -4px color-mix(in srgb,var(--cc) 55%,transparent),0 0 0 3px #0a0712}
+.termin-item .t-rel.soon{color:#04121a;background:var(--cc);border-color:var(--cc);animation:relPulse 1.6s ease-in-out infinite}
+.termin-item .t-rel.today{color:#04121a;background:var(--cc);border-color:var(--cc);animation:terminBlink 1.8s ease-in-out infinite}
+@keyframes relPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes terminBlink{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--cc) 60%,transparent)}50%{box-shadow:0 0 0 6px transparent}}
+.termin-item.notif-card{background:linear-gradient(240deg,color-mix(in srgb,var(--cc) 15%,transparent),color-mix(in srgb,var(--cc) 3%,transparent) 70%);
+  box-shadow:inset -3px 0 0 var(--cc),0 10px 24px -18px color-mix(in srgb,var(--cc) 80%,transparent);padding:10px 14px 10px 12px;border-radius:6px 16px 16px 6px}
+.termin-item.notif-card::after{right:auto;left:0;top:auto;bottom:0;border-radius:60px 0 14px 0;background:radial-gradient(circle at 0% 100%,color-mix(in srgb,var(--cc) 28%,transparent),transparent 70%)}
+.termin-item.notif-card .t-date{width:44px;height:44px;border-radius:50%}
+.termin-item.notif-card .t-date b{font-size:17px}
+.termin-item.notif-card .t-date span{font-size:7px;letter-spacing:.2em}
+.termin-empty{margin-top:6px;padding:14px 10px;text-align:center;font-size:10px;letter-spacing:.04em;color:var(--text-dim2);border:1px dashed rgba(255,255,255,.09);border-radius:6px}
+
+/* ===== GEHIRN 3D ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(2,2,6,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:9000;padding:14px}
+.modal-overlay.open{display:flex}
+.modal.brain-modal{width:100%;height:88vh;max-width:none;background:var(--panel-bg,#0b0912);border:1px solid var(--panel-border,rgba(255,255,255,.08));border-radius:16px;padding:12px;display:flex;flex-direction:column}
+.brain-modal .modal-h{display:flex;align-items:center;gap:8px;margin-bottom:8px;font:700 12px var(--font-display);letter-spacing:.14em;color:var(--pink)}
+.brain-modal .modal-close{margin-left:auto;background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:4px 8px}
+.brain-stage{position:relative;flex:1 1 auto;min-height:0;border:1px solid var(--panel-border,rgba(255,255,255,.08));border-radius:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,rgba(255,45,120,.10),transparent 60%),radial-gradient(ellipse at 50% 100%,rgba(41,211,245,.08),transparent 55%),#050409}
+.brain-stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.brain-hint{position:absolute;left:10px;bottom:8px;font:500 9px/1.4 var(--font-mono);letter-spacing:.06em;color:var(--text-dim2);pointer-events:none}
+.brain-stats{position:absolute;right:10px;top:8px;font:600 9px/1.5 var(--font-mono);letter-spacing:.1em;color:var(--cyan);text-align:right;pointer-events:none}
+.brain-info{position:absolute;left:10px;top:8px;max-width:min(320px,64%);padding:9px 11px;border:1px solid var(--panel-border,rgba(255,255,255,.08));border-radius:10px;background:rgba(8,9,17,.9);display:none}
+.brain-info.show{display:block}
+.brain-info .bi-cat{font:700 9px/1 var(--font-display);letter-spacing:.14em;color:var(--pink);margin-bottom:5px}
+.brain-info .bi-text{font:500 12px/1.4 var(--font-mono);color:var(--text);max-height:min(30vh,240px);overflow-y:auto}
+.brain-info .bi-item{padding:4px 0;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06)}
+.brain-info .bi-meta{font:500 9px/1 var(--font-mono);color:var(--text-dim2);margin-top:7px}
+.brain-info .btn{margin-top:7px;padding:5px 9px;font-size:10px;width:auto}
+.orbwrap .orb{--glow:.9;--sweepOp:.85}
+.orbwrap .sphere-core{background:radial-gradient(circle at 31% 25%,#fff 0%,#fff0f6 8%,#ffd3e4 16%,var(--pink-2) 28%,#ff6f9c 42%,var(--am) 58%,#d63a76 72%,#8a2358 86%,#3b1233 100%),radial-gradient(circle at 76% 80%,rgba(89,220,240,.2) 0%,transparent 42%);box-shadow:0 0 90px -4px color-mix(in srgb,var(--pink) 65%,transparent),inset -16px -14px 44px rgba(8,4,14,.6),inset 14px 12px 40px rgba(89,220,240,.28)}
+.orbwrap .sphere-shade{background:radial-gradient(circle at 74% 76%,rgba(4,2,10,.45),transparent 66%)}
+.orbwrap .orb-glow-cyan{opacity:.75}
+#orbState{font-size:10px;letter-spacing:.24em;color:var(--cyan)}
+/* Gauges */
+.gauges{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gauge{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
+.gauge svg{width:104px;height:104px;transform:rotate(-90deg);overflow:visible}
+.gauge .bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:8}
+.gauge .fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .8s ease,stroke .4s;filter:drop-shadow(0 0 5px currentColor)}
+.gauge .v{position:absolute;top:34px;left:0;right:0;text-align:center;font:700 20px var(--font-display)}
+.gauge .l{font:600 10px var(--font-mono);letter-spacing:.2em;color:var(--text-dim)}
+.gauge .s{font-size:10px;color:var(--text-dim2)}
+canvas.spark{width:100%;height:54px;display:block}
+.kv{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+.kv:last-child{border:0}.kv span:last-child{color:var(--cyan-2);text-align:right}
+.proc{display:grid;grid-template-columns:1fr 46px 62px;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+.proc:last-child{border:0}.proc span:nth-child(n+2){text-align:right;color:var(--text-dim)}
+.pill{display:inline-block;padding:3px 8px;border:1px solid color-mix(in srgb,var(--success) 50%,transparent);color:var(--success);font-size:10px;letter-spacing:.14em;border-radius:20px}
+/* Chat */
+#log{flex:1;min-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:2px 0}
+.m{max-width:90%;padding:9px 12px;white-space:pre-wrap;word-wrap:break-word;border:1px solid var(--panel-border);font-size:13.5px}
+.m.u{align-self:flex-end;background:color-mix(in srgb,var(--cyan) 12%,transparent);border-color:color-mix(in srgb,var(--cyan) 35%,transparent);border-radius:12px 12px 2px 12px}
+.m.a{align-self:flex-start;background:color-mix(in srgb,var(--pink) 8%,rgba(15,13,30,.8));border-radius:12px 12px 12px 2px}
+.m .tools{margin-top:6px;font-size:9.5px;letter-spacing:.1em;color:var(--cyan)}
+.m a.lk{display:block;margin-top:8px;padding:10px 12px;border:1px solid var(--cyan);border-radius:8px;color:var(--cyan-2);text-decoration:none;font-weight:600}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px;flex:none}
+.chips .btn{white-space:nowrap;flex:none;min-height:38px;padding:8px 12px}
+/* Termine */
+.day{font:700 10.5px var(--font-mono);letter-spacing:.2em;color:var(--cyan);margin:10px 0 6px}
+.ev{display:flex;gap:10px;align-items:stretch;padding:7px 0}
+.ev .bar{width:4px;border-radius:2px;flex:none}
+.ev .ti{font-weight:600}.ev .tm{font-size:11.5px;color:var(--text-dim)}
+.mail{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}.mail:last-child{border:0}
+.mail b{color:var(--pink-2);font-weight:600}
+/* Gehirn */
+.cat{display:inline-block;padding:6px 10px;margin:0 6px 6px 0;border:1px solid rgba(255,255,255,.14);border-radius:20px;font-size:11px;background:none;color:var(--text-dim);font-family:var(--font-mono)}
+.cat.on{border-color:var(--pink);color:#fff;background:color-mix(in srgb,var(--pink) 20%,transparent)}
+.mem{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}.mem small{display:block;color:var(--cyan);font-size:9.5px;letter-spacing:.14em;margin-bottom:2px}
+/* PC screen */
+#screenBox{position:relative;background:#000;border:1px solid var(--panel-border);overflow:hidden;min-height:120px}
+#screenImg{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
+.dot{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border:2px solid var(--pink);border-radius:50%;pointer-events:none;opacity:0;transition:opacity .5s}
+#fs{position:fixed;inset:0;z-index:60;background:#000;display:none}
+#fs img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-touch-callout:none}
+#fsBar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:6px;padding:6px;background:rgba(3,4,10,.72);border:1px solid var(--panel-border);border-radius:12px;backdrop-filter:blur(10px)}
+#fsBar .btn{min-height:40px;min-width:44px;padding:6px 10px}
+#fsType{position:absolute;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));display:none;gap:6px}
+/* Settings */
+.set{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.set>label{font-size:10px;letter-spacing:.18em;color:var(--text-dim)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg .btn{min-width:calc(25% - 6px)}.seg .btn{flex:1;padding:10px 4px}
+.media{display:flex;gap:14px;align-items:center}
+.media-cover{flex:none;width:96px;height:96px;position:relative;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--pink) 30%,#10101c),color-mix(in srgb,var(--cyan) 22%,#10101c));
+  border:1px solid color-mix(in srgb,var(--cyan) 35%,transparent);box-shadow:0 0 22px color-mix(in srgb,var(--pink) 30%,transparent);font-size:32px;color:var(--text-dim)}
+.media-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.media-info{flex:1;min-width:0}
+.media-title{font:700 15px/1.25 var(--font-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-artist{font:500 11.5px/1.3 var(--font-mono);color:var(--text-dim);margin:2px 0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-bar{height:10px;border-radius:5px;background:rgba(255,255,255,.09);position:relative;touch-action:none}
+.media-fill{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,var(--pink),var(--cyan));box-shadow:0 0 10px color-mix(in srgb,var(--pink) 60%,transparent)}
+.media-times{display:flex;justify-content:space-between;font:500 10px var(--font-mono);color:var(--text-dim2);margin-top:4px}
+.tg{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}.tg:last-child{border:0}
+.tg input{width:22px;height:22px;accent-color:var(--pink);flex:none}
+input[type=range]{width:100%;accent-color:var(--pink);min-height:30px}
+input[type=color]{width:100%;height:44px;padding:2px;border-radius:8px;background:none;border:1px solid var(--panel-border)}
+select{width:100%;min-height:44px;background:rgba(255,255,255,.04);border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);color:var(--text);border-radius:8px;padding:10px;font:14px var(--font-mono)}
+/* Dock */
+nav{position:relative;z-index:3;display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-top:1px solid color-mix(in srgb,var(--pink) 20%,transparent);background:rgba(3,4,10,.86);backdrop-filter:blur(14px)}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;color:var(--text-dim2);font:600 8.5px var(--font-mono);letter-spacing:.12em;padding:6px 0}
+nav button b{font-size:19px;line-height:1;font-weight:400}
+nav button.on{color:var(--pink)}nav button.on b{filter:drop-shadow(0 0 8px var(--pink))}
+#navInd{position:absolute;top:0;left:0;height:2px;width:20%;background:var(--pink);border-radius:2px;pointer-events:none;box-shadow:0 0 8px var(--pink);transition:transform .28s cubic-bezier(.2,.7,.3,1)}
+main{touch-action:pan-y}
+.termin-item.notif-card{cursor:pointer}
+.notif-dismiss{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-dim2,#7d7a92);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .15s ease,border-color .15s ease,background .15s ease}
+.notif-dismiss:active,.notif-dismiss:hover{color:var(--pink,#ff2d78);border-color:color-mix(in srgb,var(--pink,#ff2d78) 55%,transparent);background:color-mix(in srgb,var(--pink,#ff2d78) 12%,transparent)}
+.notif-dismiss svg{display:block}
+</style>
+<link rel="stylesheet" href="pc-sim.css">
+<link rel="stylesheet" href="pc-sim-panels.css">
+</head>
+<body>
+<header>
+  <div><div class="logo">A.R.I</div><div class="sub">EIGENSTÄNDIGE APP</div></div>
+  <div id="conn" class="on">BEREIT</div>
+  <div id="clock">--:--<small>--</small></div>
+</header>
+
+<main>
+  <!-- CHAT -->
+  <section id="t-chat" class="on">
+    <div class="panel" id="updBanner" style="display:none;flex:none"><div class="panel-h"><span class="ico">⟳</span><span class="t">UPDATE VERFÜGBAR</span><span class="tag" id="updBannerVer"></span></div>
+      <div class="dim" id="updBannerText"></div>
+      <div class="row" style="margin-top:10px"><button class="btn pri" id="updBannerGo">JETZT AKTUALISIEREN</button><button class="btn" id="updBannerLater" style="flex:0 0 90px">SPÄTER</button></div>
+    </div>
+    <div class="panel orbpanel" style="padding-bottom:4px"><div class="orbwrap">
+        <div class="hero-visual">
+          <div class="hero-glow"></div>
+          <div class="orb" id="orb" tabindex="0" role="button" aria-label="Mit A.R.I sprechen">
+            <div class="orb-glow-pink"></div>
+            <div class="orb-glow-cyan"></div>
+
+            <!-- Ringe: hintere Haelfte (verlaeuft hinter dem Planeten) -->
+            <div class="ring-wrap ring-back" style="--i:-24%; --sy:.3; --spin:var(--r1); --bc:color-mix(in srgb, var(--cyan) 42%, transparent); --sw:var(--cyan-2); --bc2:var(--cyan-2); --bw:1.6px">
+              <div class="ring-border"></div>
+              <div class="ring-spin"><div class="ring-sweep"></div></div>
+            </div>
+            <div class="ring-wrap ring-back" style="--i:-11%; --sy:.26; --spin:var(--r2); --bc:color-mix(in srgb, var(--pink) 45%, transparent); --sw:var(--am); --bc2:var(--am); --bw:1.4px">
+              <div class="ring-border"></div>
+              <div class="ring-spin"><div class="ring-sweep"></div></div>
+            </div>
+            <div class="ring-wrap ring-back" style="--i:-1%; --sy:.22; --spin:var(--r3); --bc:color-mix(in srgb, var(--cyan) 30%, transparent); --sw:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bc2:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bw:1px">
+              <div class="ring-border"></div>
+              <div class="ring-spin"><div class="ring-sweep"></div></div>
+            </div>
+
+            <!-- Monde -->
+            <div class="moon-orbit">
+              <div class="spin"><span class="moon moon-a"></span></div>
+              <div class="spin-rev"><span class="moon moon-b"></span></div>
+            </div>
+
+            <!-- Planet -->
+            <div class="sphere sphere-core"></div>
+            <div class="sphere sphere-bands"><div></div></div>
+            <div class="sphere sphere-shade"></div>
+            <div class="sphere sphere-rim"></div>
+            <div class="sphere sphere-sweep"></div>
+
+            <!-- Ringe: vordere Haelfte (verlaeuft vor dem Planeten) -->
+            <div class="ring-wrap ring-front" style="--i:-1%; --sy:.22; --spin:var(--r3); --bc:color-mix(in srgb, var(--cyan) 50%, transparent); --sw:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bc2:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bw:1px">
+              <div class="ring-border"></div>
+              <div class="ring-spin"><div class="ring-sweep"></div></div>
+            </div>
+            <div class="ring-wrap ring-front" style="--i:-11%; --sy:.26; --spin:var(--r2); --bc:color-mix(in srgb, var(--pink) 70%, transparent); --sw:var(--am); --bc2:var(--am); --bw:1.6px">
+              <div class="ring-border"></div>
+              <div class="ring-spin"><div class="ring-sweep"></div></div>
+            </div>
+            <div class="ring-wrap ring-front" style="--i:-24%; --sy:.3; --spin:var(--r1); --bc:color-mix(in srgb, var(--cyan) 60%, transparent); --sw:var(--cyan-2); --bc2:var(--cyan-2); --bw:1.8px">
+              <div class="ring-border"></div>
+              <div class="ring-spin"><div class="ring-sweep"></div></div>
+            </div>
+
+            <div class="orb-wave a"></div>
+            <div class="orb-wave b"></div>
+
+            <div class="orb-label">
+              <span class="name">A.R.I</span>
+              <span class="state" id="heroSub">SYSTEM ONLINE</span>
+            </div>
+            <div class="orb-bars"></div>
+          </div>
+        </div>
+      <div id="orbState">BEREIT · TIPPEN ZUM SPRECHEN</div>
+    </div></div>
+    <div id="log"></div>
+    <div class="chips">
+      <button class="btn" data-q="Wie spät ist es?">Uhrzeit</button>
+      <button class="btn" data-q="Plane eine Route nach ">Route …</button>
+      <button class="btn" data-q="Reserviere mir einen Tisch für 2 Personen um 19 Uhr in ">Restaurant …</button>
+      <button class="btn" data-q="Merk dir, dass ">Merken …</button>
+      <button class="btn" data-q="Was weißt du über mich?">Was weißt du?</button>
+    </div>
+    <div class="row" style="flex:none">
+      <input id="msg" placeholder="Befehl eingeben …" enterkeyhint="send" style="flex:1 1 auto">
+      <button class="btn" id="mic" style="flex:0 0 52px">🎤</button>
+      <button class="btn pri" id="send" style="flex:0 0 52px">➤</button>
+    </div>
+  </section>
+
+  <!-- GEHIRN -->
+  <section id="t-brain">
+    <div class="panel"><div class="panel-h"><span class="ico">✦</span><span class="t">GEHIRN · SPEICHER</span><span class="tag" id="brTag">–</span></div>
+      <button class="btn pri" id="brain3dBtn" style="width:100%;margin-bottom:10px">✦ 3D-ANSICHT ÖFFNEN</button>
+      <input type="search" id="brSearch" placeholder="Suchen …" style="margin-bottom:10px">
+      <div class="row" style="margin-bottom:10px"><input id="brNew" placeholder="Neue Erinnerung …"><button class="btn pri" id="brAdd" style="flex:0 0 70px">+</button></div>
+      <div id="brCats"></div><div id="brList" style="margin-top:6px"></div>
+    </div>
+  </section>
+
+  <!-- PC -->
+  <section id="t-pc">
+    <details class="set-section" open>
+      <summary>SYNCHRONISATION</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">⇄</span><span class="t">SYNCHRONISATION</span><span class="tag" id="syncTag">–</span></div>
+          <div class="dim" id="syncStatus">Nicht mit dem PC verbunden. Koppeln unter „MIT DEM PC VERBINDEN" (im selben WLAN) – danach bleiben Gehirn, Einstellungen und API-Schlüssel automatisch auf demselben Stand.</div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="syncNow">JETZT SYNCHRONISIEREN</button><button class="btn dng" id="syncOff" style="flex:0 0 96px">TRENNEN</button></div>
+          <div class="set" style="margin-top:12px"><label>GOOGLE DIREKT (OHNE PC)</label><input id="sGid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Client-ID (…apps.googleusercontent.com)"><div class="row" style="margin-top:8px"><button class="btn pri" id="gLogin">BEI GOOGLE ANMELDEN</button><button class="btn dng" id="gLogout" style="flex:0 0 96px;display:none">ABMELDEN</button></div><div class="dim" id="gStatus" style="margin-top:6px">Nicht angemeldet.</div><div class="set" style="margin-top:10px"><label>E-MAILS ÜBER GOOGLE LESEN</label><div class="seg" id="sGMail"><button class="btn" data-v="1">AN</button><button class="btn" data-v="0">AUS</button></div><div class="dim" style="margin-top:6px">Bei AUS holt die App nur den Kalender (einfacher, Google prüft das weniger streng). Nach dem Umschalten bitte neu anmelden.</div></div>
+          <div class="dim" style="margin-top:8px">Die App ruft Google Kalender (und Gmail) dann selbst ab – der PC muss nicht an sein.</div>
+          <details style="margin-top:8px"><summary class="dim" style="cursor:pointer">Eigene Client-ID (für dein eigenes Google-Projekt)</summary>
+            <div class="dim" style="margin-top:6px">Die eingetragene Client-ID gehört dem Entwickler der App. Nutzt du A.R.I mit deinem eigenen Google-Konto, lege in <b>deinem</b> Projekt (siehe Tutorial am PC: Google-Einrichtung) einen zweiten Client vom Typ <b>Android</b> an und trage seine ID oben ein:</div>
+            <div class="dim" style="margin-top:6px">Paketname: <b>com.ari.assistant</b><br>SHA-1: <b style="word-break:break-all">B6:AF:C9:89:4F:7A:A9:4E:0B:8B:E7:A2:A2:A7:72:D9:0E:B8:2E:48</b></div>
+            <div class="row" style="margin-top:8px"><button class="btn" id="gCopyPkg">PAKETNAME KOPIEREN</button><button class="btn" id="gCopySha">SHA-1 KOPIEREN</button></div>
+          </details></div>
+          <div class="set" style="margin-top:12px"><label>KALENDER PER ICAL-ADRESSE (ALTERNATIVE)</label><input id="sIcs" type="url" inputmode="url" autocomplete="off" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"><div class="dim" style="margin-top:6px">Google Kalender am Computer öffnen → Einstellungen → dein Kalender → „Geheime Adresse im iCal-Format“ kopieren und hier einfügen. Danach laufen Termine ohne PC (Serientermine der nächsten 90 Tage). E-Mails zeigen weiter die zuletzt vom PC geladenen.</div></div>
+          <div class="set" style="margin-top:12px"><label>BEFEHLE AN DEN PC</label><div class="seg" id="sPc"><button class="btn" data-v="auto">AUTO</button><button class="btn" data-v="always">IMMER</button><button class="btn" data-v="off">AUS</button></div><div class="dim" style="margin-top:6px">AUTO: Sätze mit „PC“, „Rechner“, Lautstärke, Screenshot u. Ä. führt dein PC aus (z. B. „Öffne auf meinem PC YouTube“). IMMER: jede Nachricht läuft über den PC. AUS: nur die App selbst.</div></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" open>
+      <summary>MIT DEM PC VERBINDEN</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">▣</span><span class="t">MIT DEM PC VERBINDEN</span><span class="tag" id="pcTag">–</span></div>
+          <div id="pcState" style="margin:0 0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);font-size:12px;line-height:1.5">Nicht mit dem PC verbunden.</div>
+          <div class="dim" style="margin-bottom:10px">Die App läuft ohne PC. Für Bildschirm, Steuerung und Mediensteuerung müsst ihr im selben WLAN sein.</div>
+          <div class="dim2" id="pcMsg" style="margin-top:4px;margin-bottom:10px"></div>
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer;margin-bottom:10px"><input type="checkbox" id="pcSimOn" style="margin-top:3px;flex:none"><span style="display:block"><span style="display:block;font-size:13px;letter-spacing:.04em">PC-Simulation anzeigen</span><span style="display:block;font-size:11px;opacity:.55;line-height:1.45;margin-top:2px">Zeigt die A.R.I-Grafik (Planet + Astro) wie am PC direkt hier in der App — rein optisch, ohne Live-Verbindung, läuft flüssig ohne WLAN.</span></span></label>
+          <div id="pcSimBox">
+          <div class="pc-sim-head">
+            <div class="pc-sim-head-brand"><span class="pc-sim-head-name">A.R.I</span><span class="pc-sim-head-sub">SYSTEM SIMULATION</span></div>
+            <div class="pc-sim-head-actions">
+              <div class="pc-sim-head-clock" id="pcSimClock">--:--</div>
+              <button type="button" class="pc-sim-fs-btn" id="pcSimEditBtn" title="Anordnen">✎</button>
+              <button type="button" class="pc-sim-fs-btn" id="pcSimFsBtn" title="Vollbild">⛶</button>
+            </div>
+          </div>
+          <div style="position:relative;min-height:260px">
+            <div style="display:flex;justify-content:center;padding-top:6px">
+              <div class="orb" id="pcSimOrb">
+                <div class="orb-glow-pink"></div>
+                <div class="orb-glow-cyan"></div>
+                <div class="ring-wrap ring-back" style="--i:-24%; --sy:.3; --spin:9s; --bc:color-mix(in srgb, var(--cyan) 42%, transparent); --sw:var(--cyan-2); --bc2:var(--cyan-2); --bw:1.6px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-back" style="--i:-11%; --sy:.26; --spin:13s; --bc:color-mix(in srgb, var(--pink) 45%, transparent); --sw:var(--am); --bc2:var(--am); --bw:1.4px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-back" style="--i:-1%; --sy:.22; --spin:17s; --bc:color-mix(in srgb, var(--cyan) 30%, transparent); --sw:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bc2:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bw:1px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="moon-orbit"><div class="spin"><span class="moon moon-a"></span></div><div class="spin-rev"><span class="moon moon-b"></span></div></div>
+                <div class="sphere sphere-core"></div>
+                <div class="sphere sphere-bands"><div></div></div>
+                <div class="sphere sphere-shade"></div>
+                <div class="sphere sphere-rim"></div>
+                <div class="sphere sphere-sweep"></div>
+                <div class="ring-wrap ring-front" style="--i:-1%; --sy:.22; --spin:17s; --bc:color-mix(in srgb, var(--cyan) 50%, transparent); --sw:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bc2:color-mix(in srgb, var(--cyan-2) 90%, transparent); --bw:1px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-front" style="--i:-11%; --sy:.26; --spin:13s; --bc:color-mix(in srgb, var(--pink) 70%, transparent); --sw:var(--am); --bc2:var(--am); --bw:1.6px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="ring-wrap ring-front" style="--i:-24%; --sy:.3; --spin:9s; --bc:color-mix(in srgb, var(--cyan) 60%, transparent); --sw:var(--cyan-2); --bc2:var(--cyan-2); --bw:1.8px"><div class="ring-border"></div><div class="ring-spin"><div class="ring-sweep"></div></div></div>
+                <div class="orb-label"><span class="name">A.R.I</span><span class="state">SIMULATION</span></div>
+              </div>
+            </div>
+            <svg class="pc-sim-astro" viewBox="0 0 64 92" xmlns="http://www.w3.org/2000/svg" style="position:absolute;right:14px;bottom:10px;width:70px;height:auto;filter:drop-shadow(0 0 14px rgba(255,45,120,.4))">
+              <defs><linearGradient id="pcSimVis" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fefff"/><stop offset="1" stop-color="#29d3f5"/></linearGradient>
+              <linearGradient id="pcSimSuit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2748"/><stop offset="1" stop-color="#15132a"/></linearGradient></defs>
+              <g>
+                <line x1="27" y1="63" x2="23" y2="71" stroke="#ff2d78" stroke-width="9.6" stroke-linecap="round"/><line x1="27" y1="63" x2="23" y2="71" stroke="url(#pcSimSuit)" stroke-width="7" stroke-linecap="round"/>
+                <line x1="23" y1="71" x2="22" y2="80" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="23" y1="71" x2="22" y2="80" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><path d="M14.5 83 Q14 79 20 79.5 L27 80 Q29.5 81 28.5 84 Q28 86 25 86 L17 86 Q14.5 86 14.5 83Z" fill="#29d3f5" stroke="#8fefff" stroke-width=".8"/>
+                <line x1="37" y1="63" x2="41" y2="71" stroke="#ff2d78" stroke-width="9.6" stroke-linecap="round"/><line x1="37" y1="63" x2="41" y2="71" stroke="url(#pcSimSuit)" stroke-width="7" stroke-linecap="round"/>
+                <line x1="41" y1="71" x2="42" y2="80" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="41" y1="71" x2="42" y2="80" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><path d="M49.5 83 Q50 79 44 79.5 L37 80 Q34.5 81 35.5 84 Q36 86 39 86 L47 86 Q49.5 86 49.5 83Z" fill="#29d3f5" stroke="#8fefff" stroke-width=".8"/>
+                <rect x="17" y="40" width="30" height="27" rx="11" fill="url(#pcSimSuit)" stroke="#ff2d78" stroke-width="1.6"/>
+                <rect x="21" y="63" width="22" height="3.2" rx="1.6" fill="#29d3f5" opacity=".85"/>
+                <circle cx="32" cy="52" r="5.6" fill="#0c0b16" stroke="#29d3f5" stroke-width="1.4"/><text x="32" y="54.6" text-anchor="middle" font-size="7.4" font-weight="700" fill="#29d3f5" font-family="monospace">A</text>
+                <line x1="20" y1="47" x2="16" y2="55" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="20" y1="47" x2="16" y2="55" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><line x1="16" y1="55" x2="14.6" y2="63" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="16" y1="55" x2="14.6" y2="63" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><circle cx="14.4" cy="64.4" r="5.2" fill="#ff2d78" stroke="#ff8fb4" stroke-width=".8"/>
+                <line x1="44" y1="47" x2="48" y2="55" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="44" y1="47" x2="48" y2="55" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><line x1="48" y1="55" x2="49.4" y2="63" stroke="#ff2d78" stroke-width="8.6" stroke-linecap="round"/><line x1="48" y1="55" x2="49.4" y2="63" stroke="url(#pcSimSuit)" stroke-width="6" stroke-linecap="round"/><circle cx="49.6" cy="64.4" r="5.2" fill="#ff2d78" stroke="#ff8fb4" stroke-width=".8"/>
+                <line x1="32" y1="6" x2="32" y2="12" stroke="#29d3f5" stroke-width="2"/><circle cx="32" cy="5" r="3.2" fill="#ff2d78" stroke="#ff8fb4" stroke-width=".8"/>
+                <circle cx="32" cy="26" r="19" fill="url(#pcSimSuit)" stroke="#29d3f5" stroke-width="2"/>
+                <rect x="16.5" y="15" width="31" height="22" rx="10.5" fill="url(#pcSimVis)" stroke="#8fefff" stroke-width="1.2"/>
+                <circle cx="26" cy="24.5" r="2.8" fill="#0c0b16"/><circle cx="38" cy="24.5" r="2.8" fill="#0c0b16"/><circle cx="27" cy="23.5" r=".9" fill="#8fefff"/><circle cx="39" cy="23.5" r=".9" fill="#8fefff"/>
+                <circle cx="21.5" cy="30.5" r="2.4" fill="#ff2d78" opacity=".55"/><circle cx="42.5" cy="30.5" r="2.4" fill="#ff2d78" opacity=".55"/>
+                <path d="M28 30 Q32 34.5 36 30" fill="none" stroke="#0c0b16" stroke-width="1.9" stroke-linecap="round"/>
+                <path d="M20 19.5 Q24 16 30 16" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" opacity=".75"/>
+              </g>
+            </svg>
+          </div>
+            <div style="padding:0 12px 12px;display:flex;flex-direction:column;gap:12px" id="pcSimPanels">
+              <div class="panel" data-pid="status">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h"><span class="ico">◇</span><span class="t">SYSTEM STATUS</span></div>
+                <div class="gauges">
+                  <div>
+                    <div class="gauge-label">CPU</div>
+                    <div class="gauge-ring-wrap">
+                      <svg class="gauge-svg" viewBox="0 0 100 100">
+                        <circle class="gauge-track-c" cx="50" cy="50" r="42"/>
+                        <circle class="gauge-glow-c" id="pcSimGaugeCpuGlow" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--pink)"/>
+                        <circle class="gauge-fill-c" id="pcSimGaugeCpu" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--pink)"/>
+                      </svg>
+                      <div class="gauge-tip" id="pcSimGaugeCpuTip" style="--pct:0;--gc:var(--pink)"></div>
+                      <div class="gauge-inner"></div>
+                      <div class="gauge-center"><span><span class="gauge-val" id="pcSimCpuVal">--</span><span class="gauge-unit">%</span></span><span class="gauge-sub" id="pcSimCpuSub">-- GHz</span></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="gauge-label">RAM</div>
+                    <div class="gauge-ring-wrap">
+                      <svg class="gauge-svg" viewBox="0 0 100 100">
+                        <circle class="gauge-track-c" cx="50" cy="50" r="42"/>
+                        <circle class="gauge-glow-c" id="pcSimGaugeRamGlow" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--cyan)"/>
+                        <circle class="gauge-fill-c" id="pcSimGaugeRam" cx="50" cy="50" r="42" style="--pct:0;--gc:var(--cyan)"/>
+                      </svg>
+                      <div class="gauge-tip" id="pcSimGaugeRamTip" style="--pct:0;--gc:var(--cyan)"></div>
+                      <div class="gauge-inner"></div>
+                      <div class="gauge-center"><span><span class="gauge-val" id="pcSimRamVal">--</span><span class="gauge-unit">%</span></span><span class="gauge-sub" id="pcSimRamSub">--/-- GB</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="statcells">
+                  <div class="statcell"><div class="l">NETZWERK MB/S</div><div class="v" id="pcSimStatNet" style="color:var(--cyan)">--</div></div>
+                  <div class="statcell"><div class="l">UPTIME</div><div class="v" id="pcSimStatUptime" style="color:var(--text)">--</div></div>
+                  <div class="statcell"><div class="l">SYSTEM</div><div class="v" id="pcSimStatSystem" style="color:var(--success)">--</div></div>
+                  <div class="statcell" id="pcSimStatGpuTempCell" style="display:none"><div class="l">GPU TEMP</div><div class="v" id="pcSimStatGpuTemp" style="color:var(--pink)">--</div></div>
+                </div>
+              </div>
+              <div class="panel" data-pid="media">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h cy"><span class="ico">▶</span><span class="t">MEDIEN</span><span class="tag">SPOTIFY</span></div>
+                <div class="media">
+                  <div class="media-cover"><img id="pcSimMediaCover" alt="" style="display:none"><span id="pcSimMediaCoverPh">♪</span></div>
+                  <div class="media-info">
+                    <div class="media-title-row"><div class="media-title" id="pcSimMediaTitle">Nichts aktiv</div></div>
+                    <div class="media-artist" id="pcSimMediaArtist">–</div>
+                    <div class="media-bar" id="pcSimMediaBar"><div class="media-fill" id="pcSimMediaFill"></div><div class="media-knob" id="pcSimMediaKnob"></div></div>
+                    <div class="media-times"><span id="pcSimMediaPos">0:00</span><span id="pcSimMediaDur">0:00</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel" data-pid="tasks">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h"><span class="ico">◎</span><span class="t">AKTIVE TASKS</span><span class="tag" id="pcSimTaskCount">-- PROZESSE</span></div>
+                <div class="tasks" id="pcSimTaskList" style="min-height:0"></div>
+              </div>
+              <div class="panel" data-pid="cal">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h"><span class="ico">▤</span><span class="t">KALENDER</span><span class="tag" id="pcSimCalTag">--</span></div>
+                <ul class="pcsim-list" id="pcSimCalList"></ul>
+              </div>
+              <div class="panel" data-pid="notif">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h cy"><span class="ico">◈</span><span class="t">BENACHRICHTIGUNGEN</span><span class="tag" id="pcSimNotifTag">--</span></div>
+                <ul class="pcsim-list" id="pcSimNotifList"></ul>
+              </div>
+              <div class="panel" data-pid="net">
+                <div class="pcsim-panel-tools"><button type="button" data-act="up">↑</button><button type="button" data-act="down">↓</button><button type="button" data-act="size">⤢</button></div>
+                <div class="panel-h"><span class="ico">▨</span><span class="t">SPEICHER / NETZWERK</span></div>
+                <div class="pcsim-netmem">
+                  <div class="pcsim-netmem-row"><span class="l">RAM</span><span class="v" id="pcSimMemVal">--%</span><div class="pcsim-spark" id="pcSimMemSpark"></div></div>
+                  <div class="pcsim-netmem-row"><span class="l">NETZ</span><span class="v" id="pcSimNetVal">--</span><div class="pcsim-spark" id="pcSimNetSpark"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn" id="qrScan" style="width:100%;margin-bottom:8px">▣ QR-CODE VOM PC SCANNEN</button>
+          <div class="set" style="margin-top:10px"><label>ODER CODE EINGEBEN</label>
+            <input id="pcCode" inputmode="numeric" autocomplete="off" placeholder="Koppelcode (6 Ziffern vom PC)">
+            <button class="btn pri" id="pcPair" style="width:100%;margin-top:8px">MIT CODE KOPPELN</button>
+            <div class="dim" style="margin-top:6px">Am PC: A.R.I → Einstellungen → HANDY → „Koppelcode erzeugen“. Die App sucht den PC automatisch im WLAN.</div></div>
+          <div id="pcSaved" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section">
+      <summary>SO GEHT'S</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">ⓘ</span><span class="t">SO GEHT'S</span></div>
+          <div class="dim">1. Handy und PC im selben WLAN.<br>2. Am PC in A.R.I: Einstellungen → HANDY → „Koppelcode erzeugen".<br>3. Am Handy: „QR-CODE VOM PC SCANNEN“ – oder unten nur den Code eingeben, die Adresse findet die App von selbst.</div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- TERMINE / BENACHRICHTIGUNGEN (nur mit PC-Verbindung, kommt von Kalender/Mail am PC) -->
+  <section id="t-cal">
+    <div class="panel"><div class="panel-h"><span class="ico">▦</span><span class="t">TERMINE</span><span class="tag" id="calTag">–</span></div>
+      <ul class="termin-list" id="calList" style="min-height:60px"></ul>
+    </div>
+    <div class="panel"><div class="panel-h cy"><span class="ico">✉</span><span class="t">BENACHRICHTIGUNGEN</span><span class="tag" id="mailTag">–</span></div>
+      <ul class="termin-list" id="mailList" style="min-height:60px"></ul>
+    </div>
+  </section>
+
+  <!-- EINSTELLUNGEN -->
+  <section id="t-set">
+    <div class="dim2" style="margin-bottom:10px;opacity:.6">Kopplung mit dem PC und PC-Bildschirm: Tab „PC". Hier: KI, Hintergrund-Betrieb, Update, Daten.</div>
+    <details class="set-section" open>
+      <summary>◉ KI-ANBIETER</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">◉</span><span class="t">KI-ANBIETER</span></div>
+      <div class="set"><label>ANBIETER</label><select id="sProv"><option value="groq">Groq</option><option value="gemini">Gemini (Google)</option><option value="openai">ChatGPT (OpenAI)</option><option value="anthropic">Claude (Anthropic)</option></select></div>
+      <div class="set"><label>API-SCHLÜSSEL</label><input id="sKey" type="password" autocomplete="off" placeholder="Schlüssel des gewählten Anbieters"></div>
+      <div class="dim2">Der Schlüssel bleibt nur auf diesem Handy (Browser-Speicher) und geht direkt an den Anbieter – nirgendwo sonst hin.</div>
+      <div class="set" style="margin-top:12px"><label>AUSWEICH-ANBIETER (WENN LIMIT ERREICHT)</label><select id="sProv2"><option value="">keiner</option><option value="gemini">Gemini (Google)</option><option value="groq">Groq</option><option value="openai">ChatGPT (OpenAI)</option><option value="anthropic">Claude (Anthropic)</option></select></div>
+      <div class="set"><label>WEITERE GROQ-SCHLÜSSEL (EINER PRO ZEILE)</label><textarea id="sGroqMore" rows="3" autocomplete="off" spellcheck="false" placeholder="Bei erreichtem Limit wechselt A.R.I automatisch zum nächsten Schlüssel" style="width:100%;background:rgba(255,255,255,.04);border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);color:var(--text);border-radius:8px;padding:10px;font:13px var(--font-mono)"></textarea></div>
+      <div class="set"><label>SCHLÜSSEL AUSWEICH-ANBIETER</label><input id="sKey2" type="password" autocomplete="off" placeholder="Schlüssel"></div>
+      <div class="set"><label>SPRACHE</label><select id="sLang"><option value="de-DE">Deutsch</option><option value="en-US">English</option><option value="fr-FR">Français</option><option value="es-ES">Español</option><option value="it-IT">Italiano</option></select></div>
+      <div class="set"><label>ANTWORTEN VORLESEN</label><div class="seg" id="sTts"><button class="btn" data-v="1">AN</button><button class="btn" data-v="0">AUS</button></div></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" id="bgSection" style="display:none">
+      <summary>⟳ HINTERGRUND-BETRIEB (Termine/Mails ohne offene App)</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">HINTERGRUND-BETRIEB</span><span class="tag" id="bgTag">AUS</span></div>
+          <div class="dim">A.R.I bleibt im Hintergrund am Leben (ohne Mikrofon), prüft alle paar Minuten Termine und Mails und meldet sich mit einer Benachrichtigung bei neuen Mails und anstehenden Terminen. Dafür läuft eine dauerhafte, leise Benachrichtigung.</div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="bgToggle">EINSCHALTEN</button><button class="btn" id="bgBattery">AKKU-OPTIMIERUNG AUS</button></div>
+          <div class="dim2" id="bgMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" id="wakeSection" style="display:none">
+      <summary>◉ IM HINTERGRUND HÖREN (Weckwort „A.R.I")</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">◉</span><span class="t">IM HINTERGRUND HÖREN</span><span class="tag" id="wakeTag">AUS</span></div>
+          <div class="dim" id="wakeText">Optional: A.R.I lauscht im Hintergrund auf „A.R.I“ und öffnet sich dann von selbst. Dafür läuft eine dauerhafte Benachrichtigung, das Mikrofon ist aktiv und der Akku wird stärker belastet.</div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="wakeToggle">EINSCHALTEN</button><button class="btn" id="wakeOverlay">„ÜBER ANDEREN APPS“ ERLAUBEN</button></div>
+          <div class="dim2" id="wakeMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" id="notifFwdSection" style="display:none">
+      <summary>✉ HANDY-BENACHRICHTIGUNGEN AM PC</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">✉</span><span class="t">BENACHRICHTIGUNGEN WEITERLEITEN</span><span class="tag" id="notifFwdTag">AUS</span></div>
+          <div class="dim">Zeigt Benachrichtigungen von anderen Apps (WhatsApp, Discord, …) zusätzlich am PC im HUD an, mit vollem Text. Braucht eine besondere Android-Berechtigung („Benachrichtigungszugriff“).</div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="notifFwdBtn">BENACHRICHTIGUNGSZUGRIFF ERLAUBEN</button></div>
+          <div class="dim2" id="notifFwdMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" open>
+      <summary>⟳ APP-UPDATE</summary>
+      <div class="set-section-body">
+        <div class="panel" id="updPanel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">APP-UPDATE</span><span class="tag" id="updVer">–</span></div>
+          <div class="dim" id="updText">Prüft beim Start automatisch, ob es eine neue Version gibt.</div>
+          <div class="row" style="margin-top:10px"><button class="btn" id="updCheck">NACH UPDATES SUCHEN</button><button class="btn pri" id="updGo" style="display:none">JETZT AKTUALISIEREN</button></div>
+          <div class="dim2" id="updProg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section" id="devSecM" style="display:none">
+      <summary>🛠 DEV</summary>
+      <div class="set-section-body">
+        <div class="dim" id="devInfo" style="font-family:var(--font-mono);font-size:11px;line-height:1.7;white-space:pre-wrap">wird geladen …</div>
+        <div style="margin-top:10px"><label class="dim" id="betaRow" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="betaChan" style="margin-top:3px"> <span>Beta-Kanal: Test-Versionen vor allen anderen bekommen (kann Fehler haben)</span></label></div>
+        <div class="row" style="margin-top:10px"><button class="btn" id="devUpd">UPDATE-PRÜFUNG ERZWINGEN</button><button class="btn" id="devReload">APP NEU LADEN</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="devStSend">STATISTIK JETZT SENDEN</button><button class="btn" id="devStPv">STATISTIK-VORSCHAU</button></div>
+        <input type="password" id="devKey" placeholder="Admin-Schlüssel der Statistik" autocomplete="new-password" spellcheck="false" style="width:100%;box-sizing:border-box;margin-top:10px">
+        <div class="row" style="margin-top:8px"><button class="btn" id="devStOpen">STATISTIK-SEITE ÖFFNEN</button><button class="btn" id="devOff">DEV-MODUS AUS</button></div>
+        <div class="dim2" id="devMsg" style="margin-top:8px"></div>
+      </div>
+    </details>
+    <details class="set-section" id="statsSec" style="display:none">
+      <summary>📊 ANONYME STATISTIK</summary>
+      <div class="set-section-body">
+        <label class="dim" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="statsCb" style="margin-top:3px"> <span>Anonyme Nutzungsstatistik senden – zählt nur, welche Funktionen wie oft benutzt werden, nie Inhalte. Zufällige ID, keine IP-Speicherung. Abschaltbar; dann wird nichts mehr gezählt.</span></label>
+        <div class="row" style="margin-top:10px"><button class="btn" id="statsPv">WAS WIRD GESENDET?</button></div>
+        <div class="dim2" id="statsMsg" style="margin-top:8px"></div>
+      </div>
+    </details>
+    <details class="set-section">
+      <summary>⇪ VOM PC ÜBERNEHMEN</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">⇪</span><span class="t">VOM PC ÜBERNEHMEN</span></div>
+          <div class="dim" style="margin-bottom:10px">Am PC in A.R.I unter Einstellungen „EXPORTIEREN" und die Datei hier auswählen: Anbieter, Schlüssel, Sprache und Farben werden übernommen (die PC-Zugangsdaten für Google/Spotify NICHT).</div>
+          <input type="file" id="sImport" accept="application/json" style="display:none">
+          <button class="btn" id="sImportBtn" style="width:100%">EINSTELLUNGEN-DATEI WÄHLEN</button>
+          <div class="dim2" id="sImportMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+    <details class="set-section">
+      <summary>⏻ DATEN</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">⏻</span><span class="t">DATEN</span></div>
+          <div class="row"><button class="btn" id="brExport">GEHIRN EXPORT</button><button class="btn" id="brImportBtn">GEHIRN IMPORT</button></div>
+          <input type="file" id="brImport" accept="application/json" style="display:none">
+          <button class="btn dng" id="wipe" style="width:100%;margin-top:10px">ALLE DATEN AUF DIESEM HANDY LÖSCHEN</button>
+        </div>
+      </div>
+    </details>
+    <details class="set-section">
+      <summary>☕ UNTERSTÜTZEN</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">☕</span><span class="t">UNTERSTÜTZEN</span></div>
+          <div class="dim" style="margin-bottom:10px">A.R.I ist kostenlos und bleibt es. Wenn du die Weiterentwicklung unterstützen möchtest — z. B. die Veröffentlichung in den App-Stores (Google Play, evtl. Apple) oder einfach die Zeit, die reingeht — freue ich mich über jede Spende.</div>
+          <a class="btn pri" href="https://paypal.me/KingSadow" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">ÜBER PAYPAL UNTERSTÜTZEN</a>
+        </div>
+      </div>
+    </details>
+  </section>
+</main>
+
+<!-- ===== GEHIRN 3D-ANSICHT (wie am PC-Hub) ===== -->
+<div class="modal-overlay" id="brainOverlay">
+  <div class="modal brain-modal">
+    <div class="modal-h"><span>✦ GEHIRN · 3D-ANSICHT</span><button class="modal-close" id="brainClose">✕</button></div>
+    <div class="brain-stage" id="brainStage">
+      <canvas id="brainCanvas"></canvas>
+      <div class="brain-stats" id="brainStats"></div>
+      <div class="brain-info" id="brainInfo">
+        <div class="bi-cat" id="biCat"></div>
+        <div class="bi-text" id="biText"></div>
+        <div class="bi-meta" id="biMeta"></div>
+        <button class="btn dng" id="biDelete" style="display:none">LÖSCHEN</button>
+      </div>
+      <div class="brain-hint">ZIEHEN = DREHEN · KNEIFEN/RAD = ZOOM · TIPPEN = ÖFFNEN</div>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <div id="navInd"></div>
+  <button data-t="chat" class="on"><b>◉</b>CHAT</button>
+  <button data-t="cal"><b>▦</b>TERMINE</button>
+  <button data-t="brain"><b>✦</b>GEHIRN</button>
+  <button data-t="pc"><b>▣</b>PC</button>
+  <button data-t="set"><b>⚙</b>EINST.</button>
+</nav>
+
+<div id="qrOv" style="display:none;position:fixed;inset:0;z-index:9999;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:12px"><video id="qrVid" playsinline muted style="width:100%;max-height:70vh;object-fit:cover"></video><div class="dim" id="qrMsg" style="color:#dff6ff">Richte die Kamera auf den QR-Code am PC (Einstellungen → HANDY).</div><button class="btn" id="qrClose" style="width:60%">ABBRECHEN</button></div>
+<script src="jsqr.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
