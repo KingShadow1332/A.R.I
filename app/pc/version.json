@@ -1,7 +1,7 @@
 {
-    "version":  55,
-    "name":  "1.6.26",
+    "version":  56,
+    "name":  "1.6.27",
     "zip":  "ari-pc.zip",
-    "sha256":  "554f84b7a81f73b7592eb34775faa6d7a1a16bd67a24e9f5e1d15281f0430215",
-    "notes":  "Neu: Statistik-Vorschau lesbar (nur was gesendet wird), Klangpakete, Sperr-Liste fuer Apps und Absender, Admin-Uebergabe fuer die CPU-Temperatur."
+    "sha256":  "03673320721423cca10f880db1502185c63b14bf96a880eff54ee644c2cacd8c",
+    "notes":  "Neu: Weckwort-Ton vor der Begruessung, schnellere Erkennung von Ari, Spotify-Daylist abspielen, Benachrichtigungs-Abgleich ohne Doppelte, neue DEV-Tests, Sperr-Liste, Klangpakete."
 }
