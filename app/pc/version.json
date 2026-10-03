@@ -1,7 +1,7 @@
 {
-    "version":  61,
-    "name":  "1.6.32",
+    "version":  62,
+    "name":  "1.6.33",
     "zip":  "ari-pc.zip",
-    "sha256":  "52e8e12a3c055308a685caeea29734703a51f9e0d31ae65fc6e36bcbc81784ae",
-    "notes":  "Google-Einrichtung stellt die App auf Produktion um (Anmeldung laeuft nicht mehr nach 7 Tagen ab), vorher werden Zugriffsbereiche und Testnutzer eingetragen."
+    "sha256":  "637a1316b871215dbeda31a3c90fc38e5da96a8a1ad60119ca5dde2b9ed1f692",
+    "notes":  "Google-Einrichtung: vorhandenes Projekt wird weiterverwendet (kein zweites Projekt), Zugriffsbereiche mit vollstaendigen Adressen, deutsche Google-/Yahoo-Oberflaeche wird erkannt."
 }
