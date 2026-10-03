@@ -505,7 +505,7 @@ main{touch-action:pan-y}
 
   <!-- PC -->
   <section id="t-pc">
-    <details class="set-section" open>
+    <details class="set-section">
       <summary>SYNCHRONISATION</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h"><span class="ico">⇄</span><span class="t">SYNCHRONISATION</span><span class="tag" id="syncTag">–</span></div>
@@ -523,7 +523,7 @@ main{touch-action:pan-y}
         </div>
       </div>
     </details>
-    <details class="set-section" open>
+    <details class="set-section">
       <summary>MIT DEM PC VERBINDEN</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h cy"><span class="ico">▣</span><span class="t">MIT DEM PC VERBINDEN</span><span class="tag" id="pcTag">–</span></div>
@@ -692,7 +692,7 @@ main{touch-action:pan-y}
   <!-- EINSTELLUNGEN -->
   <section id="t-set">
     <div class="dim2" style="margin-bottom:10px;opacity:.6">Kopplung mit dem PC und PC-Bildschirm: Tab „PC". Hier: KI, Hintergrund-Betrieb, Update, Daten.</div>
-    <details class="set-section" open>
+    <details class="set-section">
       <summary>◉ KI-ANBIETER</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h"><span class="ico">◉</span><span class="t">KI-ANBIETER</span></div>
@@ -703,7 +703,6 @@ main{touch-action:pan-y}
       <div class="set"><label>WEITERE GROQ-SCHLÜSSEL (EINER PRO ZEILE)</label><textarea id="sGroqMore" rows="3" autocomplete="off" spellcheck="false" placeholder="Bei erreichtem Limit wechselt A.R.I automatisch zum nächsten Schlüssel" style="width:100%;background:rgba(255,255,255,.04);border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);color:var(--text);border-radius:8px;padding:10px;font:13px var(--font-mono)"></textarea></div>
       <div class="set"><label>SCHLÜSSEL AUSWEICH-ANBIETER</label><input id="sKey2" type="password" autocomplete="off" placeholder="Schlüssel"></div>
       <div class="set"><label>SPRACHE</label><select id="sLang"><option value="de-DE">Deutsch</option><option value="en-US">English</option><option value="fr-FR">Français</option><option value="es-ES">Español</option><option value="it-IT">Italiano</option></select></div>
-      <div class="set"><label>ANTWORTEN VORLESEN</label><div class="seg" id="sTts"><button class="btn" data-v="1">AN</button><button class="btn" data-v="0">AUS</button></div></div>
         </div>
       </div>
     </details>
@@ -737,7 +736,7 @@ main{touch-action:pan-y}
         </div>
       </div>
     </details>
-    <details class="set-section" open>
+    <details class="set-section">
       <summary>⟳ APP-UPDATE</summary>
       <div class="set-section-body">
         <div class="panel" id="updPanel"><div class="panel-h cy"><span class="ico">⟳</span><span class="t">APP-UPDATE</span><span class="tag" id="updVer">–</span></div>
@@ -753,11 +752,21 @@ main{touch-action:pan-y}
         <div class="dim" id="devInfo" style="font-family:var(--font-mono);font-size:11px;line-height:1.7;white-space:pre-wrap">wird geladen …</div>
         <div style="margin-top:10px"><label class="dim" id="betaRow" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="betaChan" style="margin-top:3px"> <span>Beta-Kanal: Test-Versionen vor allen anderen bekommen (kann Fehler haben)</span></label></div>
         <div class="row" style="margin-top:10px"><button class="btn" id="devUpd">UPDATE-PRÜFUNG ERZWINGEN</button><button class="btn" id="devReload">APP NEU LADEN</button></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="devTour">EINFÜHRUNG STARTEN</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="devTour">EINFÜHRUNG STARTEN</button><button class="btn" id="devVoice">STIMME TESTEN</button></div>
         <div class="row" style="margin-top:8px"><button class="btn" id="devStSend">STATISTIK JETZT SENDEN</button><button class="btn" id="devStPv">STATISTIK-VORSCHAU</button></div>
         <input type="password" id="devKey" placeholder="Admin-Schlüssel der Statistik" autocomplete="new-password" spellcheck="false" style="width:100%;box-sizing:border-box;margin-top:10px">
         <div class="row" style="margin-top:8px"><button class="btn" id="devStOpen">STATISTIK-SEITE ÖFFNEN</button><button class="btn" id="devOff">DEV-MODUS AUS</button></div>
         <div class="dim2" id="devMsg" style="margin-top:8px"></div>
+      </div>
+    </details>
+    <details class="set-section" id="voiceSec">
+      <summary>🔊 STIMME</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">🔊</span><span class="t">STIMME</span></div>
+      <div class="set"><label>ANTWORTEN VORLESEN</label><div class="seg" id="sTts"><button class="btn" data-v="1">AN</button><button class="btn" data-v="0">AUS</button></div></div>
+      <div class="set"><label>STIMME</label><select id="sVoice"><option value="edge:katja">Katja</option><option value="edge:conrad">Conrad</option><option value="edge:amala">Amala</option><option value="device">Handy-Stimme</option></select>
+        <div class="dim2" style="margin-top:6px">Katja, Conrad und Amala werden direkt aus dem Internet geladen. Ohne Internet spricht automatisch die Handy-Stimme.</div></div>
+        </div>
       </div>
     </details>
     <details class="set-section" id="statsSec" style="display:none">
