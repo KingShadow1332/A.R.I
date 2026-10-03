@@ -1,7 +1,7 @@
 {
-    "versionCode":  54,
-    "versionName":  "1.54",
+    "versionCode":  56,
+    "versionName":  "1.56",
     "apk":  "ARI.apk",
-    "notes":  "Neu: Einfuehrung beim ersten Start, DEV-Bereich, bessere Handy-Benachrichtigungen (Abgleich nach PC-Pause), lesbare Statistik-Vorschau, Versionsetikett nicht mehr abgeschnitten.",
-    "sizeMb":  5.9
+    "notes":  "BETA: Eigene Kategorie STIMME (Katja/Conrad/Amala direkt am Handy), Einstellungen immer zugeklappt.",
+    "sizeMb":  6.4
 }
