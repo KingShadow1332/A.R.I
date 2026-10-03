@@ -1,7 +1,7 @@
 {
-    "version":  64,
-    "name":  "1.6.35",
+    "version":  65,
+    "name":  "1.6.36",
     "zip":  "ari-pc.zip",
-    "sha256":  "dffb764861d2510a599227012595434b07af8bcf65186b250dfd06cc83e11884",
-    "notes":  "Neu: weiteren Groq-Schluessel automatisch erstellen (auch mit anderem Konto), neue Schluessel landen im naechsten freien Platz."
+    "sha256":  "604b68831950e6a6c7866d409e22b437645aa9040d7fdfba439fb1b2a2d3d4db",
+    "notes":  "Neu: ein Klick erstellt alle freien Groq-Schluessel (bis 5). Fix: KI-Hilfe klickt \u0027Bereiche hinzufuegen oder entfernen\u0027 selbst (wurde faelschlich als Loeschen gewertet)."
 }
