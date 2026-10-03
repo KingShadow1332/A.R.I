@@ -1,7 +1,7 @@
 {
-    "version":  56,
-    "name":  "1.6.27",
+    "version":  57,
+    "name":  "1.6.28",
     "zip":  "ari-pc.zip",
-    "sha256":  "03673320721423cca10f880db1502185c63b14bf96a880eff54ee644c2cacd8c",
-    "notes":  "Neu: Weckwort-Ton vor der Begruessung, schnellere Erkennung von Ari, Spotify-Daylist abspielen, Benachrichtigungs-Abgleich ohne Doppelte, neue DEV-Tests, Sperr-Liste, Klangpakete."
+    "sha256":  "1310acdc52c89a42cba59a5ad7abde53f0c02fc2b57acd3fdef8c81fa159cdd9",
+    "notes":  "Neu: Automatische Einrichtung per Browser mit KI-Hilfe (Spotify, Google, Yahoo, Groq, Gemini - du meldest dich nur an), KI-Limit: A.R.I wartet und macht automatisch weiter (Chat und Einrichtung), Tray-Symbol, Spotify-Anzeige und Login repariert, Stimmen-Paket, Autostart im Setup, Einfuehrung nach der Installation, vier Kacheln."
 }
