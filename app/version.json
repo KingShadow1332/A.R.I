@@ -1,7 +1,7 @@
 {
-    "versionCode":  51,
-    "versionName":  "1.51",
+    "versionCode":  54,
+    "versionName":  "1.54",
     "apk":  "ARI.apk",
-    "notes":  "BETA: Einfuehrung beim ersten Start, Beta-Updates direkt in der App installierbar.",
+    "notes":  "Neu: Einfuehrung beim ersten Start, DEV-Bereich, bessere Handy-Benachrichtigungen (Abgleich nach PC-Pause), lesbare Statistik-Vorschau, Versionsetikett nicht mehr abgeschnitten.",
     "sizeMb":  5.9
 }
