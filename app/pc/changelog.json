@@ -31,5 +31,6 @@
   {"version": 58, "name": "1.6.29", "notes": "Neu: Streaming-Dienste im Gehirn ankreuzen (Film/Serie-Suche bevorzugt deine Dienste, mehr Anbieter), Browser-Einrichtung mit KI-Hilfe, KI-Limit: automatisch weitermachen."},
   {"version": 59, "name": "1.6.30", "notes": "Fix: Google-Einrichtung nutzt den Namen ARIAssistant (Google verlangt mindestens 4 Buchstaben, keine Sonderzeichen)."},
   {"version": 60, "name": "1.6.31", "notes": "Browser-Einrichtung: sagt vorher an, was sie tut und was du selbst tun musst (Hinweis + Vorlesen), KI-Limit-Hinweis ergaenzt den Schritt statt ihn zu ueberdecken, Google: alle Zugriffsbereiche (Kalender, Gmail lesen/senden) und Testnutzer werden eingetragen (behebt Fehler 403 access_denied)."},
-  {"version": 61, "name": "1.6.32", "notes": "Google-Einrichtung stellt die App auf Produktion um (Anmeldung laeuft nicht mehr nach 7 Tagen ab), vorher werden Zugriffsbereiche und Testnutzer eingetragen."}
+  {"version": 61, "name": "1.6.32", "notes": "Google-Einrichtung stellt die App auf Produktion um (Anmeldung laeuft nicht mehr nach 7 Tagen ab), vorher werden Zugriffsbereiche und Testnutzer eingetragen."},
+  {"version": 62, "name": "1.6.33", "notes": "Google-Einrichtung: vorhandenes Projekt wird weiterverwendet (kein zweites Projekt), Zugriffsbereiche mit vollstaendigen Adressen, deutsche Google-/Yahoo-Oberflaeche wird erkannt."}
 ]
