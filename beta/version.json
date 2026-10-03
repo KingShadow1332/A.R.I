@@ -1,7 +1,7 @@
 {
-    "versionCode":  57,
-    "versionName":  "1.57",
+    "versionCode":  58,
+    "versionName":  "1.58",
     "apk":  "ARI.apk",
-    "notes":  "Neu: Kategorie STIMME (Katja, Conrad, Amala direkt am Handy), Einstellungen immer zugeklappt, Einfuehrung, DEV-Bereich, bessere Benachrichtigungen.",
+    "notes":  "Gehirn: Streaming-Dienste ankreuzen, Film/Serie-Suche bevorzugt eigene Dienste.",
     "sizeMb":  6.4
 }
