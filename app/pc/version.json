@@ -1,7 +1,7 @@
 {
-    "version":  58,
-    "name":  "1.6.29",
+    "version":  59,
+    "name":  "1.6.30",
     "zip":  "ari-pc.zip",
-    "sha256":  "bcf8da99e14156ab59937dc3fa51d77bf29189bddc6e0399be478c6f8c618f32",
-    "notes":  "Neu: Streaming-Dienste im Gehirn ankreuzen (Film/Serie-Suche bevorzugt deine Dienste, mehr Anbieter), Browser-Einrichtung mit KI-Hilfe, KI-Limit: automatisch weitermachen."
+    "sha256":  "0f736635acab1824fdef0874e6f96208e18c9c133708b18f4a80ad1b8d678d95",
+    "notes":  "Fix: Google-Einrichtung nutzt den Namen ARIAssistant (Google verlangt mindestens 4 Buchstaben, keine Sonderzeichen)."
 }
