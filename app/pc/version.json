@@ -1,7 +1,7 @@
 {
-    "version":  65,
-    "name":  "1.6.36",
+    "version":  66,
+    "name":  "1.6.37",
     "zip":  "ari-pc.zip",
-    "sha256":  "604b68831950e6a6c7866d409e22b437645aa9040d7fdfba439fb1b2a2d3d4db",
-    "notes":  "Neu: ein Klick erstellt alle freien Groq-Schluessel (bis 5). Fix: KI-Hilfe klickt \u0027Bereiche hinzufuegen oder entfernen\u0027 selbst (wurde faelschlich als Loeschen gewertet)."
+    "sha256":  "39450b2e86d0b501a6c08180037e3924233b9499d084e8e947e671525aa71ea9",
+    "notes":  "Google-Verbindung: Login oeffnet nur noch nach Klick auf VERBINDEN, hoechstens 2 Versuche, dann Abbruch. Einrichtung sagt nur noch kurze Saetze. Zustimmungsbildschirm auch auf deutscher Oberflaeche, Projekt wird wiedergefunden, KI-Hilfe stabiler."
 }
