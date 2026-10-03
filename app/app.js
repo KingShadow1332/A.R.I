@@ -105,7 +105,8 @@ const saveBrain=()=>store.set('ari-app-brain',brain);
 /* ---------- Tabs / Uhr ---------- */
 const TAB_ORDER=$$('nav button').map(b=>b.dataset.t);
 function moveNavInd(t){const ind=$('#navInd');if(!ind)return;const i=TAB_ORDER.indexOf(t);if(i<0)return;ind.style.transform='translateX('+(i*100)+'%)';}
-function goTab(t){track('tab_'+t);$$('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));moveNavInd(t);if(t==='brain')renderBrain();if(t==='pc')renderPcs();if(t==='cal')loadCalData();}
+function goTab(t){track('tab_'+t);if(t==='set')$$('#t-set details.set-section').forEach(d=>{d.open=false;});   // Einstellungen: alle Kategorien starten immer zugeklappt
+  $$('nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));moveNavInd(t);if(t==='brain')renderBrain();if(t==='pc')renderPcs();if(t==='cal')loadCalData();}
 $$('nav button').forEach(b=>b.onclick=()=>goTab(b.dataset.t));
 moveNavInd(TAB_ORDER[0]);
 // Wischen zwischen den Reitern (Chat/Termine/Gehirn/PC/Einst.): der Inhalt und die Unterstreichung
@@ -324,12 +325,31 @@ function speakWeb(t){if(!window.speechSynthesis)return;const u=new SpeechSynthes
 // TTS-Engine (klingt natuerlicher), faellt automatisch auf die Web-Stimme zurueck, wenn nicht verfuegbar.
 // Fuer die Sprachausgabe: Emojis, Markdown-Zeichen und Links weglassen (sonst liest die Stimme sie vor)
 function speechClean(t){return String(t||'').replace(/[\p{Extended_Pictographic}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu,' ').replace(/https?:\/\/\S+/g,' ').replace(/[*_`#~|]+/g,' ').replace(/\s{2,}/g,' ').trim();}
-function speak(t){
-  t=speechClean(t);
-  if(cfg.tts!=='1'||!t)return;
+let edgeAudio=null;
+const EDGE_VOICES={'edge:katja':'de-DE-KatjaNeural','edge:conrad':'de-DE-ConradNeural','edge:amala':'de-DE-AmalaNeural'};
+// Die gleichen Stimmen wie am PC (Microsoft Edge: Katja, Conrad, Amala) - direkt vom Handy, ohne PC. Braucht Internet;
+// klappt es nicht (offline, Fehler, zu langsam), spricht still die Handy-Stimme.
+async function speakEdge(t,voice){
+  const P=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriTts;
+  if(!P||!P.edgeSynth)throw new Error('nicht verfuegbar');
+  const r=await P.edgeSynth({text:t.slice(0,1500),voice:EDGE_VOICES[voice]||EDGE_VOICES['edge:katja']});
+  if(!r||!r.audio)throw new Error('kein Audio');
+  if(edgeAudio){try{edgeAudio.pause();}catch(e){}}
+  const a=edgeAudio=new Audio('data:audio/mpeg;base64,'+r.audio);
+  a.onended=()=>{if(edgeAudio===a)edgeAudio=null;};
+  await a.play();
+}
+function speakDevice(t){
   const P=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriTts;
   if(P){P.speak({text:t,lang:cfg.lang}).catch(()=>speakWeb(t));return;}
   speakWeb(t);
+}
+function speak(t){
+  t=speechClean(t);
+  if(cfg.tts!=='1'||!t)return;
+  const v=cfg.voice||'edge:katja';
+  if(v!=='device'&&cfg.lang==='de-DE'&&NATIVE){speakEdge(t,v).catch(()=>speakDevice(t));return;}   // die Edge-Stimmen gibt es hier fuer Deutsch; sonst Handy-Stimme
+  speakDevice(t);
 }
 async function send(text){
   text=(text||'').trim();if(!text)return;
@@ -1116,6 +1136,7 @@ setInterval(()=>{if(document.getElementById('t-cal').classList.contains('on'))lo
 function loadSet(){
   $('#sProv').value=cfg.provider;$('#sKey').value=cfg.keys[cfg.provider]||'';$('#sProv2').value=cfg.fb||'';$('#sKey2').value=cfg.fbKey||'';$('#sLang').value=cfg.lang;$('#sGroqMore').value=(sync.groqAll||[]).slice(1).join(String.fromCharCode(10));
   $$('#sTts .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===cfg.tts));
+  $('#sVoice').value=cfg.voice||'edge:katja';
   $$('#sPc .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.pcRoute||'auto')));
   $('#sIcs').value=cfg.icsUrl||'';$('#sGid').value=cfg.gClientId||'';
   $('#gStatus').textContent=gOn()?'✓ Bei Google angemeldet – Termine und Mails laufen direkt über Google, ohne PC.':'Nicht angemeldet.';
@@ -1131,6 +1152,7 @@ $('#sProv2').onchange=()=>{cfg.fb=$('#sProv2').value;saveCfg();};
 $('#sKey2').onchange=()=>{cfg.fbKey=$('#sKey2').value.trim();saveCfg();};
 $('#sLang').onchange=()=>{cfg.lang=$('#sLang').value;saveCfg();};
 $$('#sTts .btn').forEach(b=>b.onclick=()=>{cfg.tts=b.dataset.v;saveCfg();loadSet();});
+$('#sVoice').onchange=()=>{cfg.voice=$('#sVoice').value;saveCfg();speak('Das ist meine Stimme.');};
 $$('#sPc .btn').forEach(b=>b.onclick=()=>{cfg.pcRoute=b.dataset.v;saveCfg();loadSet();});
 $$('#sGMail .btn').forEach(b=>b.onclick=()=>{cfg.gMail=b.dataset.v;saveCfg();loadSet();});
 $('#gCopyPkg').onclick=()=>{try{navigator.clipboard.writeText('com.ari.assistant');$('#gStatus').textContent='Paketname kopiert.';}catch(e){}};
@@ -1437,6 +1459,8 @@ const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
 on('#devUpd',async()=>{msg('Suche …');try{await checkUpdate(true);msg('Update-Prüfung fertig (Ergebnis siehe APP-UPDATE).');}catch(e){msg('Fehler: '+e.message);}});
 on('#devReload',()=>location.reload());
 on('#devTour',()=>{goTab('chat');tourStart();});
+on('#devVoice',async()=>{const v=cfg.voice||'edge:katja';msg('Teste '+v+' …');if(v==='device'||cfg.lang!=='de-DE'||!NATIVE){speakDevice('Hallo, ich bin A.R.I. Das ist die Handy-Stimme.');msg('Handy-Stimme gespielt.');return;}
+  const t0=Date.now();try{await speakEdge('Hallo, ich bin A.R.I. Das ist die Stimme '+v.replace('edge:','')+'.',v);msg('Edge-Stimme ok ('+(Date.now()-t0)+' ms).');}catch(e){msg('Edge-Stimme nicht erreichbar ('+(e.message||e)+') - Handy-Stimme als Ersatz.');speakDevice('Hallo, ich bin A.R.I. Das ist die Handy-Stimme.');}});
 on('#devStSend',async()=>{msg('Sende …');const ok=await statsSend();msg(ok?'Statistik gesendet.':'Nicht gesendet (aus, keine Adresse oder kein Internet).');});
 on('#devStPv',()=>statsPreviewShow());
 on('#devStOpen',async()=>{const ep=await statsEndpoint(),k=($('#devKey').value||'').trim();if(!ep||!k){msg('Adresse oder Schlüssel fehlt.');return;}window.open(ep+'/?key='+encodeURIComponent(k),'_system');});
