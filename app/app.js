@@ -180,11 +180,49 @@ setInterval(()=>{const d=new Date();$('#clock').firstChild.nodeValue=d.toLocaleT
 
 /* ---------- Werkzeuge (laufen komplett auf dem Handy) ---------- */
 const TOOLS=[
+  {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
   {name:'forget',description:'Loescht Erinnerungen, die zum Suchbegriff passen.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
   {name:'maps_route',description:'Plant eine Route (Auto/zu Fuss/Fahrrad/OePNV) in Google Maps.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']}},required:['destination']}},
   {name:'find_restaurant',description:'Sucht ein Restaurant und bereitet die Tischreservierung vor (Personenzahl/Zeit vorausgefuellt). Bucht nicht selbst - der Nutzer bestaetigt auf der Seite.',parameters:{type:'object',properties:{query:{type:'string'},people:{type:'integer'},when:{type:'string',description:'YYYY-MM-DD HH:MM'}},required:['query']}}
 ];
+/* ---------- Streaming-Dienste (wie am PC im Gehirn ankreuzbar) ---------- */
+const STREAM=[['Netflix','https://www.netflix.com/search?q={q}',['netflix']],['Disney+','https://www.disneyplus.com/search/{q}',['disney']],
+  ['Amazon Prime Video','https://www.amazon.de/s?k={q}&i=instant-video',['amazon','prime']],['Apple TV+','https://tv.apple.com/search?term={q}',['apple']],
+  ['Paramount+','https://www.paramountplus.com/de/search/?query={q}',['paramount']],['WOW (Sky)','https://www.wow.de/suche?q={q}',['wow','sky']],
+  ['RTL+','https://plus.rtl.de/suche?q={q}',['rtl']],['Joyn','https://www.joyn.de/suche?q={q}',['joyn']],['DAZN','https://www.google.com/search?q={q}+site:dazn.com',['dazn']],
+  ['Crunchyroll','https://www.crunchyroll.com/search?q={q}',['crunchyroll']],['MagentaTV','https://www.google.com/search?q={q}+site:magentatv.de',['magenta']],
+  ['ARD Mediathek','https://www.ardmediathek.de/suche/{q}',['ard']],['ZDF Mediathek','https://www.zdf.de/suche?q={q}',['zdf']],['ARTE','https://www.arte.tv/de/search/?q={q}',['arte']],
+  ['Max (HBO)','https://www.max.com/search?q={q}',['max','hbo']],['YouTube','https://www.youtube.com/results?search_query={q}',['youtube']],
+  ['Twitch','https://www.twitch.tv/search?term={q}',['twitch']],['Plex','https://watch.plex.tv/search?q={q}',['plex']],
+  ['Pluto TV','https://www.google.com/search?q={q}+site:pluto.tv',['pluto']],['Rakuten TV','https://www.google.com/search?q={q}+site:rakuten.tv',['rakuten']]];
+const STREAM_PRE='Hat diese Streaming-Dienste:';
+const streamNode=()=>brain.find(n=>String(n.text).startsWith(STREAM_PRE));
+function streamMine(){const n=streamNode();if(!n)return[];const set=new Set(n.text.slice(STREAM_PRE.length).split(',').map(x=>x.trim().toLowerCase()));return STREAM.map(x=>x[0]).filter(x=>set.has(x.toLowerCase()));}
+function streamSet(list){
+  const old=streamNode();if(old){brain=brain.filter(n=>n!==old);sync.deleted=(sync.deleted||[]).concat(old.text);saveSync();}
+  if(list.length)brain.push({id:Date.now()+Math.random().toString(36).slice(2,6),text:STREAM_PRE+' '+list.join(', '),cat:'Streaming-Anbieter',ts:Date.now()});
+  saveBrain();syncSoon();
+}
+const streamMatch=(pkg,svc)=>{const e=STREAM.find(x=>x[0]===svc);const low=String(pkg||'').toLowerCase();return !!e&&e[2].some(w=>new RegExp('(^|[^a-z])'+w+'($|[^a-z])').test(low));};
+function renderStream(){
+  const box=$('#brStream');if(!box)return;const mine=new Set(streamMine());box.textContent='';
+  STREAM.forEach(([name])=>{const b=document.createElement('button');b.className='btn'+(mine.has(name)?' pri':'');b.style.cssText='min-height:30px;padding:4px 10px;font-size:11px;flex:none';b.textContent=(mine.has(name)?'✓ ':'')+name;
+    b.onclick=()=>{const cur=new Set(streamMine());cur.has(name)?cur.delete(name):cur.add(name);streamSet(STREAM.map(x=>x[0]).filter(x=>cur.has(x)));renderStream();renderBrain();};box.appendChild(b);});
+}
+// Film/Serie suchen: JustWatch (wo laeuft der Titel?), eigene Dienste zuerst; klappt die Abfrage nicht, Suche beim ersten eigenen Dienst
+async function streamLookup(title,mine){
+  try{
+    const q='query GetSearchTitles($f: TitleFilter!, $c: Country!, $l: Language!, $n: Int!) { popularTitles(country: $c, filter: $f, first: $n) { edges { node { offers(country: $c, platform: WEB) { monetizationType standardWebURL package { clearName } } } } } }';
+    const ac=new AbortController(),to=setTimeout(()=>ac.abort(),6000);
+    const r=await fetch('https://apis.justwatch.com/graphql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:{f:{searchQuery:title},c:'DE',l:'de',n:1}}),signal:ac.signal});clearTimeout(to);
+    const d=await r.json();const offers=(((d.data||{}).popularTitles||{}).edges||[]).map(e=>(e.node||{}).offers||[])[0]||[];
+    const flat=offers.filter(o=>o.monetizationType==='FLATRATE');
+    const mineOf=flat.filter(o=>mine.some(s=>streamMatch((o.package||{}).clearName,s)));
+    const pick=mineOf[0]||flat[0]||offers[0];if(pick&&pick.standardWebURL)return{name:(pick.package||{}).clearName||'',url:pick.standardWebURL};
+  }catch(e){}
+  return null;
+}
 let links=[];
 function runTool(name,a){
   a=a||{};
@@ -192,6 +230,15 @@ function runTool(name,a){
     if(brain.some(n=>n.text.toLowerCase()===t.toLowerCase()))return 'Das wusste ich schon.';
     brain.push({id:Date.now()+Math.random().toString(36).slice(2,6),text:t,cat:String(a.category||'Wissen').slice(0,30),ts:Date.now()});saveBrain();syncSoon();return 'Gespeichert.';}
   if(name==='forget'){const q=String(a.query||'').toLowerCase();const gone=brain.filter(n=>n.text.toLowerCase().includes(q));brain=brain.filter(n=>!gone.includes(n));saveBrain();gone.forEach(n=>{sync.deleted=(sync.deleted||[]).concat(n.text);});saveSync();syncSoon();return gone.length+' Eintrag/Eintraege geloescht.';}
+  if(name==='play_streaming_title'){const t=String(a.title||'').trim();if(!t)return 'Kein Titel.';
+    const mine=streamMine();const want=String(a.provider||'').trim().toLowerCase();
+    const svc=STREAM.find(x=>want&&(x[0].toLowerCase().includes(want)||want.includes(x[0].toLowerCase().split(' ')[0])))||STREAM.find(x=>x[0]===mine[0]);
+    const search=svc?svc[1].replace('{q}',encodeURIComponent(t)):'https://www.google.com/search?q='+encodeURIComponent(t+' stream');
+    const label='Jetzt ansehen: '+t+(svc?' ('+svc[0]+')':'');
+    const entry={url:search,label};links.push(entry);
+    // Verfeinern: wo laeuft der Titel wirklich? (aktualisiert den Link, sobald JustWatch antwortet)
+    streamLookup(t,mine).then(r=>{if(r){entry.url=r.url;entry.label='Jetzt ansehen: '+t+' ('+r.name+')';document.querySelectorAll('a.lk').forEach(x=>{if(x.textContent.indexOf('↗ Jetzt ansehen: '+t)===0){x.href=r.url;x.textContent='↗ '+entry.label;}});}});
+    return 'Link zu "'+t+'" ist bereit'+(svc?' ('+svc[0]+(mine.includes(svc[0])?', aus deinen Diensten':'')+')':' (Google-Suche, keine Dienste im Gehirn angekreuzt)')+'.';}
   if(name==='maps_route'){const d=String(a.destination||'').trim();if(!d)return 'Kein Ziel.';
     const m={driving:1,walking:1,bicycling:1,transit:1}[a.mode]?a.mode:'driving';
     let u='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode='+m;if(a.origin)u+='&origin='+encodeURIComponent(a.origin);
@@ -384,7 +431,7 @@ $('#mic').onclick=mic;$('#orb').onclick=mic;
 /* ---------- Gehirn ---------- */
 let brainCat='ALLE';
 function renderBrain(){
-  $('#brTag').textContent=brain.length+' ERINNERUNGEN';
+  $('#brTag').textContent=brain.length+' ERINNERUNGEN';renderStream();
   const cats={};brain.forEach(n=>cats[n.cat]=(cats[n.cat]||0)+1);
   const cb=$('#brCats');cb.textContent='';
   ['ALLE',...Object.keys(cats).sort()].forEach(c=>{const b=document.createElement('button');b.className='cat'+(c===brainCat?' on':'');b.textContent=c==='ALLE'?'ALLE ('+brain.length+')':c+' ('+cats[c]+')';b.onclick=()=>{brainCat=c;renderBrain();};cb.appendChild(b);});
