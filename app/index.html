@@ -56,6 +56,8 @@ section.on{display:flex}
 .panel-h .t{font:700 11.5px var(--font-mono);letter-spacing:.22em;color:var(--pink)}
 .panel-h.cy .t,.panel-h.cy .ico{color:var(--cyan);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--cyan) 55%,transparent))}
 .panel-h .tag{margin-left:auto;font:500 9px var(--font-mono);letter-spacing:.1em;color:var(--text-dim2)}
+.panel-h .tag{white-space:nowrap;flex:none;margin-right:10px}   /* Versions-/Status-Etikett nicht an den Rand klemmen oder abschneiden */
+.panel-h .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--cyan) 6%,rgba(255,255,255,.03));border:1px solid color-mix(in srgb,var(--cyan) 30%,transparent);color:var(--text);
   border-radius:8px;padding:12px 10px;font:600 12px var(--font-mono);letter-spacing:.08em;min-height:44px}
 .btn:active{background:color-mix(in srgb,var(--cyan) 22%,transparent)}
