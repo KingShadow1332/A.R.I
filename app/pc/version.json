@@ -1,7 +1,7 @@
 {
-    "version":  60,
-    "name":  "1.6.31",
+    "version":  61,
+    "name":  "1.6.32",
     "zip":  "ari-pc.zip",
-    "sha256":  "5238e8289e273de4978730b49bd678c2692d91f87b42a25da3b24c39a0e8678b",
-    "notes":  "Browser-Einrichtung: sagt vorher an, was sie tut und was du selbst tun musst (Hinweis + Vorlesen), KI-Limit-Hinweis ergaenzt den Schritt statt ihn zu ueberdecken, Google: alle Zugriffsbereiche (Kalender, Gmail lesen/senden) und Testnutzer werden eingetragen (behebt Fehler 403 access_denied)."
+    "sha256":  "52e8e12a3c055308a685caeea29734703a51f9e0d31ae65fc6e36bcbc81784ae",
+    "notes":  "Google-Einrichtung stellt die App auf Produktion um (Anmeldung laeuft nicht mehr nach 7 Tagen ab), vorher werden Zugriffsbereiche und Testnutzer eingetragen."
 }
