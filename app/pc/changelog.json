@@ -29,5 +29,6 @@
   {"version": 56, "name": "1.6.27", "notes": "Neu: Weckwort-Ton vor der Begruessung, schnellere Erkennung von Ari, Spotify-Daylist abspielen, Benachrichtigungs-Abgleich ohne Doppelte, neue DEV-Tests, Sperr-Liste, Klangpakete."},
   {"version": 57, "name": "1.6.28", "notes": "Neu: Automatische Einrichtung per Browser mit KI-Hilfe (Spotify, Google, Yahoo, Groq, Gemini - du meldest dich nur an), KI-Limit: A.R.I wartet und macht automatisch weiter (Chat und Einrichtung), Tray-Symbol, Spotify-Anzeige und Login repariert, Stimmen-Paket, Autostart im Setup, Einfuehrung nach der Installation, vier Kacheln."},
   {"version": 58, "name": "1.6.29", "notes": "Neu: Streaming-Dienste im Gehirn ankreuzen (Film/Serie-Suche bevorzugt deine Dienste, mehr Anbieter), Browser-Einrichtung mit KI-Hilfe, KI-Limit: automatisch weitermachen."},
-  {"version": 59, "name": "1.6.30", "notes": "Fix: Google-Einrichtung nutzt den Namen ARIAssistant (Google verlangt mindestens 4 Buchstaben, keine Sonderzeichen)."}
+  {"version": 59, "name": "1.6.30", "notes": "Fix: Google-Einrichtung nutzt den Namen ARIAssistant (Google verlangt mindestens 4 Buchstaben, keine Sonderzeichen)."},
+  {"version": 60, "name": "1.6.31", "notes": "Browser-Einrichtung: sagt vorher an, was sie tut und was du selbst tun musst (Hinweis + Vorlesen), KI-Limit-Hinweis ergaenzt den Schritt statt ihn zu ueberdecken, Google: alle Zugriffsbereiche (Kalender, Gmail lesen/senden) und Testnutzer werden eingetragen (behebt Fehler 403 access_denied)."}
 ]
