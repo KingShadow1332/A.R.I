@@ -1,7 +1,7 @@
 {
-    "version":  69,
-    "name":  "1.6.40",
+    "version":  70,
+    "name":  "1.6.41",
     "zip":  "ari-pc.zip",
-    "sha256":  "8ebd3c1ef5f8eea30fb81ef8147712746c91da5e2f5a1d5ad7a378abf6471704",
-    "notes":  "Autostart-Reparatur, Spotify- und Google-Einrichtung verbessert, Tutorial spricht sofort, KI-Schlüssel steht in der Einführung zuerst, Groq empfohlen, Netzwerk-Aktivität auf Live, nur ein Symbol im Infobereich."
+    "sha256":  "bcf9741238a206b651088363d4dd003066fce69847b21f89206f71c708abc654",
+    "notes":  "Neue Optik mit weniger Grafiklast, Mitdenken (A.R.I spart bei hoher PC-Auslastung), Wahl der Grafikkarte (Standard: integrierte), runde Ringe, kein schwarzes Fenster mehr beim Start, Autostart-Reparatur, schnellere Tutorial-Stimme, Spotify- und Google-Einrichtung verbessert."
 }
