@@ -1,9 +1,9 @@
 {
-    "version":  72,
-    "name":  "1.6.43",
+    "version":  73,
+    "name":  "1.6.44",
     "zip":  "ari-pc.zip",
-    "sha256":  "0f126d2fdf844ea6aad7f1383597efbe7a49f4871eee49c830d6a914cc8c4773",
+    "sha256":  "5f9e25619c0e6b25f00589af824d6aa41c300994eecc6e15f5296db2152a6ce1",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "b654a9ca4b0dc36a342ad8a364d2e130acb223cbbed58a0aaa65ad233b739174",
-    "notes":  "Sensor-Modul (CPU/GPU-Anzeige) wird bei Bedarf automatisch installiert, Admin-Rechte werden zuverlässiger übernommen (mit Hinweis und Reparatur-Knopf), größere Schrift in den Einstellungen."
+    "lhm_sha256":  "fa27ebe285ba60ebf57e215347e4c7488e92028f650813c28906f7eab5f37077",
+    "notes":  "Neu: Spielerkennung automatisch + Spielmodus per Auswahl, Spielbefehle nur im Spielmodus, Routenplanung (Suchfeld, Routen-Ziel, Ziel festlegen), Dazwischenreden und schnelleres Reagieren auf Ari mit Zuhoeren-Anzeige, weniger Grafiklast, A.R.I-Look im Tray-Menue, groessere Schrift in den Einstellungen."
 }
