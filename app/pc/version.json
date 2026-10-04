@@ -1,7 +1,9 @@
 {
-    "version":  71,
-    "name":  "1.6.42",
+    "version":  72,
+    "name":  "1.6.43",
     "zip":  "ari-pc.zip",
-    "sha256":  "e717169334204a1c0f213619763594a39d701e5696b50cf8831ff0051b5b9563",
-    "notes":  "Google-Einrichtung: Kalender- und Gmail-Schnittstelle werden jetzt sicher eingeschaltet (vorher blieb sie manchmal aus und es kam Fehler 403)."
+    "sha256":  "0f126d2fdf844ea6aad7f1383597efbe7a49f4871eee49c830d6a914cc8c4773",
+    "lhm_zip":  "ari-lhm.zip",
+    "lhm_sha256":  "b654a9ca4b0dc36a342ad8a364d2e130acb223cbbed58a0aaa65ad233b739174",
+    "notes":  "Sensor-Modul (CPU/GPU-Anzeige) wird bei Bedarf automatisch installiert, Admin-Rechte werden zuverlässiger übernommen (mit Hinweis und Reparatur-Knopf), größere Schrift in den Einstellungen."
 }
