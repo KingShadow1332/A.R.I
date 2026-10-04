@@ -1,7 +1,7 @@
 {
-    "version":  66,
-    "name":  "1.6.37",
+    "version":  68,
+    "name":  "1.6.39",
     "zip":  "ari-pc.zip",
-    "sha256":  "39450b2e86d0b501a6c08180037e3924233b9499d084e8e947e671525aa71ea9",
-    "notes":  "Google-Verbindung: Login oeffnet nur noch nach Klick auf VERBINDEN, hoechstens 2 Versuche, dann Abbruch. Einrichtung sagt nur noch kurze Saetze. Zustimmungsbildschirm auch auf deutscher Oberflaeche, Projekt wird wiedergefunden, KI-Hilfe stabiler."
+    "sha256":  "7daf002f4688eb5361a6fadc9f909e0400a1b88966044b4e6947795fb3f0c135",
+    "notes":  "Google-Einrichtung läuft jetzt komplett automatisch (eigenes Projekt, Branding, Testnutzer, Client), Netzwerk-Aktivität startet auf Live, A.R.I-Symbol im Infobereich auch im Hintergrundbetrieb."
 }
