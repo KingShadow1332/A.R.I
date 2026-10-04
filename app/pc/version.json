@@ -1,7 +1,7 @@
 {
-    "version":  70,
-    "name":  "1.6.41",
+    "version":  71,
+    "name":  "1.6.42",
     "zip":  "ari-pc.zip",
-    "sha256":  "bcf9741238a206b651088363d4dd003066fce69847b21f89206f71c708abc654",
-    "notes":  "Neue Optik mit weniger Grafiklast, Mitdenken (A.R.I spart bei hoher PC-Auslastung), Wahl der Grafikkarte (Standard: integrierte), runde Ringe, kein schwarzes Fenster mehr beim Start, Autostart-Reparatur, schnellere Tutorial-Stimme, Spotify- und Google-Einrichtung verbessert."
+    "sha256":  "e717169334204a1c0f213619763594a39d701e5696b50cf8831ff0051b5b9563",
+    "notes":  "Google-Einrichtung: Kalender- und Gmail-Schnittstelle werden jetzt sicher eingeschaltet (vorher blieb sie manchmal aus und es kam Fehler 403)."
 }
