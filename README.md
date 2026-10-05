@@ -4,7 +4,7 @@ A.R.I läuft als Command Center auf dem PC und als eigenständige App auf dem Ha
 
 ## 🖥️ Für den PC
 
-1. **[ari-pc-setup.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip)**
+1. **[ari-pc-setup.zip herunterladen](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip)**
 2. Entpacken (z. B. auf den Desktop)
 3. **`ARI-Setup.exe` doppelklicken** und „Installieren“ wählen — richtet Python & alle Pakete automatisch ein
 
@@ -12,7 +12,7 @@ A.R.I sucht beim Start selbst nach neueren Versionen und bietet ein Update per K
 
 ## 🐧 Für Linux (Ubuntu/Debian, X11) — ⚠️ ungetestet
 
-1. **[ari-linux.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip)** und entpacken
+1. **[ari-linux.zip herunterladen](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip)** und entpacken
 2. Im Terminal im entpackten Ordner: `bash linux/install.sh`
 3. Fertig — „A.R.I Assistant“ steht im Programmmenü (und optional auf dem Desktop, mit Icon)
 
@@ -21,7 +21,7 @@ Unter **Wayland** sind Tasten-/Maussteuerung und Bildschirm-Ansicht eingeschrän
 
 ## 📱 Fürs Handy (Android)
 
-1. **[ARI.apk herunterladen](https://kingshadow1332.github.io/A.R.I/app/ARI.apk)**
+1. **[ARI.apk herunterladen](https://ari-stats.morice3474.workers.dev/dl/ARI.apk)**
 2. Datei öffnen und installieren (Android fragt einmal nach Erlaubnis für „Unbekannte Apps“ bzw. blockiert es kurz über den Play-Protect-Schutz — dort „Trotzdem installieren“ wählen)
 3. App öffnen, mit dem PC koppeln (QR-Code am PC unter Einstellungen → HANDY)
 
@@ -31,9 +31,13 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 
 | | Version | Download |
 |---|---|---|
-| PC (Windows) | 1.6.44 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
-| PC (Linux) | 1.6.44 | [ari-linux.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-linux.zip) |
-| Handy | 1.58 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
+| PC (Windows) | 1.6.45 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
+| PC (Linux) | 1.6.45 | [ari-linux.zip](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip) |
+| Handy | 1.59 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
+
+| PC (Windows) | 1.6.1 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
+| PC (Linux) | 1.6.1 | [ari-linux.zip](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip) |
+| Handy | 1.7.3 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
 
