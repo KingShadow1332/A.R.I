@@ -1,9 +1,9 @@
 {
-    "version":  74,
-    "name":  "1.6.45",
+    "version":  75,
+    "name":  "1.6.46",
     "zip":  "ari-pc.zip",
-    "sha256":  "887ab813e9531df7c46451793b0099bc930af3d66eb69b1e38c5b0e5460cfbc6",
+    "sha256":  "377112ec0b9a5609433305999407ffffdad359ae2c084ecd85fecb909bfce4c5",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "f10b57e7541ee5c936e75232584b0008eea76119bc8e5520125e6a70023c36f4",
-    "notes":  "Neu: Auf WhatsApp/Discord-Nachrichten vom PC aus antworten (im HUD oder per Sprache mit Bestaetigung), Spielbefehle nur im Spielmodus, Spielmodus per Auswahl, schnelleres Reagieren auf Ari mit Zuhoeren-Anzeige, Routenplanung verbessert (Routen-Ziel, Ziel festlegen)."
+    "lhm_sha256":  "66643c289e4f1a6c877ba76177c87a73ef24065572ae3d074f63f856d7f04b23",
+    "notes":  "Neu: Nachrichten und Anrufe (WhatsApp, Discord ...) werden angesagt - A.R.I fragt, ob er antworten soll, und sendet deine gesprochene Antwort direkt; beantwortete Nachrichten verschwinden. Spielbefehle nur im Spielmodus, A.R.I beenden schliesst auch Hub und Fenster, genauere Spracherkennung, kurze Fehlermeldungen, Alle-loeschen-Knopf bei den Benachrichtigungen."
 }
