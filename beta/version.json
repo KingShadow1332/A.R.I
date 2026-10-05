@@ -1,7 +1,7 @@
 {
-    "versionCode":  58,
-    "versionName":  "1.58",
+    "versionCode":  61,
+    "versionName":  "1.61",
     "apk":  "ARI.apk",
-    "notes":  "Gehirn: Streaming-Dienste ankreuzen, Film/Serie-Suche bevorzugt eigene Dienste.",
+    "notes":  "Beta: Nachrichten und Anrufe ansagen, auf Antwort warten, Antworten auf WhatsApp/Discord",
     "sizeMb":  6.4
 }
