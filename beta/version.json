@@ -1,7 +1,7 @@
 {
-    "versionCode":  61,
-    "versionName":  "1.61",
+    "versionCode":  62,
+    "versionName":  "1.62",
     "apk":  "ARI.apk",
-    "notes":  "Beta: Nachrichten und Anrufe ansagen, auf Antwort warten, Antworten auf WhatsApp/Discord",
+    "notes":  "Beta: Ansage nur fuer Messenger (WhatsApp, Discord ...), Anrufe und Instagram-Chats, wartet auf Antwort",
     "sizeMb":  6.4
 }
