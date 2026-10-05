@@ -1,7 +1,7 @@
 {
-    "versionCode":  58,
-    "versionName":  "1.58",
+    "versionCode":  59,
+    "versionName":  "1.59",
     "apk":  "ARI.apk",
-    "notes":  "Gehirn: Streaming-Dienste ankreuzen, Film/Serie-Suche bevorzugt eigene Dienste.",
+    "notes":  "Antworten auf WhatsApp/Discord-Nachrichten vom PC aus",
     "sizeMb":  6.4
 }
