@@ -1688,6 +1688,8 @@ if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.j
   function text(n){
     const all=(n.app||'')+' '+(n.title||'')+' '+(n.text||'');
     const call=/anruf|ruft an|incoming call/i.test(all)&&/anruf|call|ruft/i.test((n.title||'')+' '+(n.text||''));
+    if(!call&&!/whatsapp|discord|telegram|signal|messenger|threema|messages|nachrichten|\bsms\b|\bmms\b|teams|slack|skype|viber|\bline\b|wechat|snapchat|instagram|element|matrix|google chat|\bchat\b|telefon|phone|anruf|dialer/i.test(String(n.app||'')))return null;   // nur Messenger und Anrufe
+    if(/instagram/i.test(String(n.app||''))&&(!n.can_reply||/gefällt|liked|folgt|follow|kommentiert|comment|erwähnt|mentioned|hat dein|your (photo|post|reel|story)|reel|story|vorgeschlagen|suggested/i.test(String(n.title||'')+' '+String(n.text||''))))return null;   // Instagram: nur Chat-Nachrichten
     if(call)return{t:'Eingehender Anruf'+(n.title?' von '+n.title:'')+'.',ask:false};
     const app=String(n.app||'').replace(/\s*\(Test\)\s*$/i,'');
     let body=String(n.text||'').replace(/\s+/g,' ').trim();if(body.length>600)body=body.slice(0,600)+' …';
@@ -1699,7 +1701,7 @@ if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.j
   function next(){
     if(busy||!queue.length)return;
     if($('#orb').classList.contains('busy'))return;
-    busy=true;const n=queue.shift(),x=text(n);
+    const n=queue.shift(),x=text(n);if(!x){next();return;}busy=true;
     addMsg('a',x.t);hist.push({role:'assistant',content:x.t});if(hist.length>20)hist.splice(0,hist.length-20);
     $('#log').scrollTop=1e9;speak(x.t);
     if(x.ask){replyCtxUntil=Date.now()+120000;setTimeout(()=>{busy=false;mic();},1200+x.t.length*70);}   // erst ausreden lassen, dann zuhoeren
