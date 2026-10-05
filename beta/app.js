@@ -99,6 +99,7 @@ cfg.keys=cfg.keys||{};
 let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
 const hist=[];
+let replyCtxUntil=0;   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
 const saveCfg=()=>{store.set('ari-app-cfg',cfg);try{refreshReady();}catch(e){}};
 const saveBrain=()=>store.set('ari-app-brain',brain);
 
@@ -324,7 +325,7 @@ async function ask(text){track('chat');
   if(/^(wie spaet|wie spät)( ist es)?\??$|^uhrzeit\??$/.test(q.trim()))return 'Es ist '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.';
   if(/^(welcher tag|welches datum|den wievielten)/.test(q.trim()))return 'Heute ist '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'.';
   // Befehle an den PC: ueber den gekoppelten Hub ausfuehren (Apps oeffnen, Lautstaerke, Musik, Screenshot ...)
-  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q),paired=!!(sync.token&&sync.origin);
+  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q)||Date.now()<replyCtxUntil,paired=!!(sync.token&&sync.origin);
   // Termine, Kalender und Mails beantwortet die App selbst (auch im Modus IMMER) - die laufen nicht ueber den PC
   const LOCAL_RE=/termin|kalender|calendar|geburtstag|e-?mail|mails?\b|posteingang|erinner/i;
   if(route!=='off'&&(route==='always'?!LOCAL_RE.test(q):pcIntent)){
@@ -1663,4 +1664,46 @@ refreshReady();
 loadSet();
 addMsg('a','Hallo! Ich bin A.R.I – diese App läuft auch ohne PC. '+(cfg.keys[cfg.provider]?'Sag oder tipp mir, was ich tun soll.':'Trage zuerst in den Einstellungen einen KI-Schlüssel ein (oder übernimm die Datei vom PC).'));
 if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+})();
+
+/* ---------- Nachrichten & Anrufe ansagen (Handy, solange die App offen ist) ---------- */
+(function announceNotifs(){
+  let since=-1,seen=new Set(),queue=[],busy=false;
+  const on=()=>cfg.announce!=='0';
+  const btn=$('#announceBtn');
+  const paint=()=>{if(btn)btn.textContent='ANSAGEN: '+(on()?'AN':'AUS');};
+  if(btn)btn.onclick=()=>{cfg.announce=on()?'0':'1';saveCfg();paint();};
+  paint();
+  async function poll(){
+    if(!on()||!sync.token||!sync.origin||document.hidden)return;
+    try{
+      const r=await fetch(sync.origin+'/phone/notifications?since='+Math.max(0,since),{headers:{'X-Ari-Token':sync.token}});
+      if(!r.ok)return;const d=await r.json();const items=d.items||[];
+      if(since<0){items.forEach(n=>seen.add(n.id));since=items.reduce((m,n)=>Math.max(m,n.ts),Math.floor(Date.now()/1000));return;}   // erster Abruf: nur merken, nichts ansagen
+      items.forEach(n=>{since=Math.max(since,n.ts);if(seen.has(n.id))return;seen.add(n.id);queue.push(n);});
+      while(queue.length>3)queue.shift();
+      next();
+    }catch(e){}
+  }
+  function text(n){
+    const all=(n.app||'')+' '+(n.title||'')+' '+(n.text||'');
+    const call=/anruf|ruft an|incoming call/i.test(all)&&/anruf|call|ruft/i.test((n.title||'')+' '+(n.text||''));
+    if(call)return{t:'Eingehender Anruf'+(n.title?' von '+n.title:'')+'.',ask:false};
+    const app=String(n.app||'').replace(/\s*\(Test\)\s*$/i,'');
+    let body=String(n.text||'').replace(/\s+/g,' ').trim();if(body.length>600)body=body.slice(0,600)+' …';
+    let t='Neue Nachricht'+(n.title?' von '+n.title:'')+(app?' auf '+app:'')+(body?': '+body:'.');
+    if(!/[.!?…]$/.test(t))t+='.';
+    if(n.can_reply)t+=' Soll ich antworten?';
+    return{t,ask:!!n.can_reply};
+  }
+  function next(){
+    if(busy||!queue.length)return;
+    if($('#orb').classList.contains('busy'))return;
+    busy=true;const n=queue.shift(),x=text(n);
+    addMsg('a',x.t);hist.push({role:'assistant',content:x.t});if(hist.length>20)hist.splice(0,hist.length-20);
+    $('#log').scrollTop=1e9;speak(x.t);
+    if(x.ask){replyCtxUntil=Date.now()+120000;setTimeout(()=>{busy=false;mic();},1200+x.t.length*70);}   // erst ausreden lassen, dann zuhoeren
+    else setTimeout(()=>{busy=false;next();},800+x.t.length*60);
+  }
+  setInterval(poll,5000);setTimeout(poll,3000);
 })();
