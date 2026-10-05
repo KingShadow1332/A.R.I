@@ -1,7 +1,7 @@
 {
-    "versionCode":  59,
-    "versionName":  "1.59",
+    "versionCode":  63,
+    "versionName":  "1.63",
     "apk":  "ARI.apk",
-    "notes":  "Antworten auf WhatsApp/Discord-Nachrichten vom PC aus",
+    "notes":  "Nachrichten und Anrufe ansagen, auf Antwort warten, Antworten auf WhatsApp/Discord, kurze Fehlermeldungen",
     "sizeMb":  6.4
 }
