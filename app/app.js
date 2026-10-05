@@ -99,6 +99,7 @@ cfg.keys=cfg.keys||{};
 let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
 const hist=[];
+let replyCtxUntil=0;   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
 const saveCfg=()=>{store.set('ari-app-cfg',cfg);try{refreshReady();}catch(e){}};
 const saveBrain=()=>store.set('ari-app-brain',brain);
 
@@ -324,7 +325,7 @@ async function ask(text){track('chat');
   if(/^(wie spaet|wie spät)( ist es)?\??$|^uhrzeit\??$/.test(q.trim()))return 'Es ist '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.';
   if(/^(welcher tag|welches datum|den wievielten)/.test(q.trim()))return 'Heute ist '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'.';
   // Befehle an den PC: ueber den gekoppelten Hub ausfuehren (Apps oeffnen, Lautstaerke, Musik, Screenshot ...)
-  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q),paired=!!(sync.token&&sync.origin);
+  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q)||Date.now()<replyCtxUntil,paired=!!(sync.token&&sync.origin);
   // Termine, Kalender und Mails beantwortet die App selbst (auch im Modus IMMER) - die laufen nicht ueber den PC
   const LOCAL_RE=/termin|kalender|calendar|geburtstag|e-?mail|mails?\b|posteingang|erinner/i;
   if(route!=='off'&&(route==='always'?!LOCAL_RE.test(q):pcIntent)){
@@ -344,7 +345,11 @@ async function ask(text){track('chat');
   catch(e){
     if(small&&!isLimit(e)){try{return await runWithKeys(cfg.provider,keyList(cfg.provider),h,false,text);}catch(e2){e=e2;}}
     if(isLimit(e)&&cfg.fb&&cfg.fbKey&&cfg.fb!==cfg.provider){try{return await runProvider(cfg.fb,cfg.fbKey,h,small,text);}catch(e3){e=e3;}}
-    return 'Fehler beim Anbieter ('+cfg.provider+'): '+String(e.message).slice(0,160);
+    const em=String(e&&e.message||e).toLowerCase();   // kurz sagen, was los ist - nie Fehlercodes
+    if(isLimit(e))return 'Das Limit ist erreicht, Sir – bitte gleich nochmal versuchen.';
+    if(/api key|api_key|unauthorized|401|403|permission|authentication/.test(em))return 'Mit dem KI-Schlüssel stimmt etwas nicht, Sir – bitte in den Einstellungen prüfen.';
+    if(/timeout|timed out|network|failed to fetch|connection|resolve/.test(em))return 'Keine Verbindung zur KI, Sir – bitte gleich nochmal versuchen.';
+    return 'Das hat gerade nicht geklappt, Sir – bitte gleich nochmal versuchen.';
   }
 }
 
@@ -402,6 +407,7 @@ async function send(text){
   text=(text||'').trim();if(!text)return;
   addMsg('u',text);hist.push({role:'user',content:text});const w=addMsg('a','…');orbBusy(true);
   const reply=await ask(text);
+  if(reply===''){w.remove();orbBusy(false);hist.pop();return;}   // stiller Fehler: kein Fehlertext, keine Sprachausgabe
   w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.appendChild(a);});
   hist.push({role:'assistant',content:reply});if(hist.length>20)hist.splice(0,hist.length-20);
   $('#log').scrollTop=1e9;orbBusy(false);speak(reply);
@@ -1663,4 +1669,48 @@ refreshReady();
 loadSet();
 addMsg('a','Hallo! Ich bin A.R.I – diese App läuft auch ohne PC. '+(cfg.keys[cfg.provider]?'Sag oder tipp mir, was ich tun soll.':'Trage zuerst in den Einstellungen einen KI-Schlüssel ein (oder übernimm die Datei vom PC).'));
 if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+})();
+
+/* ---------- Nachrichten & Anrufe ansagen (Handy, solange die App offen ist) ---------- */
+(function announceNotifs(){
+  let since=-1,seen=new Set(),queue=[],busy=false;
+  const on=()=>cfg.announce!=='0';
+  const btn=$('#announceBtn');
+  const paint=()=>{if(btn)btn.textContent='ANSAGEN: '+(on()?'AN':'AUS');};
+  if(btn)btn.onclick=()=>{cfg.announce=on()?'0':'1';saveCfg();paint();};
+  paint();
+  async function poll(){
+    if(!on()||!sync.token||!sync.origin||document.hidden)return;
+    try{
+      const r=await fetch(sync.origin+'/phone/notifications?since='+Math.max(0,since),{headers:{'X-Ari-Token':sync.token}});
+      if(!r.ok)return;const d=await r.json();const items=d.items||[];
+      if(since<0){items.forEach(n=>seen.add(n.id));since=items.reduce((m,n)=>Math.max(m,n.ts),Math.floor(Date.now()/1000));return;}   // erster Abruf: nur merken, nichts ansagen
+      items.forEach(n=>{since=Math.max(since,n.ts);if(seen.has(n.id))return;seen.add(n.id);queue.push(n);});
+      while(queue.length>3)queue.shift();
+      next();
+    }catch(e){}
+  }
+  function text(n){
+    const all=(n.app||'')+' '+(n.title||'')+' '+(n.text||'');
+    const call=/anruf|ruft an|incoming call/i.test(all)&&/anruf|call|ruft/i.test((n.title||'')+' '+(n.text||''));
+    if(!call&&!/whatsapp|discord|telegram|signal|messenger|threema|messages|nachrichten|\bsms\b|\bmms\b|teams|slack|skype|viber|\bline\b|wechat|snapchat|instagram|element|matrix|google chat|\bchat\b|telefon|phone|anruf|dialer/i.test(String(n.app||'')))return null;   // nur Messenger und Anrufe
+    if(/instagram/i.test(String(n.app||''))&&(!n.can_reply||/gefällt|liked|folgt|follow|kommentiert|comment|erwähnt|mentioned|hat dein|your (photo|post|reel|story)|reel|story|vorgeschlagen|suggested/i.test(String(n.title||'')+' '+String(n.text||''))))return null;   // Instagram: nur Chat-Nachrichten
+    if(call)return{t:'Eingehender Anruf'+(n.title?' von '+n.title:'')+'.',ask:false};
+    const app=String(n.app||'').replace(/\s*\(Test\)\s*$/i,'');
+    let body=String(n.text||'').replace(/\s+/g,' ').trim();if(body.length>600)body=body.slice(0,600)+' …';
+    let t='Neue Nachricht'+(n.title?' von '+n.title:'')+(app?' auf '+app:'')+(body?': '+body:'.');
+    if(!/[.!?…]$/.test(t))t+='.';
+    if(n.can_reply)t+=' Soll ich antworten?';
+    return{t,ask:!!n.can_reply};
+  }
+  function next(){
+    if(busy||!queue.length)return;
+    if($('#orb').classList.contains('busy'))return;
+    const n=queue.shift(),x=text(n);if(!x){next();return;}busy=true;
+    addMsg('a',x.t);hist.push({role:'assistant',content:x.t});if(hist.length>20)hist.splice(0,hist.length-20);
+    $('#log').scrollTop=1e9;speak(x.t);
+    if(x.ask){replyCtxUntil=Date.now()+120000;setTimeout(()=>{busy=false;mic();},1200+x.t.length*70);}   // erst ausreden lassen, dann zuhoeren
+    else setTimeout(()=>{busy=false;next();},800+x.t.length*60);
+  }
+  setInterval(poll,5000);setTimeout(poll,3000);
 })();
