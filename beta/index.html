@@ -697,7 +697,7 @@ main{touch-action:pan-y}
       <summary>◉ KI-ANBIETER</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h"><span class="ico">◉</span><span class="t">KI-ANBIETER</span></div>
-      <div class="set"><label>ANBIETER</label><select id="sProv"><option value="groq">Groq</option><option value="gemini">Gemini (Google)</option><option value="openai">ChatGPT (OpenAI)</option><option value="anthropic">Claude (Anthropic)</option></select></div>
+      <div class="set"><label>ANBIETER</label><select id="sProv"><option value="groq">Groq (empfohlen)</option><option value="gemini">Gemini (Google)</option><option value="openai">ChatGPT (OpenAI)</option><option value="anthropic">Claude (Anthropic)</option></select></div>
       <div class="set"><label>API-SCHLÜSSEL</label><input id="sKey" type="password" autocomplete="off" placeholder="Schlüssel des gewählten Anbieters"></div>
       <div class="dim2">Der Schlüssel bleibt nur auf diesem Handy (Browser-Speicher) und geht direkt an den Anbieter – nirgendwo sonst hin.</div>
       <div class="set" style="margin-top:12px"><label>AUSWEICH-ANBIETER (WENN LIMIT ERREICHT)</label><select id="sProv2"><option value="">keiner</option><option value="gemini">Gemini (Google)</option><option value="groq">Groq</option><option value="openai">ChatGPT (OpenAI)</option><option value="anthropic">Claude (Anthropic)</option></select></div>
@@ -734,6 +734,8 @@ main{touch-action:pan-y}
           <div class="dim">Zeigt Benachrichtigungen von anderen Apps (WhatsApp, Discord, …) zusätzlich am PC im HUD an, mit vollem Text. Braucht eine besondere Android-Berechtigung („Benachrichtigungszugriff“).</div>
           <div class="row" style="margin-top:10px"><button class="btn pri" id="notifFwdBtn">BENACHRICHTIGUNGSZUGRIFF ERLAUBEN</button></div>
           <div class="dim2" id="notifFwdMsg" style="margin-top:8px"></div>
+          <div class="row" style="margin-top:10px"><button class="btn" id="announceBtn">ANSAGEN: AN</button></div>
+          <div class="dim2" style="margin-top:6px">Solange die App offen ist, liest A.R.I neue Nachrichten und Anrufe vor und fragt bei beantwortbaren Nachrichten „Soll ich antworten?“ – dann einfach sprechen.</div>
         </div>
       </div>
     </details>
