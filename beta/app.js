@@ -345,7 +345,11 @@ async function ask(text){track('chat');
   catch(e){
     if(small&&!isLimit(e)){try{return await runWithKeys(cfg.provider,keyList(cfg.provider),h,false,text);}catch(e2){e=e2;}}
     if(isLimit(e)&&cfg.fb&&cfg.fbKey&&cfg.fb!==cfg.provider){try{return await runProvider(cfg.fb,cfg.fbKey,h,small,text);}catch(e3){e=e3;}}
-    return 'Fehler beim Anbieter ('+cfg.provider+'): '+String(e.message).slice(0,160);
+    const em=String(e&&e.message||e).toLowerCase();   // kurz sagen, was los ist - nie Fehlercodes
+    if(isLimit(e))return 'Das Limit ist erreicht, Sir – bitte gleich nochmal versuchen.';
+    if(/api key|api_key|unauthorized|401|403|permission|authentication/.test(em))return 'Mit dem KI-Schlüssel stimmt etwas nicht, Sir – bitte in den Einstellungen prüfen.';
+    if(/timeout|timed out|network|failed to fetch|connection|resolve/.test(em))return 'Keine Verbindung zur KI, Sir – bitte gleich nochmal versuchen.';
+    return 'Das hat gerade nicht geklappt, Sir – bitte gleich nochmal versuchen.';
   }
 }
 
@@ -403,6 +407,7 @@ async function send(text){
   text=(text||'').trim();if(!text)return;
   addMsg('u',text);hist.push({role:'user',content:text});const w=addMsg('a','…');orbBusy(true);
   const reply=await ask(text);
+  if(reply===''){w.remove();orbBusy(false);hist.pop();return;}   // stiller Fehler: kein Fehlertext, keine Sprachausgabe
   w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.appendChild(a);});
   hist.push({role:'assistant',content:reply});if(hist.length>20)hist.splice(0,hist.length-20);
   $('#log').scrollTop=1e9;orbBusy(false);speak(reply);
