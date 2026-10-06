@@ -420,6 +420,10 @@ main{touch-action:pan-y}
 #annSection .annev{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-bottom:8px}
 #annSection .st-ok{color:#39ff9e}#annSection .st-err{color:var(--pink)}#annSection .st-wait{color:#ffd23d}
 #annPreviewOv pre{white-space:pre-wrap;word-break:break-word;font:400 12px/1.5 var(--font-mono);background:rgba(0,0,0,.3);border-radius:8px;padding:10px;margin:6px 0}
+
+/* Synchronisation: drehendes Zeichen */
+.syncspin{display:none;width:11px;height:11px;border:2px solid color-mix(in srgb,var(--cyan) 30%,transparent);border-top-color:var(--cyan);border-radius:50%;animation:orbSpin .8s linear infinite;flex:none}
+body.syncing .syncspin{display:inline-block}
 </style>
 <link rel="stylesheet" href="pc-sim.css">
 <link rel="stylesheet" href="pc-sim-panels.css">
@@ -427,7 +431,7 @@ main{touch-action:pan-y}
 <body>
 <header>
   <div><div class="logo">A.R.I</div><div class="sub">EIGENSTÄNDIGE APP</div></div>
-  <div id="conn" class="on">BEREIT</div>
+  <div id="conn" class="on"><span class="syncspin" title="Synchronisiert mit dem PC …"></span><span id="connTxt">BEREIT</span></div>
   <div id="clock">--:--<small>--</small></div>
 </header>
 
@@ -798,8 +802,10 @@ main{touch-action:pan-y}
     <details class="set-section" id="plugSection">
       <summary>🧩 PLUGINS</summary>
       <div class="set-section-body">
-        <div class="panel"><div class="panel-h cy"><span class="ico">🧩</span><span class="t">ERWEITERUNGEN</span><span class="tag" id="plugTag">0</span></div>
+        <div class="panel"><div class="panel-h cy"><span class="ico">🧩</span><span class="t">ERWEITERUNGEN</span><span class="syncspin" style="margin-left:auto;margin-right:8px"></span><span class="tag" id="plugTag">0</span></div>
           <div class="dim">Plugins erweitern A.R.I – und laufen hier auch <b>ohne PC</b>. Am PC eingeschaltete Plugins werden automatisch übernommen (einmal einrichten genügt). Du kannst auch selbst eine <b>plugin.json</b> hinzufügen oder A.R.I sagen: „Bau dir ein Plugin, das …“.</div>
+          <div class="row" style="margin-top:10px;align-items:center"><button class="btn" id="plugSyncBtn">↻ MIT PC ABGLEICHEN</button></div>
+          <div class="dim2" id="plugSyncMsg" style="margin-top:4px"></div>
           <div id="plugList" style="margin-top:10px"></div>
           <div class="row" style="margin-top:10px"><button class="btn pri" id="plugAdd">+ PLUGIN HINZUFÜGEN</button><input type="file" id="plugFile" accept=".json,application/json" style="display:none"></div>
           <div class="dim2" id="plugMsg" style="margin-top:8px"></div>
