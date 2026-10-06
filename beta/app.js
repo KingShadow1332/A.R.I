@@ -99,7 +99,9 @@ cfg.keys=cfg.keys||{};
 let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
 const hist=[];
-let replyCtxUntil=0;   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
+let replyCtxUntil=0;
+let pluginKw=[];   // (Python-Plugins am PC)   // Stichwoerter der Plugins auf dem PC: kommt eines in der Anfrage vor, laeuft sie ueber den PC (dort sind die Plugins)
+setTimeout(refreshPlugins,4000);setInterval(refreshPlugins,5*60*1000);   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
 const saveCfg=()=>{store.set('ari-app-cfg',cfg);try{refreshReady();}catch(e){}};
 const saveBrain=()=>store.set('ari-app-brain',brain);
 
@@ -180,6 +182,120 @@ setInterval(()=>{const d=new Date();$('#clock').firstChild.nodeValue=d.toLocaleT
   const psc=$('#pcSimClock');if(psc)psc.textContent=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});},1000);
 
 /* ---------- Werkzeuge (laufen komplett auf dem Handy) ---------- */
+/* ---------- Plugins (deklarativ: plugin.json mit tools + action - dieselben Dateien laufen am PC und hier, auch ohne PC) ---------- */
+const PLUGIN_ACTIONS=['http','open_url','text','random'];
+let plugHub=store.get('ari-plugins-hub',[]);     // vom PC uebernommene (dort eingeschaltete) Plugins - Stand beim letzten Abgleich
+let plugLocal=store.get('ari-plugins-local',[]); // direkt am Handy hinzugefuegte / von A.R.I hier gebaute Plugins
+const plugOff=()=>store.get('ari-plugins-off',{});
+function plugActive(){const off=plugOff();return [...plugHub.map(p=>Object.assign({src:'hub'},p)),...plugLocal.filter(p=>p.enabled).map(p=>Object.assign({src:'phone'},p))].filter(p=>!off[p.id]);}
+function pluginTools(){
+  const out=[];
+  plugActive().forEach(p=>(p.tools||[]).forEach(t=>{if(!t||!t.name||!t.action)return;
+    out.push({name:(String(p.id).replace(/[^A-Za-z0-9_]/g,'_')+'_'+t.name).slice(0,60),description:'[Plugin '+p.name+'] '+String(t.description||'').slice(0,600),parameters:t.input_schema||{type:'object',properties:{}},_t:t});}));
+  return out;
+}
+const allTools=()=>[...TOOLS,...pluginTools().map(t=>({name:t.name,description:t.description,parameters:t.parameters})),CREATE_PLUGIN_TOOL];
+function dSub(txt,args,quote){return String(txt).replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g,(m,k)=>{const v=args[k]==null?'':String(args[k]);return quote?encodeURIComponent(v):v;});}
+function dPath(obj,path){for(const part of String(path).split('.')){if(part==='')continue;if(obj==null)return undefined;
+  if(Array.isArray(obj)){const i=parseInt(part,10);if(isNaN(i))return undefined;obj=obj[i];}else if(typeof obj==='object')obj=obj[part];else return undefined;}return obj;}
+function dTpl(tpl,args,data,extra){extra=extra||{};
+  let out=String(tpl).replace(/\{\$\.?([^{}]*)\}/g,(m,p)=>{const v=data===undefined?undefined:dPath(data,p);return v==null?'?':(typeof v==='object'?JSON.stringify(v):String(v));});
+  return out.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g,(m,k)=>k in extra?String(extra[k]):(args[k]==null?'':String(args[k])));}
+async function runDecl(tool,args){
+  const act=tool.action||{};args=args||{};
+  if(act.type==='text')return dTpl(act.template||'',args).slice(0,3000);
+  if(act.type==='random'){
+    let lo=parseInt(dSub(act.min==null?1:act.min,args),10),hi=parseInt(dSub(act.max==null?6:act.max,args),10),cnt=parseInt(dSub(act.count==null?1:act.count,args),10);
+    if(isNaN(lo))lo=1;if(isNaN(hi))hi=6;if(isNaN(cnt))cnt=1;cnt=Math.max(1,Math.min(20,cnt));if(hi<lo)[lo,hi]=[hi,lo];
+    const vals=[];for(let i=0;i<cnt;i++)vals.push(lo+Math.floor(Math.random()*(hi-lo+1)));
+    return dTpl(act.template||'{values}',args,undefined,{values:vals.join(', '),sum:vals.reduce((a,b)=>a+b,0),value:vals[0]}).slice(0,3000);}
+  if(act.type==='open_url'){
+    const url=dSub(act.url||'',args,true);if(!/^https?:\/\//i.test(url))return 'Ungueltige Adresse.';
+    links.push({url,label:'Öffnen: '+(String(act.label||'').trim()||url.slice(0,60))});return dTpl(act.template||'Link bereit.',args).slice(0,500);}
+  if(act.type==='http'){
+    const url=dSub(act.url||'',args,true);
+    if(!/^https?:\/\//i.test(url))return 'Ungueltige Adresse.';
+    let host='';try{host=new URL(url).hostname;}catch(e){return 'Ungueltige Adresse.';}
+    if(/^(localhost|.*\.local|.*\.internal)$/i.test(host)||/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/.test(host))return 'Adressen im eigenen Netz sind fuer Plugins gesperrt.';
+    const method=String(act.method||'GET').toUpperCase();if(method!=='GET'&&method!=='POST')return 'Nur GET oder POST.';
+    const headers={};Object.entries(act.headers||{}).forEach(([k,v])=>headers[k]=dSub(v,args));
+    const init={method,headers,redirect:'error'};
+    if(method==='POST'&&act.body!=null){init.body=dSub(typeof act.body==='string'?act.body:JSON.stringify(act.body),args);if(!headers['Content-Type'])headers['Content-Type']='application/json';}
+    const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),10000);init.signal=ctl.signal;
+    try{const res=await fetch(url,init);const text=(await res.text()).slice(0,200000);let data;try{data=JSON.parse(text);}catch(e){}
+      if(act.template)return dTpl(act.template,args,data).slice(0,3000);return (data!==undefined?JSON.stringify(data):text).slice(0,1500);}
+    finally{clearTimeout(to);}
+  }
+  throw new Error('Unbekannte Aktion');
+}
+async function runToolAsync(name,a){
+  const pt=pluginTools().find(t=>t.name===name);
+  if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Das Plugin hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass das Plugin gerade nicht geklappt hat - ohne technische Details.';}}
+  if(name==='create_plugin')return createPluginFromAi(a||{});
+  return runTool(name,a);
+}
+// A.R.I baut hier selbst ein (deklaratives) Plugin: immer erst AUS - der Nutzer prueft es und schaltet es ein.
+const CREATE_PLUGIN_TOOL={name:'create_plugin',description:'Baut ein neues PLUGIN fuer A.R.I (laeuft auch ohne PC), wenn der Nutzer sagt, du sollst dir eine neue Faehigkeit bauen. Ein Plugin ist ein JSON mit Werkzeugen; jedes Werkzeug hat name, description, input_schema und eine "action": '+
+  '{"type":"http","url":"https://api.../{param}","template":"Text mit {param} und {$.feld.0.wert} aus der JSON-Antwort"} | {"type":"open_url","url":"https://.../{param}"} | {"type":"text","template":"..."} | {"type":"random","min":1,"max":"{seiten}","count":"{anzahl}","template":"{values} Summe {sum}"}. '+
+  'Nur oeffentliche Adressen. Das Plugin ist nach dem Anlegen AUS - der Nutzer schaltet es selbst ein (sag ihm das kurz).',
+  parameters:{type:'object',properties:{name:{type:'string',description:'Kurzer Name, nur Kleinbuchstaben/Ziffern/Bindestrich'},title:{type:'string'},description:{type:'string'},keywords:{type:'array',items:{type:'string'}},tools:{type:'array',description:'Die Werkzeuge (siehe oben)',items:{type:'object'}}},required:['name','title','description','tools']}};
+function createPluginFromAi(a){
+  const id=String(a.name||'').toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+  if(!id)return 'Ungueltiger Plugin-Name.';
+  const tools=Array.isArray(a.tools)?a.tools:[];
+  if(!tools.length||tools.some(t=>!t||!/^[A-Za-z0-9_]{1,40}$/.test(String(t.name||''))||!t.action||!PLUGIN_ACTIONS.includes(t.action.type)))return 'Jedes Werkzeug braucht einen Namen (Buchstaben, Ziffern, _) und eine gueltige action (http, open_url, text oder random). Korrigiere das und versuche es nochmal.';
+  if(plugLocal.some(p=>p.id===id))return 'Es gibt schon ein Plugin "'+id+'". Nimm einen anderen Namen.';
+  plugLocal.push({id,name:String(a.title||id).slice(0,60),description:String(a.description||'').slice(0,300),keywords:(a.keywords||[]).map(k=>String(k).toLowerCase()).slice(0,20),tools,enabled:false});
+  store.set('ari-plugins-local',plugLocal);try{renderPlugins();}catch(e){}
+  return 'Plugin "'+(a.title||id)+'" wurde angelegt, ist aber noch AUS. Sag dem Nutzer kurz, was es tut - er schaltet es unter Einstellungen > Plugins selbst ein.';
+}
+/* ---------- Plugins: Einstellungen ---------- */
+function plugMsg(t,bad){const el=$('#plugMsg');if(el){el.textContent=t||'';el.style.color=bad?'var(--pink)':'';}}
+function renderPlugins(){
+  const list=$('#plugList');if(!list)return;
+  const off=plugOff(),rows=[];
+  plugHub.forEach(p=>rows.push({p,src:'hub',on:!off[p.id]}));
+  plugLocal.forEach(p=>rows.push({p,src:'phone',on:!!p.enabled&&!off[p.id]}));
+  $('#plugTag').textContent=rows.filter(x=>x.on).length+' AN';
+  if(!rows.length){list.innerHTML='<div class="dim2">Noch keine Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  list.innerHTML=rows.map(({p,src,on})=>{
+    const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
+    return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
+      <div class="dim2">${escHtml(p.description||'')}</div>${tools?`<div class="dim2">Werkzeuge: ${tools}</div>`:''}
+      <div class="row" style="margin-top:8px"><button class="btn ${on?'':'pri'}" data-pa="toggle">${on?'AUSSCHALTEN':'EINSCHALTEN'}</button>${src==='phone'?'<button class="btn dng" data-pa="del">ENTFERNEN</button>':''}</div></div>`;}).join('');
+}
+$('#plugList')&&($('#plugList').onclick=e=>{
+  const b=e.target.closest('[data-pa]');if(!b)return;const card=b.closest('[data-pid]'),id=card.dataset.pid,src=card.dataset.src;
+  if(b.dataset.pa==='del'){if(!confirm('Plugin entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin entfernt.');return;}
+  if(src==='phone'){
+    const p=plugLocal.find(x=>x.id===id);if(!p)return;
+    if(!p.enabled){if(!confirm('Plugin „'+(p.name||id)+'“ einschalten?\n\nEs darf Internet-Adressen abrufen, die in der plugin.json stehen:\n'+(p.tools||[]).map(t=>'• '+t.name+(t.action&&t.action.url?' → '+String(t.action.url).slice(0,80):'')).join('\n')))return;}
+    p.enabled=!p.enabled;store.set('ari-plugins-local',plugLocal);
+  }else{const off=plugOff();if(off[id])delete off[id];else off[id]=1;store.set('ari-plugins-off',off);}
+  renderPlugins();
+});
+$('#plugAdd')&&($('#plugAdd').onclick=()=>$('#plugFile').click());
+$('#plugFile')&&($('#plugFile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const m=JSON.parse(await f.text());
+    const tools=(m.tools||[]).filter(t=>t&&t.name&&t.action&&PLUGIN_ACTIONS.includes(t.action.type));
+    if(!tools.length){plugMsg('Die Datei braucht eine Liste "tools" mit je einer gültigen "action" (http, open_url, text, random).',true);return;}
+    const id=String(m.id||f.name.replace(/\.json$/i,'')).toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'plugin';
+    if(plugLocal.some(p=>p.id===id)){plugMsg('Es gibt schon ein Plugin "'+id+'".',true);return;}
+    plugLocal.push({id,name:String(m.name||id).slice(0,60),description:String(m.description||'').slice(0,300),keywords:(m.keywords||[]).map(k=>String(k).toLowerCase()),tools,enabled:false});
+    store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin hinzugefügt – noch AUS. Schalte es ein, wenn du ihm vertraust.');
+  }catch(err){plugMsg('Keine gültige plugin.json.',true);}
+});
+setTimeout(()=>{try{renderPlugins();}catch(e){}},500);
+async function refreshPlugins(){
+  try{
+    if(!sync.token||!sync.origin){pluginKw=[];return;}
+    const r=await fetch(sync.origin+'/phone/api/plugins',{headers:{'X-Ari-Token':sync.token}});if(!r.ok)return;
+    const d=await r.json();pluginKw=(d.keywords||[]).map(k=>String(k).toLowerCase()).filter(Boolean);
+    plugHub=(d.plugins||[]);store.set('ari-plugins-hub',plugHub);try{renderPlugins();}catch(e){}
+  }catch(e){}
+}
 const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
@@ -282,24 +398,25 @@ async function runProvider(p,key,history,small,query){
   const P=PROV[p],model=small?P.small:P.big,sys=sysPrompt(query);
   if(P.oa){
     const msgs=[{role:'system',content:sys},...history];
-    const tools=TOOLS.map(t=>({type:'function',function:t}));
+    const tools=allTools().map(t=>({type:'function',function:t}));
     for(let i=0;i<4;i++){
       const d=await post(P.url,{Authorization:'Bearer '+key},{model,messages:msgs,tools,max_tokens:1024});
       const m=d.choices[0].message;
       if(!m.tool_calls||!m.tool_calls.length)return (m.content||'').replace(/<\|[a-zA-Z_]+\|>/g,'').trim();
       msgs.push({role:'assistant',content:m.content||'',tool_calls:m.tool_calls});
-      m.tool_calls.forEach(tc=>{let a={};try{a=JSON.parse(tc.function.arguments||'{}');}catch(e){}
-        msgs.push({role:'tool',tool_call_id:tc.id,content:runTool(tc.function.name,a)});});
+      for(const tc of m.tool_calls){let a={};try{a=JSON.parse(tc.function.arguments||'{}');}catch(e){}
+        msgs.push({role:'tool',tool_call_id:tc.id,content:await runToolAsync(tc.function.name,a)});}
     }
     return 'Erledigt.';
   }
   const msgs=history.map(m=>({role:m.role,content:m.content}));
-  const tools=TOOLS.map(t=>({name:t.name,description:t.description,input_schema:t.parameters}));
+  const tools=allTools().map(t=>({name:t.name,description:t.description,input_schema:t.parameters}));
   for(let i=0;i<4;i++){
     const d=await post(P.url,{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},{model,max_tokens:1024,system:sys,messages:msgs,tools});
     if(d.stop_reason!=='tool_use')return (d.content.find(b=>b.type==='text')||{text:''}).text.trim();
     msgs.push({role:'assistant',content:d.content});
-    msgs.push({role:'user',content:d.content.filter(b=>b.type==='tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:runTool(b.name,b.input)}))});
+    const results=[];for(const b of d.content.filter(b=>b.type==='tool_use'))results.push({type:'tool_result',tool_use_id:b.id,content:await runToolAsync(b.name,b.input)});
+    msgs.push({role:'user',content:results});
   }
   return 'Erledigt.';
 }
@@ -325,7 +442,7 @@ async function ask(text){track('chat');
   if(/^(wie spaet|wie spät)( ist es)?\??$|^uhrzeit\??$/.test(q.trim()))return 'Es ist '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.';
   if(/^(welcher tag|welches datum|den wievielten)/.test(q.trim()))return 'Heute ist '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'.';
   // Befehle an den PC: ueber den gekoppelten Hub ausfuehren (Apps oeffnen, Lautstaerke, Musik, Screenshot ...)
-  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q)||Date.now()<replyCtxUntil,paired=!!(sync.token&&sync.origin);
+  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q)||Date.now()<replyCtxUntil||pluginKw.some(k=>q.includes(k)),paired=!!(sync.token&&sync.origin);
   // Termine, Kalender und Mails beantwortet die App selbst (auch im Modus IMMER) - die laufen nicht ueber den PC
   const LOCAL_RE=/termin|kalender|calendar|geburtstag|e-?mail|mails?\b|posteingang|erinner/i;
   if(route!=='off'&&(route==='always'?!LOCAL_RE.test(q):pcIntent)){
@@ -778,6 +895,7 @@ function pcSimRenderCal(){
   const list=$('#pcSimCalList');if(!list)return;
   const ev=((calCache&&calCache.events)||[]).slice(0,6);
   $('#pcSimCalTag').textContent=ev.length?ev.length+' TERMINE':'KEINE';
+  const sig=JSON.stringify(ev.map(e=>[e.title,e.start]));if(list.dataset.sig===sig)return;list.dataset.sig=sig;   // unveraendert: nicht neu zeichnen (kein Flackern)
   if(!ev.length){list.innerHTML='<li class="pcsim-empty">Keine anstehenden Termine.</li>';return;}
   list.innerHTML=ev.map(e=>{
     const start=new Date(e.start),color=pcSimColor(e.title||'?');
@@ -847,10 +965,11 @@ async function pcSimPoll(){
       const items=(n.items||[]).slice(-8).reverse();
       const tag=$('#pcSimNotifTag'),list=$('#pcSimNotifList');
       if(tag)tag.textContent=items.length?items.length+' NEU':'KEINE';
-      if(list)list.innerHTML=items.length?items.map(it=>{
+      const sig=items.map(it=>it.id).join(',');
+      if(list&&list.dataset.sig!==sig){list.dataset.sig=sig;list.innerHTML=items.length?items.map(it=>{
         const color=pcSimColor(it.app||'?'),initial=(String(it.app||'?').charAt(0)||'?').toUpperCase();
         return `<li class="pcsim-row"><span class="badge" style="--rc:${color}">${escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span></span></li>`;
-      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';
+      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';}   // nur neu zeichnen, wenn sich die Liste geaendert hat (sonst flackert sie bei jedem Abruf)
     }
     pcSimRenderCal();
   }catch(e){}
@@ -1134,7 +1253,8 @@ function renderCalMails(d){
   const list=$('#mailList');
   const mails=(d.mails||[]).slice(0,8);
   $('#mailTag').textContent=mails.length?mails.length+' NEU':'KEINE';
-  if(!mails.length){list.innerHTML='<li class="termin-empty">Keine wichtigen E-Mails — alles ruhig.</li>';return;}
+  const msig=JSON.stringify(mails.map(m=>m.id||m.subject));if(list.dataset.sig===msig)return;list.dataset.sig=msig;
+  if(!mails.length){list.innerHTML='<li class="termin-empty">Keine neuen E-Mails — alles ruhig.</li>';return;}
   list.innerHTML=mails.map(m=>{
     const from=String(m.from||'?'),color=calColor(from),initial=(from.replace(/[^A-Za-zÄÖÜäöü0-9]/g,'').charAt(0)||'✉').toUpperCase();
     return `<li class="termin-item notif-card" style="--cal-color:${color}" data-mail-id="${escHtml(m.id||'')}" data-mail-from="${escHtml(from)}" data-mail-src="${escHtml(m.src||'')}" data-mail-sub="${escHtml(m.subject||'')}"><div class="t-date"><b>${escHtml(initial)}</b><span>MAIL</span></div><div class="t-body"><div class="ttitle">${escHtml(from)}</div><div class="when"><span class="chip"><span class="dot"></span><span class="txt">${escHtml(m.subject||'')}</span></span></div></div><button type="button" class="notif-dismiss" data-spam="1" title="Als Spam markieren" aria-label="Als Spam markieren"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg></button></li>`;
@@ -1669,7 +1789,6 @@ refreshReady();
 loadSet();
 addMsg('a','Hallo! Ich bin A.R.I – diese App läuft auch ohne PC. '+(cfg.keys[cfg.provider]?'Sag oder tipp mir, was ich tun soll.':'Trage zuerst in den Einstellungen einen KI-Schlüssel ein (oder übernimm die Datei vom PC).'));
 if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{});}
-})();
 
 /* ---------- Nachrichten & Anrufe ansagen (Handy, solange die App offen ist) ---------- */
 (function announceNotifs(){
@@ -1713,4 +1832,263 @@ if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.j
     else setTimeout(()=>{busy=false;next();},800+x.t.length*60);
   }
   setInterval(poll,5000);setTimeout(poll,3000);
+})();
+
+/* ---------- Event-Ankündigungen (TruckersMP -> WhatsApp / Discord) ---------- */
+(function annModule(){
+  const AN=window.AriAnnounce;if(!AN||!$('#annSection'))return;
+  const ANN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriAnnounce;
+  let tpl=Object.assign({},AN.DEFAULT_TEMPLATE,store.get('ari-ann-tpl',{}));
+  let events=store.get('ari-ann-events',[]);
+  let draft=null,perm=null,results={};
+  const saveEvents=()=>store.set('ari-ann-events',events);
+  const msg=(t,bad)=>{const e=$('#annMsg');e.textContent=t||'';e.style.color=bad?'var(--pink)':'';};
+  const COUNTRIES=[['ES','Spanien'],['PT','Portugal'],['FR','Frankreich'],['DE','Deutschland'],['IT','Italien'],['GB','Großbritannien'],['IE','Irland'],['NL','Niederlande'],['BE','Belgien'],['LU','Luxemburg'],['CH','Schweiz'],['AT','Österreich'],['DK','Dänemark'],['SE','Schweden'],['NO','Norwegen'],['FI','Finnland'],['IS','Island'],['EE','Estland'],['LV','Lettland'],['LT','Litauen'],['PL','Polen'],['CZ','Tschechien'],['SK','Slowakei'],['HU','Ungarn'],['RO','Rumänien'],['BG','Bulgarien'],['GR','Griechenland'],['TR','Türkei'],['RS','Serbien'],['HR','Kroatien'],['SI','Slowenien'],['BA','Bosnien'],['ME','Montenegro'],['MK','Nordmazedonien'],['AL','Albanien'],['XK','Kosovo'],['RU','Russland'],['BY','Belarus'],['UA','Ukraine'],['MD','Moldau']];
+
+  /* --- Event holen --- */
+  async function fetchEvent(id){
+    const r=await fetch('https://api.truckersmp.com/v2/events/'+id);
+    if(!r.ok)throw new Error(r.status===404?'Das Event wurde nicht gefunden – ist der Link richtig?':'TruckersMP antwortet gerade nicht ('+r.status+').');
+    const d=await r.json();if(d.error||!d.response)throw new Error('Das Event wurde nicht gefunden – ist der Link richtig?');
+    return d.response;
+  }
+
+  /* --- Entwurf --- */
+  function newDraft(ev,existing){
+    const start=AN.tmpTime(ev.start_at),now=new Date(),plan=start?AN.plan(start,tpl,now):[];
+    const last=store.get('ari-ann-last',{targets:{whatsapp:'',discord:''},auto:{whatsapp:true,discord:false}});
+    const d=existing?JSON.parse(JSON.stringify(existing)):{id:String(ev.id),lengthKm:0,flagFrom:'',flagTo:'',imgFile:'',useShot:false,targets:Object.assign({},last.targets),auto:Object.assign({},last.auto),sends:[]};
+    d.ev=ev;
+    d.sends=plan.map(p=>{const old=(d.sends||[]).find(x=>x.key===p.key);return {key:p.key,title:p.title,at:old&&old.custom?old.at:p.at.getTime(),custom:!!(old&&old.custom),enabled:old?old.enabled:!p.past};});
+    return d;
+  }
+  const toLocalInput=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());};
+  const stateOf=(d,send)=>({tpl,lengthKm:d.lengthKm,flagFrom:d.flagFrom||undefined,flagTo:d.flagTo||undefined,targets:d.targets,sendAt:send?new Date(send.at):undefined});
+
+  function renderDraft(){
+    const d=draft,form=$('#annForm');if(!d){form.style.display='none';return;}
+    form.style.display='';
+    const ev=d.ev,m=AN.tmpTime(ev.meetup_at),s=AN.tmpTime(ev.start_at),fm=m&&AN.fmtBerlin(m),fs=s&&AN.fmtBerlin(s);
+    $('#annInfo').innerHTML='<b>'+escHtml(ev.name||'')+'</b><div class="dim2">'+escHtml(((ev.departure||{}).city||'?')+' → '+((ev.arrive||{}).city||'?'))+'</div><div class="dim2">'+(fs?'Treffpunkt '+(fm?fm.time:'?')+' · Abfahrt '+fs.time+' '+fs.tz+' · '+fs.date:'Keine Zeit im Event')+'</div>';
+    $('#annKm').value=d.lengthKm||'';
+    $('#annUseShot').checked=!!d.useShot;
+    $('#annWa').value=d.targets.whatsapp||'';$('#annDc').value=d.targets.discord||'';
+    $('#annAutoWa').checked=!!d.auto.whatsapp;$('#annAutoDc').checked=!!d.auto.discord;
+    // Flaggen: nur fragen, wenn A.R.I das Land nicht sicher kennt
+    const fl=[];
+    [['Treffpunkt',(ev.departure||{}).city,'flagFrom'],['Ziel',(ev.arrive||{}).city,'flagTo']].forEach(([n,city,key])=>{
+      if(!city||AN.countryOf(city))return;
+      fl.push('<label class="lbl">LAND VON „'+escHtml(city).toUpperCase()+'“ ('+n.toUpperCase()+') – FLAGGE</label><select data-flag="'+key+'"><option value="">– bitte wählen –</option>'+COUNTRIES.map(c=>'<option value="'+c[0]+'"'+(d[key]===c[0]?' selected':'')+'>'+AN.flagEmoji(c[0])+' '+c[1]+'</option>').join('')+'</select>');});
+    $('#annFlags').innerHTML=fl.join('');
+    $('#annSends').innerHTML=d.sends.map((x,i)=>'<div class="annsend"><input type="checkbox" data-sc="'+i+'" style="width:auto"'+(x.enabled?' checked':'')+'><div style="flex:none;font-size:12px;min-width:92px">'+escHtml(x.title)+'</div><input type="datetime-local" data-st="'+i+'" value="'+toLocalInput(x.at)+'"></div>').join('');
+    $('#annTpl').innerHTML=TPL_FIELDS.map(([k,l,t])=>'<label class="lbl">'+l+'</label><input type="'+(t||'text')+'" data-tpl="'+k+'" value="'+escHtml(String(tpl[k]==null?'':tpl[k]))+'">').join('');
+  }
+  const TPL_FIELDS=[['lead','FÜHRUNGSFAHRZEUG'],['ts','TEAMSPEAK-IP'],['dh','DH-EVENTKALENDER-LINK'],['reward','BELOHNUNG'],['paintText','LACKIERUNG (TEXT)'],['paintImg','LACKIERUNG (BILD-LINK)'],['maxWeight','MAX. LADEGEWICHT'],['playertagRgb','PLAYERTAG-FARBE (RGB)'],['playertag','PLAYERTAG'],['role','DISCORD-ROLLE (<@&…>)'],['eveningHour','UHRZEIT AM VORTAG (STUNDE)','number'],['minutesBefore','MINUTEN VOR BEGINN','number']];
+
+  /* --- Eingaben --- */
+  $('#annForm').addEventListener('input',e=>{
+    const t=e.target;if(!draft)return;
+    if(t.id==='annKm')draft.lengthKm=parseInt(t.value,10)||0;
+    else if(t.id==='annWa')draft.targets.whatsapp=t.value.trim();
+    else if(t.id==='annDc')draft.targets.discord=t.value.trim();
+    else if(t.id==='annAutoWa')draft.auto.whatsapp=t.checked;
+    else if(t.id==='annAutoDc'){if(t.checked&&!confirm('Achtung: Discord verbietet Automatisierung von Nutzerkonten – das Konto könnte gesperrt werden.\n\nTrotzdem automatisch senden?')){t.checked=false;return;}draft.auto.discord=t.checked;}
+    else if(t.id==='annUseShot')draft.useShot=t.checked;
+    else if(t.dataset.flag)draft[t.dataset.flag]=t.value;
+    else if(t.dataset.sc!=null)draft.sends[+t.dataset.sc].enabled=t.checked;
+    else if(t.dataset.st!=null){const ms=new Date(t.value).getTime();if(isFinite(ms)){draft.sends[+t.dataset.st].at=ms;draft.sends[+t.dataset.st].custom=true;}}
+    else if(t.dataset.tpl){const k=t.dataset.tpl;tpl[k]=t.type==='number'?(parseInt(t.value,10)||0):t.value;store.set('ari-ann-tpl',tpl);}
+  });
+  $('#annLoad').onclick=async()=>{
+    const id=AN.parseEventId($('#annUrl').value);if(!id){msg('Das ist kein TruckersMP-Link. Beispiel: https://truckersmp.com/events/35744-…',true);return;}
+    msg('Lade das Event …');
+    try{const ev=await fetchEvent(id);const ex=events.find(x=>x.id===String(ev.id));draft=newDraft(ev,ex);renderDraft();msg('Event geladen.'+(ex?' (Gespeicherte Einstellungen übernommen.)':''));}
+    catch(err){msg(String(err.message||err),true);}
+  };
+
+  /* --- Länge aus dem Screenshot lesen (Bild-KI) --- */
+  function shrink(file,maxW){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,maxW/img.width),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.85));};img.onerror=()=>rej(new Error('Bild nicht lesbar'));img.src=u;});}
+  async function visionLength(dataUrl){
+    const b64=dataUrl.split(',')[1],p=cfg.provider,P=PROV[p],keys=keyList(p);
+    if(!keys.length)throw new Error('Kein KI-Schlüssel – trage die Länge von Hand ein.');
+    let last;
+    for(const key of keys){
+      try{
+        if(!P.oa){
+          const d=await post(P.url,{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},{model:P.small,max_tokens:30,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:AN.LENGTH_PROMPT}]}]});
+          return AN.parseLength((d.content.find(b=>b.type==='text')||{}).text);
+        }
+        const model=p==='groq'?'meta-llama/llama-4-scout-17b-16e-instruct':P.small;
+        const d=await post(P.url,{Authorization:'Bearer '+key},{model,max_tokens:30,messages:[{role:'user',content:[{type:'text',text:AN.LENGTH_PROMPT},{type:'image_url',image_url:{url:dataUrl}}]}]});
+        return AN.parseLength(d.choices[0].message.content);
+      }catch(e){last=e;if(!isLimit(e))throw e;}
+    }
+    throw last;
+  }
+  $('#annShot').onclick=()=>$('#annShotFile').click();
+  $('#annShotFile').onchange=async e=>{
+    const f=e.target.files[0];e.target.value='';if(!f||!draft)return;
+    const out=$('#annShotMsg');out.style.color='';out.textContent='Lese die Länge aus dem Bild …';
+    try{
+      const url=await shrink(f,1280);
+      if(ANN())try{const r=await ANN().saveImage({name:'ann_'+draft.id+'.jpg',base64:url.split(',')[1]});draft.imgFile=r.file;}catch(er){}
+      const km=await visionLength(url);
+      if(km>0){draft.lengthKm=km;$('#annKm').value=km;out.textContent='Gelesen: '+km.toLocaleString('de-DE')+' km – bitte kurz mit dem Bild vergleichen.';}
+      else{out.style.color='var(--pink)';out.textContent='Die Länge war im Bild nicht sicher lesbar – bitte von Hand eintragen.';}
+    }catch(err){out.style.color='var(--pink)';out.textContent='Konnte die Länge nicht lesen ('+String(err.message||err).slice(0,80)+') – bitte von Hand eintragen.';}
+  };
+
+  /* --- Prüfen + Vorschau --- */
+  function checkAll(d){
+    const c=AN.check(d.ev,{lengthKm:d.lengthKm,flagFrom:d.flagFrom||undefined,flagTo:d.flagTo||undefined,targets:d.targets,tpl},new Date());
+    if(d.useShot&&!d.imgFile)c.errors.push('„Mein Screenshot“ ist angehakt, aber es wurde noch keiner gewählt.');
+    ['whatsapp','discord'].forEach(k=>{if(d.auto[k]&&!d.targets[k])c.errors.push((k==='discord'?'Discord':'WhatsApp')+': Automatisch senden ist an, aber der Chat-/Kanalname fehlt.');});
+    if(perm){
+      if((d.auto.whatsapp&&d.targets.whatsapp)||(d.auto.discord&&d.targets.discord)){if(!perm.accessibility)c.warnings.push('Die Bedienungshilfe ist aus – automatisches Senden geht erst, wenn du sie unten einschaltest (sonst wird nur vorbereitet).');}
+      if(!perm.exactAlarms)c.warnings.push('„Exakte Alarme“ sind nicht erlaubt – die Ankündigung kann einige Minuten zu spät kommen.');
+      if(d.targets.whatsapp&&!perm.whatsapp)c.warnings.push('WhatsApp ist auf diesem Handy nicht installiert.');
+      if(d.targets.discord&&!perm.discord)c.warnings.push('Discord ist auf diesem Handy nicht installiert.');
+    }
+    return c;
+  }
+  function showPreview(d,onSave){
+    const c=checkAll(d);let o=$('#annPreviewOv');if(o)o.remove();
+    o=document.createElement('div');o.id='annPreviewOv';
+    o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:12px';
+    const sends=d.sends.filter(x=>x.enabled);
+    const blocks=(sends.length?sends:[null]).map(sd=>{
+      const lbl=sd&&AN.tmpTime(d.ev.start_at)?AN.dayLabel(new Date(sd.at),AN.tmpTime(d.ev.start_at)):'';
+      return '<div style="margin-top:8px"><b>'+(sd?escHtml(sd.title)+' · '+escHtml(AN.fmtBerlin(new Date(sd.at)).date+' '+AN.fmtBerlin(new Date(sd.at)).time)+' · '+escHtml(lbl):'Text')+'</b>'+
+        ['discord','whatsapp'].map(pl=>'<details'+(sd===sends[0]||!sd?'':'')+'><summary class="dim" style="cursor:pointer">'+(pl==='discord'?'Discord':'WhatsApp')+'-Text</summary><pre>'+escHtml(AN.buildText(pl,d.ev,stateOf(d,sd)))+'</pre></details>').join('')+'</div>';}).join('');
+    const img=d.useShot&&d.imgFile?'Eigener Screenshot':(d.ev.map?'<img src="'+escHtml(d.ev.map)+'" style="max-width:100%;border-radius:8px;margin-top:6px" alt="Routenbild">':'<span class="st-wait">kein Routenbild</span>');
+    o.innerHTML='<div style="width:min(560px,100%);max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#14121f);border:1px solid color-mix(in srgb,var(--cyan) 35%,transparent);border-radius:14px;padding:14px">'+
+      '<div style="font:700 11px var(--font-mono);letter-spacing:.14em;color:var(--cyan)">VORSCHAU</div><div style="font:700 15px var(--font-display);margin:4px 0 8px">'+escHtml(d.ev.name||'')+'</div>'+
+      (c.errors.length?'<div class="st-err" style="font-size:12px"><b>Das muss erst behoben werden:</b><ul style="margin:4px 0 8px 18px;padding:0">'+c.errors.map(x=>'<li>'+escHtml(x)+'</li>').join('')+'</ul></div>':'')+
+      (c.warnings.length?'<div class="st-wait" style="font-size:12px"><b>Hinweise:</b><ul style="margin:4px 0 8px 18px;padding:0">'+c.warnings.map(x=>'<li>'+escHtml(x)+'</li>').join('')+'</ul></div>':'')+
+      (!c.errors.length&&!c.warnings.length?'<div class="st-ok" style="font-size:12px">✓ Alles in Ordnung.</div>':'')+
+      '<div class="dim2">Bild: '+img+'</div>'+blocks+
+      '<div class="row" style="margin-top:12px"><button class="btn" id="annPvClose">SCHLIESSEN</button>'+(onSave?'<button class="btn pri" id="annPvSave"'+(c.errors.length?' disabled style="opacity:.4"':'')+'>SPEICHERN &amp; PLANEN</button>':'')+'</div></div>';
+    document.body.appendChild(o);
+    $('#annPvClose').onclick=()=>o.remove();o.onclick=ev=>{if(ev.target===o)o.remove();};
+    if(onSave&&!c.errors.length)$('#annPvSave').onclick=()=>{o.remove();onSave();};
+    return c;
+  }
+  $('#annPreview').onclick=()=>{if(draft)showPreview(draft,null);};
+
+  /* --- Planen --- */
+  function payloadFor(d,send){
+    const start=AN.tmpTime(d.ev.start_at),st=stateOf(d,send),pf=[];
+    if(d.targets.whatsapp)pf.push({name:'whatsapp',target:d.targets.whatsapp,text:AN.buildText('whatsapp',d.ev,st),auto:!!d.auto.whatsapp});
+    if(d.targets.discord)pf.push({name:'discord',target:d.targets.discord,text:AN.buildText('discord',d.ev,st),auto:!!d.auto.discord});
+    const own=d.useShot&&d.imgFile;
+    return {title:d.ev.name||'Event',when:send.title,imageUrl:own?'':(d.ev.map||''),imageFile:own?d.imgFile:'',deadline:start?start.getTime():0,platforms:pf,test:false};
+  }
+  async function scheduleEvent(d){
+    let planned=0,exactAll=true;
+    for(const s of d.sends){
+      const id='ann_'+d.id+'_'+s.key;
+      if(!ANN())continue;
+      if(!s.enabled||s.at<=Date.now()){try{await ANN().cancel({id});}catch(e){}continue;}
+      try{const r=await ANN().schedule({id,at:s.at,payload:payloadFor(d,s)});planned++;if(!r.exact)exactAll=false;}catch(e){throw new Error('Planen fehlgeschlagen: '+String(e.message||e));}
+    }
+    return {planned,exactAll};
+  }
+  async function saveDraft(){
+    const d=draft;if(!d)return;
+    const c=checkAll(d);
+    if(c.errors.length){showPreview(d,null);return;}
+    try{
+      const r=await scheduleEvent(d);
+      const i=events.findIndex(x=>x.id===d.id);if(i>=0)events[i]=d;else events.push(d);saveEvents();
+      store.set('ari-ann-last',{targets:d.targets,auto:d.auto});store.set('ari-ann-tpl',tpl);
+      renderList();
+      msg(ANN()?(r.planned+' Ankündigung(en) geplant.'+(r.exactAll?'':' (Ohne „Exakte Alarme“ kann es etwas später kommen.)')):'Gespeichert – geplant wird nur in der Handy-App (hier ist es nur eine Vorschau).');
+      draft=null;renderDraft();
+    }catch(err){msg(String(err.message||err),true);}
+  }
+  $('#annSaveBtn').onclick=()=>{if(draft)showPreview(draft,saveDraft);};
+
+  /* --- Liste + Status --- */
+  function statusOf(d,s){
+    const r=results['ann_'+d.id+'_'+s.key];
+    if(!s.enabled)return ['aus','',''];
+    if(r){const m={gesendet:['✓ gesendet','st-ok'],vorbereitet:['✓ vorbereitet – Senden tippen','st-wait'],fehler:['✗ Fehler','st-err'],wartet:['… wartet (Handy gesperrt)','st-wait']}[r.status]||[r.status,''];return [m[0],m[1],r.msg||''];}
+    if(s.at<=Date.now())return ['übersprungen / vorbei','',''];
+    return ['geplant','',''];
+  }
+  function renderList(){
+    const list=$('#annList');$('#annTag').textContent=events.length+'';
+    if(!events.length){list.innerHTML='<div class="dim2">Noch nichts geplant.</div>';return;}
+    list.innerHTML=events.map(d=>{
+      const f=AN.fmtBerlin(AN.tmpTime(d.ev.start_at)||new Date());
+      return '<div class="annev" data-eid="'+escHtml(d.id)+'"><b>'+escHtml(d.ev.name||'')+'</b><div class="dim2">'+f.date+' · '+escHtml(((d.ev.departure||{}).city||'?')+' → '+((d.ev.arrive||{}).city||'?'))+' · '+AN.fmtKm(d.lengthKm)+'</div>'+
+        d.sends.map(s=>{const st=statusOf(d,s),t=AN.fmtBerlin(new Date(s.at));return '<div style="font-size:12px;margin-top:4px">'+escHtml(s.title)+' · '+t.date+' '+t.time+' – <span class="'+st[1]+'">'+escHtml(st[0])+'</span>'+(st[2]?'<div class="dim2">'+escHtml(st[2])+'</div>':'')+'</div>';}).join('')+
+        '<div class="row" style="margin-top:8px"><button class="btn" data-aa="edit">BEARBEITEN</button><button class="btn dng" data-aa="del">LÖSCHEN</button></div></div>';}).join('');
+  }
+  $('#annList').onclick=async e=>{
+    const b=e.target.closest('[data-aa]');if(!b)return;const id=b.closest('[data-eid]').dataset.eid,d=events.find(x=>x.id===id);if(!d)return;
+    if(b.dataset.aa==='del'){if(!confirm('Diese Ankündigung samt Terminen löschen?'))return;try{if(ANN())await ANN().cancelPrefix({prefix:'ann_'+id+'_'});}catch(er){}events=events.filter(x=>x.id!==id);saveEvents();renderList();return;}
+    draft=newDraft(d.ev,d);renderDraft();$('#annForm').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  function renderPerm(){
+    const el=$('#annPerm');
+    if(!ANN()){el.textContent='Nur in der Handy-App verfügbar (hier siehst du nur Vorschau und Texte).';return;}
+    if(!perm){el.textContent='Prüfe …';return;}
+    const on=(v,t)=>'<div>'+(v?'<span class="st-ok">✓</span>':'<span class="st-err">✗</span>')+' '+t+'</div>';
+    el.innerHTML=on(perm.accessibility,'Bedienungshilfe „A.R.I Ankündigungen“ eingeschaltet')+on(perm.exactAlarms,'Exakte Alarme erlaubt')+on(perm.overlay,'„Über anderen Apps anzeigen“ erlaubt (nötig, damit A.R.I WhatsApp/Discord im Hintergrund öffnen darf)')+on(perm.whatsapp,'WhatsApp installiert')+on(perm.discord,'Discord installiert');
+  }
+  $('#annPermAcc').onclick=()=>{if(ANN())ANN().openAccessibilitySettings();};
+  $('#annPermAlarm').onclick=()=>{if(ANN())ANN().openExactAlarmSettings();};
+
+  /* --- Ergebnisse (auch ansagen) --- */
+  const reported=new Set(store.get('ari-ann-reported',[]));
+  async function poll(){
+    if(!ANN())return;
+    try{
+      const st=await ANN().status();perm=st;results=st.results||{};
+      renderPerm();renderList();
+      Object.entries(results).forEach(([id,r])=>{
+        const key=id+'@'+r.ts;if(reported.has(key)||r.status==='wartet')return;reported.add(key);store.set('ari-ann-reported',[...reported].slice(-100));
+        const ev=events.find(x=>id.startsWith('ann_'+x.id+'_')),name=ev?ev.ev.name:'Ankündigung';
+        if(/_test$/.test(id)){addMsg('a','Test-Alarm angekommen – es wurde nichts gesendet.');return;}
+        const t=r.status==='fehler'?'Ankündigung „'+name+'“ hat nicht geklappt: '+r.msg:r.status==='vorbereitet'?'Ankündigung „'+name+'“ ist vorbereitet – tippe in der App auf Senden.':'Ankündigung „'+name+'“ wurde gesendet.';
+        addMsg('a',t);hist.push({role:'assistant',content:t});speak(t);
+      });
+    }catch(e){}
+  }
+
+  /* --- Aenderungen am Event erkennen (Zeit/Ort) und neu planen --- */
+  async function refreshAll(){
+    for(const d of events){
+      const start=AN.tmpTime(d.ev.start_at);if(!start||start.getTime()<Date.now())continue;
+      try{
+        const ev=await fetchEvent(d.id);
+        const changed=['start_at','meetup_at'].some(k=>ev[k]!==d.ev[k])||JSON.stringify(ev.departure)!==JSON.stringify(d.ev.departure)||JSON.stringify(ev.arrive)!==JSON.stringify(d.ev.arrive);
+        const nd=newDraft(ev,d);
+        if(changed){Object.assign(d,nd);saveEvents();await scheduleEvent(d);addMsg('a','Das Event „'+ev.name+'“ wurde geändert – die Ankündigungen sind neu geplant.');}
+        else if(ANN())await scheduleEvent(d);
+      }catch(e){}
+    }
+    renderList();
+  }
+
+  /* --- Entwickler-Tests --- */
+  function sampleEvent(){
+    const t=new Date(Date.now()+24*3600*1000);t.setUTCMinutes(0,0,0);t.setUTCHours(18);
+    const f=d=>d.toISOString().slice(0,19).replace('T',' ');
+    return {id:35744,name:'Golden Phoenix Express #160',departure:{location:'Norrsken',city:'Valencia'},arrive:{location:'Nos Partugas',city:'Salamanca'},meetup_at:f(new Date(t.getTime()-3600000)),start_at:f(t),
+      map:'https://static.truckersmp.com/images/event/map/35744.1778927590.png',voice_link:'https://discord.gg/GPE',url:'/events/35744-golden-phoenix-express#160',server:{id:31,name:'ProMods'},vtc:{id:51501,name:'Golden Phoenix Express'},
+      dlcs:{'227310':'Going East!','304212':'Scandinavia','531130':'Vive la France !','558244':'Italia','925580':'Beyond the Baltic Sea','933610':'Krone Trailer Pack','1':'Road to the Black Sea','2':'Iberia','3':'West Balkans','4':'Feldbinder Trailer Pack','5':'Greece','6':'Nordic Horizons','7':'Iceland','8':'Isle of Ireland'}};
+  }
+  $('#annDevPrev').onclick=()=>{const d=newDraft(sampleEvent());d.lengthKm=1031;d.targets={whatsapp:'Test-Gruppe',discord:'test-kanal'};showPreview(d,null);};
+  $('#annDevErr').onclick=()=>{const ev=sampleEvent();ev.arrive={location:'Irgendwo',city:'Nirgendwo'};delete ev.map;const d=newDraft(ev);d.lengthKm=0;d.targets={whatsapp:'',discord:''};showPreview(d,null);};
+  $('#annDevAlarm').onclick=async()=>{
+    if(!ANN()){msg('Test-Alarm gibt es nur in der Handy-App.',true);return;}
+    try{await ANN().schedule({id:'ann_dev_test',at:Date.now()+60000,payload:{title:'Test-Alarm',test:true,platforms:[]}});msg('Test-Alarm kommt in 1 Minute (sendet nichts, zeigt nur eine Benachrichtigung).');}catch(e){msg('Konnte den Test-Alarm nicht planen: '+String(e.message||e),true);}
+  };
+
+  renderList();renderPerm();
+  if(ANN()){setTimeout(poll,1500);setInterval(poll,10000);setTimeout(refreshAll,8000);setInterval(refreshAll,30*60*1000);try{Capacitor.Plugins.App.addListener('appStateChange',st=>{if(st.isActive)poll();});}catch(e){}}
+})();
+
 })();
