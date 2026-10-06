@@ -1,7 +1,7 @@
 {
-    "versionCode":  67,
-    "versionName":  "1.67",
+    "versionCode":  69,
+    "versionName":  "1.69",
     "apk":  "ARI.apk",
-    "notes":  "Event-Ankuendigungen (TruckersMP -\u003e WhatsApp/Discord), Plugins auch ohne PC",
+    "notes":  "Tests der Event-Ankuendigung direkt bei den Plugins, Plugins sichtbar",
     "sizeMb":  6.5
 }
