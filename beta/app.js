@@ -1003,8 +1003,21 @@ function pcSimSetNavHeight(){
   const navEl=document.querySelector('nav');
   if(navEl)document.documentElement.style.setProperty('--nav-h',navEl.offsetHeight+'px');
 }
+/* Bildschirm anlassen, solange die PC-Version laeuft: erst die Web-Funktion (Wake Lock), sonst das Android-Fenster-Flag */
+let wakeLockObj=null,wantAwake=false;
+async function keepAwake(on){
+  wantAwake=!!on;
+  try{const W=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;if(W&&W.keepScreenOn)await W.keepScreenOn({on:!!on});}catch(e){}
+  try{
+    if(on){if('wakeLock' in navigator&&!wakeLockObj&&!document.hidden){wakeLockObj=await navigator.wakeLock.request('screen');wakeLockObj.addEventListener('release',()=>{wakeLockObj=null;});}}
+    else if(wakeLockObj){await wakeLockObj.release();wakeLockObj=null;}
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&wantAwake)keepAwake(true);});   // der Wake Lock geht beim Wegwechseln verloren -> zurueck in der App neu holen
+function pcSimBtnPaint(){const b=$('#pcSimBtn');if(!b)return;const on=cfg.pcSimOn==='1';b.textContent=on?'■ PC-VERSION BEENDEN':'▣ PC-VERSION STARTEN';b.classList.toggle('pri',!on);}
 function pcSimSetActive(on){
   document.body.classList.toggle('pc-sim-active',!!on);
+  keepAwake(!!on);pcSimBtnPaint();
   if(!on)pcSimSetFullscreen(false);
   clearInterval(pcSimTimer);pcSimTimer=null;
   if(on){pcSimPoll();pcSimTimer=setInterval(pcSimPoll,4000);}
@@ -1028,9 +1041,10 @@ function pcSimSetFullscreen(on){
     if(btn){btn.textContent='⛶';btn.title='Vollbild';}
   }
 }
-$('#pcSimOn').addEventListener('change',e=>{
-  cfg.pcSimOn=e.target.checked?'1':'0';saveCfg();
-  pcSimSetActive(e.target.checked);
+$('#pcSimBtn').addEventListener('click',()=>{
+  cfg.pcSimOn=cfg.pcSimOn==='1'?'0':'1';saveCfg();
+  pcSimSetActive(cfg.pcSimOn==='1');
+  if(cfg.pcSimOn==='1')goTab('pc');   // gleich die PC-Ansicht zeigen
 });
 $('#pcSimFsBtn').addEventListener('click',()=>pcSimSetFullscreen(!$('#pcSimBox').classList.contains('pc-sim-fullscreen')));
 $$('nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='pc')pcSimSetFullscreen(false);}));
@@ -1339,7 +1353,6 @@ function loadSet(){
   $('#gStatus').textContent=gOn()?'✓ Bei Google angemeldet – Termine und Mails laufen direkt über Google, ohne PC.':'Nicht angemeldet.';
   $('#gLogout').style.display=gOn()?'':'none';
   $$('#sGMail .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.gMail||'1')));
-  $('#pcSimOn').checked=cfg.pcSimOn==='1';
   pcSimSetActive(cfg.pcSimOn==='1');
 }
 $('#sProv').onchange=()=>{cfg.provider=$('#sProv').value;$('#sKey').value=cfg.keys[cfg.provider]||'';saveCfg();sync.dirtySet=true;saveSync();syncSoon();};
