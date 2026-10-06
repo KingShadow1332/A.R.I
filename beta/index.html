@@ -400,6 +400,26 @@ main{touch-action:pan-y}
 .notif-dismiss{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-dim2,#7d7a92);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .15s ease,border-color .15s ease,background .15s ease}
 .notif-dismiss:active,.notif-dismiss:hover{color:var(--pink,#ff2d78);border-color:color-mix(in srgb,var(--pink,#ff2d78) 55%,transparent);background:color-mix(in srgb,var(--pink,#ff2d78) 12%,transparent)}
 .notif-dismiss svg{display:block}
+
+/* ===== Planet: gleiche Optik wie im PC-Hub (Ringkanten rund, Leuchten nicht abgeschnitten) ===== */
+.hero-glow{-webkit-mask-image:radial-gradient(closest-side, #000 35%, transparent 100%); mask-image:radial-gradient(closest-side, #000 35%, transparent 100%); opacity:.8; filter:blur(10px)}
+.orb-glow-pink{filter:blur(40px)}
+.orb-glow-cyan{filter:blur(30px); opacity:.42}
+.ring-wrap .ring-border{border-width:0; background:radial-gradient(closest-side, transparent 96.4%, var(--bc) 97.6%, var(--bc) 99.1%, transparent 99.9%); box-shadow:0 0 22px var(--sw); filter:none}
+.ring-wrap .ring-sweep{filter:none; -webkit-mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%); mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%)}
+.ring-back{-webkit-mask-image:none; mask-image:none}
+.ring-front{inset:calc(var(--i) - 40px); padding:40px; box-sizing:border-box; -webkit-mask-image:linear-gradient(to bottom, transparent 29.8%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.4) 48.4%, rgba(0,0,0,.78) 56.8%, #000 66.8%, #000 100%); mask-image:linear-gradient(to bottom, transparent 29.8%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.4) 48.4%, rgba(0,0,0,.78) 56.8%, #000 66.8%, #000 100%)}
+.ring-front .ring-border, .ring-front .ring-spin, .ring-front .ring-sweep{inset:40px}
+.orb{will-change:auto}
+.orb-wave.a, .orb-wave.b, .sphere-sweep, .ring-sweep, .hero-glow{transition:opacity .8s var(--ease)}
+
+/* Event-Ankuendigungen */
+#annSection input[type=number],#annSection input[type=datetime-local],#annSection input[type=url],#annSection select,#annSection textarea{background:rgba(255,255,255,.04);border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);color:var(--text);border-radius:8px;padding:9px 10px;font:500 13px var(--font-mono);width:100%;min-height:40px}
+#annSection label.lbl{display:block;font:600 10px var(--font-mono);letter-spacing:.1em;color:var(--text-dim);margin:10px 0 4px}
+#annSection .annsend{display:flex;gap:8px;align-items:center;margin:6px 0}#annSection .annsend input[type=datetime-local]{flex:1}
+#annSection .annev{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-bottom:8px}
+#annSection .st-ok{color:#39ff9e}#annSection .st-err{color:var(--pink)}#annSection .st-wait{color:#ffd23d}
+#annPreviewOv pre{white-space:pre-wrap;word-break:break-word;font:400 12px/1.5 var(--font-mono);background:rgba(0,0,0,.3);border-radius:8px;padding:10px;margin:6px 0}
 </style>
 <link rel="stylesheet" href="pc-sim.css">
 <link rel="stylesheet" href="pc-sim-panels.css">
@@ -727,6 +747,66 @@ main{touch-action:pan-y}
         </div>
       </div>
     </details>
+    <details class="set-section" id="annSection">
+      <summary>📢 EVENT-ANKÜNDIGUNGEN</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">📢</span><span class="t">TRUCKERSMP → WHATSAPP + DISCORD</span><span class="tag" id="annTag">0</span></div>
+          <div class="dim">Link zum TruckersMP-Event einfügen – A.R.I baut den Text, hängt das Routenbild an und sendet <b>am Vortag um 22:00</b> und <b>2 Std. vor Beginn</b> automatisch aus deinem eigenen WhatsApp und Discord.</div>
+          <label class="lbl">TRUCKERSMP-EVENT (LINK ODER NUMMER)</label>
+          <div class="row"><input type="text" id="annUrl" placeholder="https://truckersmp.com/events/35744-…" autocomplete="off" spellcheck="false"><button class="btn pri" id="annLoad" style="flex:none">LADEN</button></div>
+          <div class="dim2" id="annMsg" style="margin-top:6px;min-height:14px"></div>
+
+          <div id="annForm" style="display:none">
+            <div class="mem" id="annInfo" style="margin-top:8px"></div>
+
+            <label class="lbl">STRECKENLÄNGE (KM)</label>
+            <div class="row"><input type="number" id="annKm" min="0" step="1" placeholder="z. B. 1031"><button class="btn" id="annShot" style="flex:none">AUS BILD LESEN</button><input type="file" id="annShotFile" accept="image/*" style="display:none"></div>
+            <div class="dim2" id="annShotMsg" style="margin-top:4px">Spiel-Screenshot der Route wählen („Streckenlänge …“) – A.R.I liest die km ab.</div>
+            <label style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:12px"><input type="checkbox" id="annUseShot" style="width:auto"> Meinen Screenshot statt des TruckersMP-Routenbilds mitschicken</label>
+
+            <div id="annFlags"></div>
+
+            <label class="lbl">WHATSAPP-GRUPPE (NAME GENAU WIE IN WHATSAPP)</label>
+            <input type="text" id="annWa" placeholder="z. B. RSL Events" autocomplete="off">
+            <label style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:12px"><input type="checkbox" id="annAutoWa" style="width:auto"> Automatisch senden (sonst: nur vorbereiten, du tippst auf Senden)</label>
+            <label class="lbl">DISCORD-KANAL (NAME GENAU WIE IN DISCORD)</label>
+            <input type="text" id="annDc" placeholder="z. B. event-ankündigungen" autocomplete="off">
+            <label style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:12px"><input type="checkbox" id="annAutoDc" style="width:auto"> Automatisch senden</label>
+            <div class="dim2" style="margin-top:4px">⚠️ Discord erlaubt keine Automatisierung von Nutzerkonten – das kann zur Sperrung führen. Ohne Haken bereitet A.R.I nur vor und du tippst selbst auf Senden.</div>
+
+            <label class="lbl">SENDEZEITEN</label>
+            <div id="annSends"></div>
+
+            <details style="margin-top:10px"><summary class="dim" style="cursor:pointer">Vorlage bearbeiten (Führungsfahrzeug, Links, Lackierung …)</summary><div id="annTpl"></div></details>
+
+            <div class="row" style="margin-top:12px"><button class="btn" id="annPreview">VORSCHAU</button><button class="btn pri" id="annSaveBtn">SPEICHERN &amp; PLANEN</button></div>
+          </div>
+
+          <label class="lbl" style="margin-top:16px">GEPLANTE ANKÜNDIGUNGEN</label>
+          <div id="annList"></div>
+
+          <label class="lbl" style="margin-top:16px">BERECHTIGUNGEN</label>
+          <div id="annPerm" class="dim2"></div>
+          <div class="row" style="margin-top:6px"><button class="btn" id="annPermAcc">BEDIENUNGSHILFE</button><button class="btn" id="annPermAlarm">EXAKTE ALARME</button></div>
+
+          <label class="lbl" style="margin-top:16px">ENTWICKLER-TESTS</label>
+          <div class="row" style="flex-wrap:wrap"><button class="btn" id="annDevPrev">VORSCHAU BEISPIEL-EVENT</button><button class="btn" id="annDevErr">FEHLER SIMULIEREN</button><button class="btn" id="annDevAlarm">TEST-ALARM IN 1 MIN</button></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="set-section" id="plugSection">
+      <summary>🧩 PLUGINS</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">🧩</span><span class="t">ERWEITERUNGEN</span><span class="tag" id="plugTag">0</span></div>
+          <div class="dim">Plugins erweitern A.R.I – und laufen hier auch <b>ohne PC</b>. Am PC eingeschaltete Plugins werden automatisch übernommen (einmal einrichten genügt). Du kannst auch selbst eine <b>plugin.json</b> hinzufügen oder A.R.I sagen: „Bau dir ein Plugin, das …“.</div>
+          <div id="plugList" style="margin-top:10px"></div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="plugAdd">+ PLUGIN HINZUFÜGEN</button><input type="file" id="plugFile" accept=".json,application/json" style="display:none"></div>
+          <div class="dim2" id="plugMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+
     <details class="set-section" id="notifFwdSection" style="display:none">
       <summary>✉ HANDY-BENACHRICHTIGUNGEN AM PC</summary>
       <div class="set-section-body">
@@ -843,6 +923,7 @@ main{touch-action:pan-y}
 
 <div id="qrOv" style="display:none;position:fixed;inset:0;z-index:9999;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:12px"><video id="qrVid" playsinline muted style="width:100%;max-height:70vh;object-fit:cover"></video><div class="dim" id="qrMsg" style="color:#dff6ff">Richte die Kamera auf den QR-Code am PC (Einstellungen → HANDY).</div><button class="btn" id="qrClose" style="width:60%">ABBRECHEN</button></div>
 <script src="jsqr.js"></script>
+<script src="announce.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
