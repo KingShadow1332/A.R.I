@@ -1,7 +1,7 @@
 {
-    "versionCode":  63,
-    "versionName":  "1.63",
+    "versionCode":  67,
+    "versionName":  "1.67",
     "apk":  "ARI.apk",
-    "notes":  "Nachrichten und Anrufe ansagen, auf Antwort warten, Antworten auf WhatsApp/Discord, kurze Fehlermeldungen",
-    "sizeMb":  6.4
+    "notes":  "Event-Ankuendigungen (TruckersMP -\u003e WhatsApp/Discord), Plugins auch ohne PC",
+    "sizeMb":  6.5
 }
