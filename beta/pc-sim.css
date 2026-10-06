@@ -155,3 +155,17 @@ body.pc-sim-active #pcSimBox{display:block}
 /* --- Astro (statisch, leichte Schwebe-Animation) --- */
 .pc-sim-astro{animation:pcSimAstroFloat 3.6s ease-in-out infinite}
 @keyframes pcSimAstroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ===== Planet: exakt wie im PC-Hub (Ringkanten rund, Leuchten an den Ringspitzen nicht abgeschnitten) =====
+   Steht am ENDE dieser Datei, weil sie nach dem Stil im Dokument geladen wird und aeltere Ring-Regeln sonst gewinnen. */
+.hero-glow{-webkit-mask-image:radial-gradient(closest-side, #000 35%, transparent 100%); mask-image:radial-gradient(closest-side, #000 35%, transparent 100%); opacity:.8; filter:blur(10px)}
+.orb-glow-pink{filter:blur(40px)}
+.orb-glow-cyan{filter:blur(30px); opacity:.42}
+.orb{will-change:auto}
+.ring-wrap .ring-border{border-width:0; background:radial-gradient(closest-side, transparent 96.4%, var(--bc) 97.6%, var(--bc) 99.1%, transparent 99.9%); box-shadow:0 0 22px var(--sw); filter:none}
+.ring-wrap .ring-sweep{filter:none; -webkit-mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%); mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%)}
+.ring-back{-webkit-mask-image:none; mask-image:none}
+.ring-wrap.ring-front{inset:calc(var(--i) - 40px); padding:40px; box-sizing:border-box;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 29.8%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.4) 48.4%, rgba(0,0,0,.78) 56.8%, #000 66.8%, #000 100%);
+  mask-image:linear-gradient(to bottom, transparent 29.8%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.4) 48.4%, rgba(0,0,0,.78) 56.8%, #000 66.8%, #000 100%)}
+.ring-wrap.ring-front .ring-border, .ring-wrap.ring-front .ring-spin, .ring-wrap.ring-front .ring-sweep{inset:40px}
