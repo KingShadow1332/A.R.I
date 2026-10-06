@@ -256,9 +256,16 @@ function renderPlugins(){
   const off=plugOff(),rows=[];
   plugHub.forEach(p=>rows.push({p,src:'hub',on:!off[p.id]}));
   plugLocal.forEach(p=>rows.push({p,src:'phone',on:!!p.enabled&&!off[p.id]}));
-  $('#plugTag').textContent=rows.filter(x=>x.on).length+' AN';
-  if(!rows.length){list.innerHTML='<div class="dim2">Noch keine Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
-  list.innerHTML=rows.map(({p,src,on})=>{
+  $('#plugTag').textContent=(rows.filter(x=>x.on).length+1)+' AN';
+  // Eingebautes Plugin: Event-Ankuendigungen (immer da, hat einen eigenen Bereich weiter unten)
+  const annN=(store.get('ari-ann-events',[])||[]).length;
+  const builtin=`<div class="mem" data-pid="builtin-ann" data-src="builtin" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Event-Ankündigungen (TruckersMP)</b><small>EINGEBAUT · AN</small></div>
+      <div class="dim2">Sendet Event-Ankündigungen automatisch an WhatsApp und Discord – am Vortag um 22:00 und 2 Std. vor Beginn.${annN?' Geplant: '+annN+'.':''}</div>
+      <div class="row" style="margin-top:8px"><button class="btn pri" data-pa="open">ÖFFNEN</button></div>
+      <div class="dim2" style="margin-top:8px">TESTS (senden nichts)</div>
+      <div class="row" style="margin-top:4px;flex-wrap:wrap"><button class="btn" data-pa="t-prev">VORSCHAU BEISPIEL</button><button class="btn" data-pa="t-err">FEHLER SIMULIEREN</button><button class="btn" data-pa="t-alarm">TEST-ALARM 1 MIN</button></div></div>`;
+  if(!rows.length){list.innerHTML=builtin+'<div class="dim2">Keine weiteren Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  list.innerHTML=builtin+rows.map(({p,src,on})=>{
     const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
     return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
       <div class="dim2">${escHtml(p.description||'')}</div>${tools?`<div class="dim2">Werkzeuge: ${tools}</div>`:''}
@@ -266,6 +273,9 @@ function renderPlugins(){
 }
 $('#plugList')&&($('#plugList').onclick=e=>{
   const b=e.target.closest('[data-pa]');if(!b)return;const card=b.closest('[data-pid]'),id=card.dataset.pid,src=card.dataset.src;
+  const tmap={'t-prev':'#annDevPrev','t-err':'#annDevErr','t-alarm':'#annDevAlarm'};
+  if(tmap[b.dataset.pa]){const t=$(tmap[b.dataset.pa]);if(t){const d=$('#annSection');if(b.dataset.pa==='t-alarm'&&d)d.open=true;t.click();}return;}
+  if(b.dataset.pa==='open'){const d=$('#annSection');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}return;}
   if(b.dataset.pa==='del'){if(!confirm('Plugin entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin entfernt.');return;}
   if(src==='phone'){
     const p=plugLocal.find(x=>x.id===id);if(!p)return;
