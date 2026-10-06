@@ -100,6 +100,8 @@ let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
 const hist=[];
 let replyCtxUntil=0;
+let syncingN=0;
+function setSyncing(on){syncingN=Math.max(0,syncingN+(on?1:-1));document.body.classList.toggle('syncing',syncingN>0);}
 let pluginKw=[];   // (Python-Plugins am PC)   // Stichwoerter der Plugins auf dem PC: kommt eines in der Anfrage vor, laeuft sie ueber den PC (dort sind die Plugins)
 setTimeout(refreshPlugins,4000);setInterval(refreshPlugins,5*60*1000);   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
 const saveCfg=()=>{store.set('ari-app-cfg',cfg);try{refreshReady();}catch(e){}};
@@ -264,8 +266,9 @@ function renderPlugins(){
       <div class="row" style="margin-top:8px"><button class="btn pri" data-pa="open">ÖFFNEN</button></div>
       <div class="dim2" style="margin-top:8px">TESTS (senden nichts)</div>
       <div class="row" style="margin-top:4px;flex-wrap:wrap"><button class="btn" data-pa="t-prev">VORSCHAU BEISPIEL</button><button class="btn" data-pa="t-err">FEHLER SIMULIEREN</button><button class="btn" data-pa="t-alarm">TEST-ALARM 1 MIN</button></div></div>`;
-  if(!rows.length){list.innerHTML=builtin+'<div class="dim2">Keine weiteren Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
-  list.innerHTML=builtin+rows.map(({p,src,on})=>{
+  const pcCards=plugPcOnly.map(p=>`<div class="mem" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>NUR AM PC · AN</small></div><div class="dim2">${escHtml(p.description||'')}</div><div class="dim2">Läuft am PC (Python) – Wünsche mit diesen Stichwörtern gehen automatisch über den PC: ${escHtml((p.keywords||[]).slice(0,6).join(', '))}</div></div>`).join('');
+  if(!rows.length){list.innerHTML=builtin+pcCards+'<div class="dim2">Keine weiteren Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  list.innerHTML=builtin+pcCards+rows.map(({p,src,on})=>{
     const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
     return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
       <div class="dim2">${escHtml(p.description||'')}</div>${tools?`<div class="dim2">Werkzeuge: ${tools}</div>`:''}
@@ -285,6 +288,7 @@ $('#plugList')&&($('#plugList').onclick=e=>{
   renderPlugins();
 });
 $('#plugAdd')&&($('#plugAdd').onclick=()=>$('#plugFile').click());
+$('#plugSyncBtn')&&($('#plugSyncBtn').onclick=async()=>{await syncNow();await refreshPlugins(true);});
 $('#plugFile')&&($('#plugFile').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{
@@ -298,13 +302,23 @@ $('#plugFile')&&($('#plugFile').onchange=async e=>{
   }catch(err){plugMsg('Keine gültige plugin.json.',true);}
 });
 setTimeout(()=>{try{renderPlugins();}catch(e){}},500);
-async function refreshPlugins(){
+let plugPcOnly=store.get('ari-plugins-pconly',[]);
+async function refreshPlugins(manual){
+  const msgEl=$('#plugSyncMsg');
+  const say=(t,bad)=>{if(msgEl){msgEl.textContent=t;msgEl.style.color=bad?'var(--pink)':'';}};
+  if(!sync.token||!sync.origin){pluginKw=[];say('Noch nicht mit dem PC gekoppelt – Einstellungen → Synchronisation.',true);return;}
+  setSyncing(true);
   try{
-    if(!sync.token||!sync.origin){pluginKw=[];return;}
-    const r=await fetch(sync.origin+'/phone/api/plugins',{headers:{'X-Ari-Token':sync.token}});if(!r.ok)return;
+    const r=await hubFetch('/phone/api/plugins',{headers:{'X-Ari-Token':sync.token}});
+    if(r.status===401){say('Kopplung abgelaufen – am PC neu koppeln.',true);return;}
+    if(!r.ok){say('Der PC hat geantwortet, aber mit Fehler ('+r.status+'). Ist am PC die neueste Version drauf?',true);return;}
     const d=await r.json();pluginKw=(d.keywords||[]).map(k=>String(k).toLowerCase()).filter(Boolean);
-    plugHub=(d.plugins||[]);store.set('ari-plugins-hub',plugHub);try{renderPlugins();}catch(e){}
-  }catch(e){}
+    plugHub=(d.plugins||[]);store.set('ari-plugins-hub',plugHub);
+    plugPcOnly=(d.pc_only||[]);store.set('ari-plugins-pconly',plugPcOnly);
+    try{renderPlugins();}catch(e){}
+    say('✓ Abgeglichen · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+plugHub.length+' Plugin(s) übernommen'+(plugPcOnly.length?' · '+plugPcOnly.length+' nur am PC':''));
+  }catch(e){say('PC nicht erreichbar – Handy und PC im selben WLAN? Es wird automatisch nochmal versucht.',true);}
+  finally{setSyncing(false);}
 }
 const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
@@ -437,7 +451,7 @@ const PC_RE=/\b(pc|rechner|computer|laptop)\b|lautst[aä]rke|\bleiser\b|\blauter
 async function askPc(){track('chat_via_pc');
   const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),70000);
   try{
-    const r=await hubFetch('/phone/api/chat',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({messages:hist.slice(-10).map(m=>({role:m.role,content:m.content}))}),signal:ctrl.signal});
+    const r=await hubFetch('/phone/api/chat',{timeout:150000,method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({messages:hist.slice(-10).map(m=>({role:m.role,content:m.content}))}),signal:ctrl.signal});
     if(r.status===401){sync.token='';saveSync();return {err:'Kopplung abgelaufen – bitte neu koppeln'};}
     const d=await r.json();
     if(!r.ok||d.error)return {err:d.error||('Fehler '+r.status)};
@@ -489,8 +503,8 @@ function addMsg(who,text,lk){
 // Nur "bereit", wenn wirklich ein KI-Schluessel da ist
 function hasKey(){return !!(cfg.keys[cfg.provider]||(cfg.fb&&cfg.fbKey));}
 function updateConn(connOk){
-  if(sync.token&&connOk!==false){$('#conn').classList.add('on');$('#conn').textContent='VERBUNDEN';return;}
-  const ok=hasKey();$('#conn').classList.toggle('on',ok);$('#conn').textContent=ok?'BEREIT':'KEIN SCHLÜSSEL';
+  if(sync.token&&connOk!==false){$('#conn').classList.add('on');$('#connTxt').textContent='VERBUNDEN';return;}
+  const ok=hasKey();$('#conn').classList.toggle('on',ok);$('#connTxt').textContent=ok?'BEREIT':'KEIN SCHLÜSSEL';
 }
 function refreshReady(){
   updateConn();
@@ -1378,7 +1392,9 @@ let sync=store.get('ari-app-sync',{origin:'',token:'',deleted:[],dirtyKeys:false
 const saveSync=()=>store.set('ari-app-sync',sync);
 // Handy und PC muessen im selben WLAN sein - keine Cloud/Tunnel-Adresse wird akzeptiert.
 async function hubFetch(path,opts){
-  return await fetch(sync.origin+path,opts);
+  // Zeitlimit: antwortet der PC nicht (anderes WLAN, PC aus), darf das Drehzeichen nicht ewig drehen
+  const ms=(opts&&opts.timeout)||10000,ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
+  try{return await fetch(sync.origin+path,Object.assign({},opts,{signal:ctl.signal}));}finally{clearTimeout(to);}
 }
 const LAN_OK=new RegExp('^http:[/][/](192[.]168[.][0-9]+[.][0-9]+|10[.][0-9]+[.][0-9]+[.][0-9]+|172[.](1[6-9]|2[0-9]|3[01])[.][0-9]+[.][0-9]+)(:[0-9]+)?$');
 function syncStatus(t,ok){
@@ -1467,7 +1483,7 @@ function pushKeys(){
 }
 let syncBusy=false;
 async function syncNow(){
-  if(!sync.token||!sync.origin||syncBusy)return;syncBusy=true;
+  if(!sync.token||!sync.origin||syncBusy)return;syncBusy=true;setSyncing(true);let syncOk=false;
   try{
     const body={brain:brain.map(n=>({text:n.text,cat:n.cat})),deleted:sync.deleted||[],settings:pushSettings(),apiKeys:pushKeys()};
     const r=await hubFetch('/phone/api/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify(body)});
@@ -1489,8 +1505,9 @@ async function syncNow(){
     sync.dirtyKeys=false;sync.dirtySet=false;sync.last=Date.now();saveSync();saveCfg();loadSet();
     syncStatus('✓ Synchron · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+brain.length+' Erinnerungen'+(d.hud_seen?'':' · (HUD am PC einmal öffnen, damit alle Einstellungen ankommen)'));
     if($('#t-brain').classList.contains('on'))renderBrain();
-  }catch(e){syncStatus('PC gerade nicht erreichbar – Änderungen werden nachgeholt, sobald du wieder im selben WLAN bist.',false);}
-  finally{syncBusy=false;}
+  syncOk=true;}catch(e){syncStatus('PC gerade nicht erreichbar – Änderungen werden nachgeholt, sobald du wieder im selben WLAN bist.',false);}
+  finally{syncBusy=false;setSyncing(false);}
+  if(syncOk)refreshPlugins();   // Plugins vom PC gleich mit abgleichen
 }
 function applyThemeSaved(){const th=store.get('ari-app-theme',null);if(th){if(th.primary)document.documentElement.style.setProperty('--pink',th.primary);if(th.accent)document.documentElement.style.setProperty('--cyan',th.accent);}}
 let syncT=null;const syncSoon=()=>{clearTimeout(syncT);syncT=setTimeout(syncNow,1500);};
