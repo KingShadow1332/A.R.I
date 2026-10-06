@@ -1,7 +1,7 @@
 {
-    "versionCode":  70,
-    "versionName":  "1.70",
+    "versionCode":  72,
+    "versionName":  "1.72",
     "apk":  "ARI.apk",
-    "notes":  "Abgleich mit dem PC zeigt ein Drehzeichen, Plugins werden zuverlaessig abgeglichen",
+    "notes":  "Planet wie im Hub (Ringspitzen rund), PC-Version als Knopf, Bildschirm bleibt an, Ankuendigungen, Plugins",
     "sizeMb":  6.5
 }
