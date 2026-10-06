@@ -1,7 +1,7 @@
 {
-    "versionCode":  69,
-    "versionName":  "1.69",
+    "versionCode":  70,
+    "versionName":  "1.70",
     "apk":  "ARI.apk",
-    "notes":  "Tests der Event-Ankuendigung direkt bei den Plugins, Plugins sichtbar",
+    "notes":  "Abgleich mit dem PC zeigt ein Drehzeichen, Plugins werden zuverlaessig abgeglichen",
     "sizeMb":  6.5
 }
