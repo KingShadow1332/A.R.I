@@ -1,0 +1,14 @@
+{
+    "mods":  [
+                 {
+                     "id":  "spiel-integration",
+                     "name":  "Spiel-Integration",
+                     "description":  "Spielmodus, Spiel-Tasten und Mausklicks per Sprache (z. B. Star Citizen), Routenplanung und Spiele-Editor.",
+                     "version":  "1.0.0",
+                     "icon":  "🎮",
+                     "zip":  "spiel-integration-1.0.0.zip",
+                     "sha256":  "9fab393cca855615904f2a211735aa02643210fe58d25b3a8a83d9c47b565f4f",
+                     "min_core":  76
+                 }
+             ]
+}
