@@ -1,9 +1,9 @@
 {
-    "version":  75,
-    "name":  "1.6.46",
+    "version":  76,
+    "name":  "1.6.47",
     "zip":  "ari-pc.zip",
-    "sha256":  "377112ec0b9a5609433305999407ffffdad359ae2c084ecd85fecb909bfce4c5",
+    "sha256":  "ca6effef63cee4f2f54af23a21c4ea585b746399fd68459eb7065f2a3fa9a91f",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "66643c289e4f1a6c877ba76177c87a73ef24065572ae3d074f63f856d7f04b23",
-    "notes":  "Neu: Nachrichten und Anrufe (WhatsApp, Discord ...) werden angesagt - A.R.I fragt, ob er antworten soll, und sendet deine gesprochene Antwort direkt; beantwortete Nachrichten verschwinden. Spielbefehle nur im Spielmodus, A.R.I beenden schliesst auch Hub und Fenster, genauere Spracherkennung, kurze Fehlermeldungen, Alle-loeschen-Knopf bei den Benachrichtigungen."
+    "lhm_sha256":  "8a6ae8e18aa291f821de230e908e90ead6506536d6d46c4fec9a6dc07a0ed8ba",
+    "notes":  "Neu: MODS in den Einstellungen - Erweiterungen zum Anklicken, die sich selbst installieren und aktualisieren. Die Spiel-Integration ist jetzt ein Mod. Geloeschte Benachrichtigungen kommen nicht mehr kurz zurueck."
 }
