@@ -99,7 +99,11 @@ cfg.keys=cfg.keys||{};
 let brain=store.get('ari-app-brain',[]);
 let pcs=store.get('ari-app-pcs',[]);
 const hist=[];
-let replyCtxUntil=0;   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
+let replyCtxUntil=0;
+let syncingN=0;
+function setSyncing(on){syncingN=Math.max(0,syncingN+(on?1:-1));document.body.classList.toggle('syncing',syncingN>0);}
+let pluginKw=[];   // (Python-Plugins am PC)   // Stichwoerter der Plugins auf dem PC: kommt eines in der Anfrage vor, laeuft sie ueber den PC (dort sind die Plugins)
+setTimeout(refreshPlugins,4000);setInterval(refreshPlugins,5*60*1000);   // nach einer Nachrichten-Ansage: Antworten gehen ueber den PC (dort liegt das Antwort-Werkzeug)
 const saveCfg=()=>{store.set('ari-app-cfg',cfg);try{refreshReady();}catch(e){}};
 const saveBrain=()=>store.set('ari-app-brain',brain);
 
@@ -180,6 +184,132 @@ setInterval(()=>{const d=new Date();$('#clock').firstChild.nodeValue=d.toLocaleT
   const psc=$('#pcSimClock');if(psc)psc.textContent=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});},1000);
 
 /* ---------- Werkzeuge (laufen komplett auf dem Handy) ---------- */
+/* ---------- Plugins (deklarativ: plugin.json mit tools + action - dieselben Dateien laufen am PC und hier, auch ohne PC) ---------- */
+const PLUGIN_ACTIONS=['http','open_url','text','random'];
+let plugHub=store.get('ari-plugins-hub',[]);     // vom PC uebernommene (dort eingeschaltete) Plugins - Stand beim letzten Abgleich
+let plugLocal=store.get('ari-plugins-local',[]); // direkt am Handy hinzugefuegte / von A.R.I hier gebaute Plugins
+const plugOff=()=>store.get('ari-plugins-off',{});
+function plugActive(){const off=plugOff();return [...plugHub.map(p=>Object.assign({src:'hub'},p)),...plugLocal.filter(p=>p.enabled).map(p=>Object.assign({src:'phone'},p))].filter(p=>!off[p.id]);}
+function pluginTools(){
+  const out=[];
+  plugActive().forEach(p=>(p.tools||[]).forEach(t=>{if(!t||!t.name||!t.action)return;
+    out.push({name:(String(p.id).replace(/[^A-Za-z0-9_]/g,'_')+'_'+t.name).slice(0,60),description:'[Plugin '+p.name+'] '+String(t.description||'').slice(0,600),parameters:t.input_schema||{type:'object',properties:{}},_t:t});}));
+  return out;
+}
+const allTools=()=>[...TOOLS,...pluginTools().map(t=>({name:t.name,description:t.description,parameters:t.parameters})),CREATE_PLUGIN_TOOL];
+function dSub(txt,args,quote){return String(txt).replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g,(m,k)=>{const v=args[k]==null?'':String(args[k]);return quote?encodeURIComponent(v):v;});}
+function dPath(obj,path){for(const part of String(path).split('.')){if(part==='')continue;if(obj==null)return undefined;
+  if(Array.isArray(obj)){const i=parseInt(part,10);if(isNaN(i))return undefined;obj=obj[i];}else if(typeof obj==='object')obj=obj[part];else return undefined;}return obj;}
+function dTpl(tpl,args,data,extra){extra=extra||{};
+  let out=String(tpl).replace(/\{\$\.?([^{}]*)\}/g,(m,p)=>{const v=data===undefined?undefined:dPath(data,p);return v==null?'?':(typeof v==='object'?JSON.stringify(v):String(v));});
+  return out.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g,(m,k)=>k in extra?String(extra[k]):(args[k]==null?'':String(args[k])));}
+async function runDecl(tool,args){
+  const act=tool.action||{};args=args||{};
+  if(act.type==='text')return dTpl(act.template||'',args).slice(0,3000);
+  if(act.type==='random'){
+    let lo=parseInt(dSub(act.min==null?1:act.min,args),10),hi=parseInt(dSub(act.max==null?6:act.max,args),10),cnt=parseInt(dSub(act.count==null?1:act.count,args),10);
+    if(isNaN(lo))lo=1;if(isNaN(hi))hi=6;if(isNaN(cnt))cnt=1;cnt=Math.max(1,Math.min(20,cnt));if(hi<lo)[lo,hi]=[hi,lo];
+    const vals=[];for(let i=0;i<cnt;i++)vals.push(lo+Math.floor(Math.random()*(hi-lo+1)));
+    return dTpl(act.template||'{values}',args,undefined,{values:vals.join(', '),sum:vals.reduce((a,b)=>a+b,0),value:vals[0]}).slice(0,3000);}
+  if(act.type==='open_url'){
+    const url=dSub(act.url||'',args,true);if(!/^https?:\/\//i.test(url))return 'Ungueltige Adresse.';
+    links.push({url,label:'Öffnen: '+(String(act.label||'').trim()||url.slice(0,60))});return dTpl(act.template||'Link bereit.',args).slice(0,500);}
+  if(act.type==='http'){
+    const url=dSub(act.url||'',args,true);
+    if(!/^https?:\/\//i.test(url))return 'Ungueltige Adresse.';
+    let host='';try{host=new URL(url).hostname;}catch(e){return 'Ungueltige Adresse.';}
+    if(/^(localhost|.*\.local|.*\.internal)$/i.test(host)||/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/.test(host))return 'Adressen im eigenen Netz sind fuer Plugins gesperrt.';
+    const method=String(act.method||'GET').toUpperCase();if(method!=='GET'&&method!=='POST')return 'Nur GET oder POST.';
+    const headers={};Object.entries(act.headers||{}).forEach(([k,v])=>headers[k]=dSub(v,args));
+    const init={method,headers,redirect:'error'};
+    if(method==='POST'&&act.body!=null){init.body=dSub(typeof act.body==='string'?act.body:JSON.stringify(act.body),args);if(!headers['Content-Type'])headers['Content-Type']='application/json';}
+    const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),10000);init.signal=ctl.signal;
+    try{const res=await fetch(url,init);const text=(await res.text()).slice(0,200000);let data;try{data=JSON.parse(text);}catch(e){}
+      if(act.template)return dTpl(act.template,args,data).slice(0,3000);return (data!==undefined?JSON.stringify(data):text).slice(0,1500);}
+    finally{clearTimeout(to);}
+  }
+  throw new Error('Unbekannte Aktion');
+}
+async function runToolAsync(name,a){
+  const pt=pluginTools().find(t=>t.name===name);
+  if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Das Plugin hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass das Plugin gerade nicht geklappt hat - ohne technische Details.';}}
+  if(name==='create_plugin')return createPluginFromAi(a||{});
+  return runTool(name,a);
+}
+// A.R.I baut hier selbst ein (deklaratives) Plugin: immer erst AUS - der Nutzer prueft es und schaltet es ein.
+const CREATE_PLUGIN_TOOL={name:'create_plugin',description:'Baut ein neues PLUGIN fuer A.R.I (laeuft auch ohne PC), wenn der Nutzer sagt, du sollst dir eine neue Faehigkeit bauen. Ein Plugin ist ein JSON mit Werkzeugen; jedes Werkzeug hat name, description, input_schema und eine "action": '+
+  '{"type":"http","url":"https://api.../{param}","template":"Text mit {param} und {$.feld.0.wert} aus der JSON-Antwort"} | {"type":"open_url","url":"https://.../{param}"} | {"type":"text","template":"..."} | {"type":"random","min":1,"max":"{seiten}","count":"{anzahl}","template":"{values} Summe {sum}"}. '+
+  'Nur oeffentliche Adressen. Das Plugin ist nach dem Anlegen AUS - der Nutzer schaltet es selbst ein (sag ihm das kurz).',
+  parameters:{type:'object',properties:{name:{type:'string',description:'Kurzer Name, nur Kleinbuchstaben/Ziffern/Bindestrich'},title:{type:'string'},description:{type:'string'},keywords:{type:'array',items:{type:'string'}},tools:{type:'array',description:'Die Werkzeuge (siehe oben)',items:{type:'object'}}},required:['name','title','description','tools']}};
+function createPluginFromAi(a){
+  const id=String(a.name||'').toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+  if(!id)return 'Ungueltiger Plugin-Name.';
+  const tools=Array.isArray(a.tools)?a.tools:[];
+  if(!tools.length||tools.some(t=>!t||!/^[A-Za-z0-9_]{1,40}$/.test(String(t.name||''))||!t.action||!PLUGIN_ACTIONS.includes(t.action.type)))return 'Jedes Werkzeug braucht einen Namen (Buchstaben, Ziffern, _) und eine gueltige action (http, open_url, text oder random). Korrigiere das und versuche es nochmal.';
+  if(plugLocal.some(p=>p.id===id))return 'Es gibt schon ein Plugin "'+id+'". Nimm einen anderen Namen.';
+  plugLocal.push({id,name:String(a.title||id).slice(0,60),description:String(a.description||'').slice(0,300),keywords:(a.keywords||[]).map(k=>String(k).toLowerCase()).slice(0,20),tools,enabled:false});
+  store.set('ari-plugins-local',plugLocal);try{renderPlugins();}catch(e){}
+  return 'Plugin "'+(a.title||id)+'" wurde angelegt, ist aber noch AUS. Sag dem Nutzer kurz, was es tut - er schaltet es unter Einstellungen > Plugins selbst ein.';
+}
+/* ---------- Plugins: Einstellungen ---------- */
+function plugMsg(t,bad){const el=$('#plugMsg');if(el){el.textContent=t||'';el.style.color=bad?'var(--pink)':'';}}
+function renderPlugins(){
+  const list=$('#plugList');if(!list)return;
+  const off=plugOff(),rows=[];
+  plugHub.forEach(p=>rows.push({p,src:'hub',on:!off[p.id]}));
+  plugLocal.forEach(p=>rows.push({p,src:'phone',on:!!p.enabled&&!off[p.id]}));
+  $('#plugTag').textContent=rows.filter(x=>x.on).length+' AN';
+  const pcCards=plugPcOnly.map(p=>`<div class="mem" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>NUR AM PC · AN</small></div><div class="dim2">${escHtml(p.description||'')}</div><div class="dim2">Läuft am PC (Python) – Wünsche mit diesen Stichwörtern gehen automatisch über den PC: ${escHtml((p.keywords||[]).slice(0,6).join(', '))}</div></div>`).join('');
+  if(!rows.length){list.innerHTML=pcCards+'<div class="dim2">Noch keine Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  list.innerHTML=pcCards+rows.map(({p,src,on})=>{
+    const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
+    return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
+      <div class="dim2">${escHtml(p.description||'')}</div>${tools?`<div class="dim2">Werkzeuge: ${tools}</div>`:''}
+      <div class="row" style="margin-top:8px"><button class="btn ${on?'':'pri'}" data-pa="toggle">${on?'AUSSCHALTEN':'EINSCHALTEN'}</button>${src==='phone'?'<button class="btn dng" data-pa="del">ENTFERNEN</button>':''}</div></div>`;}).join('');
+}
+$('#plugList')&&($('#plugList').onclick=e=>{
+  const b=e.target.closest('[data-pa]');if(!b)return;const card=b.closest('[data-pid]'),id=card.dataset.pid,src=card.dataset.src;
+  if(b.dataset.pa==='del'){if(!confirm('Plugin entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin entfernt.');return;}
+  if(src==='phone'){
+    const p=plugLocal.find(x=>x.id===id);if(!p)return;
+    if(!p.enabled){if(!confirm('Plugin „'+(p.name||id)+'“ einschalten?\n\nEs darf Internet-Adressen abrufen, die in der plugin.json stehen:\n'+(p.tools||[]).map(t=>'• '+t.name+(t.action&&t.action.url?' → '+String(t.action.url).slice(0,80):'')).join('\n')))return;}
+    p.enabled=!p.enabled;store.set('ari-plugins-local',plugLocal);
+  }else{const off=plugOff();if(off[id])delete off[id];else off[id]=1;store.set('ari-plugins-off',off);}
+  renderPlugins();
+});
+$('#plugAdd')&&($('#plugAdd').onclick=()=>$('#plugFile').click());
+$('#plugSyncBtn')&&($('#plugSyncBtn').onclick=async()=>{await syncNow();await refreshPlugins(true);});
+$('#plugFile')&&($('#plugFile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const m=JSON.parse(await f.text());
+    const tools=(m.tools||[]).filter(t=>t&&t.name&&t.action&&PLUGIN_ACTIONS.includes(t.action.type));
+    if(!tools.length){plugMsg('Die Datei braucht eine Liste "tools" mit je einer gültigen "action" (http, open_url, text, random).',true);return;}
+    const id=String(m.id||f.name.replace(/\.json$/i,'')).toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'plugin';
+    if(plugLocal.some(p=>p.id===id)){plugMsg('Es gibt schon ein Plugin "'+id+'".',true);return;}
+    plugLocal.push({id,name:String(m.name||id).slice(0,60),description:String(m.description||'').slice(0,300),keywords:(m.keywords||[]).map(k=>String(k).toLowerCase()),tools,enabled:false});
+    store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin hinzugefügt – noch AUS. Schalte es ein, wenn du ihm vertraust.');
+  }catch(err){plugMsg('Keine gültige plugin.json.',true);}
+});
+setTimeout(()=>{try{renderPlugins();}catch(e){}},500);
+let plugPcOnly=store.get('ari-plugins-pconly',[]);
+async function refreshPlugins(manual){
+  const msgEl=$('#plugSyncMsg');
+  const say=(t,bad)=>{if(msgEl){msgEl.textContent=t;msgEl.style.color=bad?'var(--pink)':'';}};
+  if(!sync.token||!sync.origin){pluginKw=[];say('Noch nicht mit dem PC gekoppelt – Einstellungen → Synchronisation.',true);return;}
+  setSyncing(true);
+  try{
+    const r=await hubFetch('/phone/api/plugins',{headers:{'X-Ari-Token':sync.token}});
+    if(r.status===401){say('Kopplung abgelaufen – am PC neu koppeln.',true);return;}
+    if(!r.ok){say('Der PC hat geantwortet, aber mit Fehler ('+r.status+'). Ist am PC die neueste Version drauf?',true);return;}
+    const d=await r.json();pluginKw=(d.keywords||[]).map(k=>String(k).toLowerCase()).filter(Boolean);
+    plugHub=(d.plugins||[]);store.set('ari-plugins-hub',plugHub);
+    plugPcOnly=(d.pc_only||[]);store.set('ari-plugins-pconly',plugPcOnly);
+    try{renderPlugins();}catch(e){}
+    say('✓ Abgeglichen · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+plugHub.length+' Plugin(s) übernommen'+(plugPcOnly.length?' · '+plugPcOnly.length+' nur am PC':''));
+  }catch(e){say('PC nicht erreichbar – Handy und PC im selben WLAN? Es wird automatisch nochmal versucht.',true);}
+  finally{setSyncing(false);}
+}
 const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
@@ -282,24 +412,25 @@ async function runProvider(p,key,history,small,query){
   const P=PROV[p],model=small?P.small:P.big,sys=sysPrompt(query);
   if(P.oa){
     const msgs=[{role:'system',content:sys},...history];
-    const tools=TOOLS.map(t=>({type:'function',function:t}));
+    const tools=allTools().map(t=>({type:'function',function:t}));
     for(let i=0;i<4;i++){
       const d=await post(P.url,{Authorization:'Bearer '+key},{model,messages:msgs,tools,max_tokens:1024});
       const m=d.choices[0].message;
       if(!m.tool_calls||!m.tool_calls.length)return (m.content||'').replace(/<\|[a-zA-Z_]+\|>/g,'').trim();
       msgs.push({role:'assistant',content:m.content||'',tool_calls:m.tool_calls});
-      m.tool_calls.forEach(tc=>{let a={};try{a=JSON.parse(tc.function.arguments||'{}');}catch(e){}
-        msgs.push({role:'tool',tool_call_id:tc.id,content:runTool(tc.function.name,a)});});
+      for(const tc of m.tool_calls){let a={};try{a=JSON.parse(tc.function.arguments||'{}');}catch(e){}
+        msgs.push({role:'tool',tool_call_id:tc.id,content:await runToolAsync(tc.function.name,a)});}
     }
     return 'Erledigt.';
   }
   const msgs=history.map(m=>({role:m.role,content:m.content}));
-  const tools=TOOLS.map(t=>({name:t.name,description:t.description,input_schema:t.parameters}));
+  const tools=allTools().map(t=>({name:t.name,description:t.description,input_schema:t.parameters}));
   for(let i=0;i<4;i++){
     const d=await post(P.url,{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},{model,max_tokens:1024,system:sys,messages:msgs,tools});
     if(d.stop_reason!=='tool_use')return (d.content.find(b=>b.type==='text')||{text:''}).text.trim();
     msgs.push({role:'assistant',content:d.content});
-    msgs.push({role:'user',content:d.content.filter(b=>b.type==='tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:runTool(b.name,b.input)}))});
+    const results=[];for(const b of d.content.filter(b=>b.type==='tool_use'))results.push({type:'tool_result',tool_use_id:b.id,content:await runToolAsync(b.name,b.input)});
+    msgs.push({role:'user',content:results});
   }
   return 'Erledigt.';
 }
@@ -310,7 +441,7 @@ const PC_RE=/\b(pc|rechner|computer|laptop)\b|lautst[aä]rke|\bleiser\b|\blauter
 async function askPc(){track('chat_via_pc');
   const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),70000);
   try{
-    const r=await hubFetch('/phone/api/chat',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({messages:hist.slice(-10).map(m=>({role:m.role,content:m.content}))}),signal:ctrl.signal});
+    const r=await hubFetch('/phone/api/chat',{timeout:150000,method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({messages:hist.slice(-10).map(m=>({role:m.role,content:m.content}))}),signal:ctrl.signal});
     if(r.status===401){sync.token='';saveSync();return {err:'Kopplung abgelaufen – bitte neu koppeln'};}
     const d=await r.json();
     if(!r.ok||d.error)return {err:d.error||('Fehler '+r.status)};
@@ -325,7 +456,7 @@ async function ask(text){track('chat');
   if(/^(wie spaet|wie spät)( ist es)?\??$|^uhrzeit\??$/.test(q.trim()))return 'Es ist '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.';
   if(/^(welcher tag|welches datum|den wievielten)/.test(q.trim()))return 'Heute ist '+new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'.';
   // Befehle an den PC: ueber den gekoppelten Hub ausfuehren (Apps oeffnen, Lautstaerke, Musik, Screenshot ...)
-  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q)||Date.now()<replyCtxUntil,paired=!!(sync.token&&sync.origin);
+  const route=cfg.pcRoute||'auto',pcIntent=PC_RE.test(q)||Date.now()<replyCtxUntil||pluginKw.some(k=>q.includes(k)),paired=!!(sync.token&&sync.origin);
   // Termine, Kalender und Mails beantwortet die App selbst (auch im Modus IMMER) - die laufen nicht ueber den PC
   const LOCAL_RE=/termin|kalender|calendar|geburtstag|e-?mail|mails?\b|posteingang|erinner/i;
   if(route!=='off'&&(route==='always'?!LOCAL_RE.test(q):pcIntent)){
@@ -362,8 +493,8 @@ function addMsg(who,text,lk){
 // Nur "bereit", wenn wirklich ein KI-Schluessel da ist
 function hasKey(){return !!(cfg.keys[cfg.provider]||(cfg.fb&&cfg.fbKey));}
 function updateConn(connOk){
-  if(sync.token&&connOk!==false){$('#conn').classList.add('on');$('#conn').textContent='VERBUNDEN';return;}
-  const ok=hasKey();$('#conn').classList.toggle('on',ok);$('#conn').textContent=ok?'BEREIT':'KEIN SCHLÜSSEL';
+  if(sync.token&&connOk!==false){$('#conn').classList.add('on');$('#connTxt').textContent='VERBUNDEN';return;}
+  const ok=hasKey();$('#conn').classList.toggle('on',ok);$('#connTxt').textContent=ok?'BEREIT':'KEIN SCHLÜSSEL';
 }
 function refreshReady(){
   updateConn();
@@ -778,6 +909,7 @@ function pcSimRenderCal(){
   const list=$('#pcSimCalList');if(!list)return;
   const ev=((calCache&&calCache.events)||[]).slice(0,6);
   $('#pcSimCalTag').textContent=ev.length?ev.length+' TERMINE':'KEINE';
+  const sig=JSON.stringify(ev.map(e=>[e.title,e.start]));if(list.dataset.sig===sig)return;list.dataset.sig=sig;   // unveraendert: nicht neu zeichnen (kein Flackern)
   if(!ev.length){list.innerHTML='<li class="pcsim-empty">Keine anstehenden Termine.</li>';return;}
   list.innerHTML=ev.map(e=>{
     const start=new Date(e.start),color=pcSimColor(e.title||'?');
@@ -847,10 +979,11 @@ async function pcSimPoll(){
       const items=(n.items||[]).slice(-8).reverse();
       const tag=$('#pcSimNotifTag'),list=$('#pcSimNotifList');
       if(tag)tag.textContent=items.length?items.length+' NEU':'KEINE';
-      if(list)list.innerHTML=items.length?items.map(it=>{
+      const sig=items.map(it=>it.id).join(',');
+      if(list&&list.dataset.sig!==sig){list.dataset.sig=sig;list.innerHTML=items.length?items.map(it=>{
         const color=pcSimColor(it.app||'?'),initial=(String(it.app||'?').charAt(0)||'?').toUpperCase();
         return `<li class="pcsim-row"><span class="badge" style="--rc:${color}">${escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span></span></li>`;
-      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';
+      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';}   // nur neu zeichnen, wenn sich die Liste geaendert hat (sonst flackert sie bei jedem Abruf)
     }
     pcSimRenderCal();
   }catch(e){}
@@ -860,8 +993,21 @@ function pcSimSetNavHeight(){
   const navEl=document.querySelector('nav');
   if(navEl)document.documentElement.style.setProperty('--nav-h',navEl.offsetHeight+'px');
 }
+/* Bildschirm anlassen, solange die PC-Version laeuft: erst die Web-Funktion (Wake Lock), sonst das Android-Fenster-Flag */
+let wakeLockObj=null,wantAwake=false;
+async function keepAwake(on){
+  wantAwake=!!on;
+  try{const W=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;if(W&&W.keepScreenOn)await W.keepScreenOn({on:!!on});}catch(e){}
+  try{
+    if(on){if('wakeLock' in navigator&&!wakeLockObj&&!document.hidden){wakeLockObj=await navigator.wakeLock.request('screen');wakeLockObj.addEventListener('release',()=>{wakeLockObj=null;});}}
+    else if(wakeLockObj){await wakeLockObj.release();wakeLockObj=null;}
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&wantAwake)keepAwake(true);});   // der Wake Lock geht beim Wegwechseln verloren -> zurueck in der App neu holen
+function pcSimBtnPaint(){const b=$('#pcSimBtn');if(!b)return;const on=cfg.pcSimOn==='1';b.textContent=on?'■ PC-VERSION BEENDEN':'▣ PC-VERSION STARTEN';b.classList.toggle('pri',!on);}
 function pcSimSetActive(on){
   document.body.classList.toggle('pc-sim-active',!!on);
+  keepAwake(!!on);pcSimBtnPaint();
   if(!on)pcSimSetFullscreen(false);
   clearInterval(pcSimTimer);pcSimTimer=null;
   if(on){pcSimPoll();pcSimTimer=setInterval(pcSimPoll,4000);}
@@ -885,9 +1031,10 @@ function pcSimSetFullscreen(on){
     if(btn){btn.textContent='⛶';btn.title='Vollbild';}
   }
 }
-$('#pcSimOn').addEventListener('change',e=>{
-  cfg.pcSimOn=e.target.checked?'1':'0';saveCfg();
-  pcSimSetActive(e.target.checked);
+$('#pcSimBtn').addEventListener('click',()=>{
+  cfg.pcSimOn=cfg.pcSimOn==='1'?'0':'1';saveCfg();
+  pcSimSetActive(cfg.pcSimOn==='1');
+  if(cfg.pcSimOn==='1')goTab('pc');   // gleich die PC-Ansicht zeigen
 });
 $('#pcSimFsBtn').addEventListener('click',()=>pcSimSetFullscreen(!$('#pcSimBox').classList.contains('pc-sim-fullscreen')));
 $$('nav button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.t!=='pc')pcSimSetFullscreen(false);}));
@@ -1134,7 +1281,8 @@ function renderCalMails(d){
   const list=$('#mailList');
   const mails=(d.mails||[]).slice(0,8);
   $('#mailTag').textContent=mails.length?mails.length+' NEU':'KEINE';
-  if(!mails.length){list.innerHTML='<li class="termin-empty">Keine wichtigen E-Mails — alles ruhig.</li>';return;}
+  const msig=JSON.stringify(mails.map(m=>m.id||m.subject));if(list.dataset.sig===msig)return;list.dataset.sig=msig;
+  if(!mails.length){list.innerHTML='<li class="termin-empty">Keine neuen E-Mails — alles ruhig.</li>';return;}
   list.innerHTML=mails.map(m=>{
     const from=String(m.from||'?'),color=calColor(from),initial=(from.replace(/[^A-Za-zÄÖÜäöü0-9]/g,'').charAt(0)||'✉').toUpperCase();
     return `<li class="termin-item notif-card" style="--cal-color:${color}" data-mail-id="${escHtml(m.id||'')}" data-mail-from="${escHtml(from)}" data-mail-src="${escHtml(m.src||'')}" data-mail-sub="${escHtml(m.subject||'')}"><div class="t-date"><b>${escHtml(initial)}</b><span>MAIL</span></div><div class="t-body"><div class="ttitle">${escHtml(from)}</div><div class="when"><span class="chip"><span class="dot"></span><span class="txt">${escHtml(m.subject||'')}</span></span></div></div><button type="button" class="notif-dismiss" data-spam="1" title="Als Spam markieren" aria-label="Als Spam markieren"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg></button></li>`;
@@ -1195,7 +1343,6 @@ function loadSet(){
   $('#gStatus').textContent=gOn()?'✓ Bei Google angemeldet – Termine und Mails laufen direkt über Google, ohne PC.':'Nicht angemeldet.';
   $('#gLogout').style.display=gOn()?'':'none';
   $$('#sGMail .btn').forEach(b=>b.classList.toggle('on',b.dataset.v===(cfg.gMail||'1')));
-  $('#pcSimOn').checked=cfg.pcSimOn==='1';
   pcSimSetActive(cfg.pcSimOn==='1');
 }
 $('#sProv').onchange=()=>{cfg.provider=$('#sProv').value;$('#sKey').value=cfg.keys[cfg.provider]||'';saveCfg();sync.dirtySet=true;saveSync();syncSoon();};
@@ -1248,7 +1395,9 @@ let sync=store.get('ari-app-sync',{origin:'',token:'',deleted:[],dirtyKeys:false
 const saveSync=()=>store.set('ari-app-sync',sync);
 // Handy und PC muessen im selben WLAN sein - keine Cloud/Tunnel-Adresse wird akzeptiert.
 async function hubFetch(path,opts){
-  return await fetch(sync.origin+path,opts);
+  // Zeitlimit: antwortet der PC nicht (anderes WLAN, PC aus), darf das Drehzeichen nicht ewig drehen
+  const ms=(opts&&opts.timeout)||10000,ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
+  try{return await fetch(sync.origin+path,Object.assign({},opts,{signal:ctl.signal}));}finally{clearTimeout(to);}
 }
 const LAN_OK=new RegExp('^http:[/][/](192[.]168[.][0-9]+[.][0-9]+|10[.][0-9]+[.][0-9]+[.][0-9]+|172[.](1[6-9]|2[0-9]|3[01])[.][0-9]+[.][0-9]+)(:[0-9]+)?$');
 function syncStatus(t,ok){
@@ -1337,7 +1486,7 @@ function pushKeys(){
 }
 let syncBusy=false;
 async function syncNow(){
-  if(!sync.token||!sync.origin||syncBusy)return;syncBusy=true;
+  if(!sync.token||!sync.origin||syncBusy)return;syncBusy=true;setSyncing(true);let syncOk=false;
   try{
     const body={brain:brain.map(n=>({text:n.text,cat:n.cat})),deleted:sync.deleted||[],settings:pushSettings(),apiKeys:pushKeys()};
     const r=await hubFetch('/phone/api/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify(body)});
@@ -1359,8 +1508,9 @@ async function syncNow(){
     sync.dirtyKeys=false;sync.dirtySet=false;sync.last=Date.now();saveSync();saveCfg();loadSet();
     syncStatus('✓ Synchron · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+brain.length+' Erinnerungen'+(d.hud_seen?'':' · (HUD am PC einmal öffnen, damit alle Einstellungen ankommen)'));
     if($('#t-brain').classList.contains('on'))renderBrain();
-  }catch(e){syncStatus('PC gerade nicht erreichbar – Änderungen werden nachgeholt, sobald du wieder im selben WLAN bist.',false);}
-  finally{syncBusy=false;}
+  syncOk=true;}catch(e){syncStatus('PC gerade nicht erreichbar – Änderungen werden nachgeholt, sobald du wieder im selben WLAN bist.',false);}
+  finally{syncBusy=false;setSyncing(false);}
+  if(syncOk)refreshPlugins();   // Plugins vom PC gleich mit abgleichen
 }
 function applyThemeSaved(){const th=store.get('ari-app-theme',null);if(th){if(th.primary)document.documentElement.style.setProperty('--pink',th.primary);if(th.accent)document.documentElement.style.setProperty('--cyan',th.accent);}}
 let syncT=null;const syncSoon=()=>{clearTimeout(syncT);syncT=setTimeout(syncNow,1500);};
@@ -1669,7 +1819,6 @@ refreshReady();
 loadSet();
 addMsg('a','Hallo! Ich bin A.R.I – diese App läuft auch ohne PC. '+(cfg.keys[cfg.provider]?'Sag oder tipp mir, was ich tun soll.':'Trage zuerst in den Einstellungen einen KI-Schlüssel ein (oder übernimm die Datei vom PC).'));
 if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.js').catch(()=>{});}
-})();
 
 /* ---------- Nachrichten & Anrufe ansagen (Handy, solange die App offen ist) ---------- */
 (function announceNotifs(){
@@ -1713,4 +1862,6 @@ if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.j
     else setTimeout(()=>{busy=false;next();},800+x.t.length*60);
   }
   setInterval(poll,5000);setTimeout(poll,3000);
+})();
+
 })();
