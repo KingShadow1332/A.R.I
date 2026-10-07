@@ -400,6 +400,23 @@ main{touch-action:pan-y}
 .notif-dismiss{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-dim2,#7d7a92);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .15s ease,border-color .15s ease,background .15s ease}
 .notif-dismiss:active,.notif-dismiss:hover{color:var(--pink,#ff2d78);border-color:color-mix(in srgb,var(--pink,#ff2d78) 55%,transparent);background:color-mix(in srgb,var(--pink,#ff2d78) 12%,transparent)}
 .notif-dismiss svg{display:block}
+
+/* ===== Planet: gleiche Optik wie im PC-Hub (Ringkanten rund, Leuchten nicht abgeschnitten) ===== */
+.hero-glow{-webkit-mask-image:radial-gradient(closest-side, #000 35%, transparent 100%); mask-image:radial-gradient(closest-side, #000 35%, transparent 100%); opacity:.8; filter:blur(10px)}
+.orb-glow-pink{filter:blur(40px)}
+.orb-glow-cyan{filter:blur(30px); opacity:.42}
+.ring-wrap .ring-border{border-width:0; background:radial-gradient(closest-side, transparent 96.4%, var(--bc) 97.6%, var(--bc) 99.1%, transparent 99.9%); box-shadow:0 0 22px var(--sw); filter:none}
+.ring-wrap .ring-sweep{filter:none; -webkit-mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%); mask:radial-gradient(closest-side, transparent 93%, #000 97.5%, #000 99%, transparent 100%)}
+.ring-back{-webkit-mask-image:none; mask-image:none}
+.ring-front{inset:calc(var(--i) - 40px); padding:40px; box-sizing:border-box; -webkit-mask-image:linear-gradient(to bottom, transparent 29.8%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.4) 48.4%, rgba(0,0,0,.78) 56.8%, #000 66.8%, #000 100%); mask-image:linear-gradient(to bottom, transparent 29.8%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.4) 48.4%, rgba(0,0,0,.78) 56.8%, #000 66.8%, #000 100%)}
+.ring-front .ring-border, .ring-front .ring-spin, .ring-front .ring-sweep{inset:40px}
+.orb{will-change:auto}
+.orb-wave.a, .orb-wave.b, .sphere-sweep, .ring-sweep, .hero-glow{transition:opacity .8s var(--ease)}
+
+
+/* Synchronisation: drehendes Zeichen */
+.syncspin{display:none;width:11px;height:11px;border:2px solid color-mix(in srgb,var(--cyan) 30%,transparent);border-top-color:var(--cyan);border-radius:50%;animation:orbSpin .8s linear infinite;flex:none}
+body.syncing .syncspin{display:inline-block}
 </style>
 <link rel="stylesheet" href="pc-sim.css">
 <link rel="stylesheet" href="pc-sim-panels.css">
@@ -407,7 +424,7 @@ main{touch-action:pan-y}
 <body>
 <header>
   <div><div class="logo">A.R.I</div><div class="sub">EIGENSTÄNDIGE APP</div></div>
-  <div id="conn" class="on">BEREIT</div>
+  <div id="conn" class="on"><span class="syncspin" title="Synchronisiert mit dem PC …"></span><span id="connTxt">BEREIT</span></div>
   <div id="clock">--:--<small>--</small></div>
 </header>
 
@@ -531,7 +548,10 @@ main{touch-action:pan-y}
           <div id="pcState" style="margin:0 0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);font-size:12px;line-height:1.5">Nicht mit dem PC verbunden.</div>
           <div class="dim" style="margin-bottom:10px">Die App läuft ohne PC. Für Bildschirm, Steuerung und Mediensteuerung müsst ihr im selben WLAN sein.</div>
           <div class="dim2" id="pcMsg" style="margin-top:4px;margin-bottom:10px"></div>
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer;margin-bottom:10px"><input type="checkbox" id="pcSimOn" style="margin-top:3px;flex:none"><span style="display:block"><span style="display:block;font-size:13px;letter-spacing:.04em">PC-Simulation anzeigen</span><span style="display:block;font-size:11px;opacity:.55;line-height:1.45;margin-top:2px">Zeigt die A.R.I-Grafik (Planet + Astro) wie am PC direkt hier in der App — rein optisch, ohne Live-Verbindung, läuft flüssig ohne WLAN.</span></span></label>
+          <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:10px">
+            <button type="button" class="btn pri" id="pcSimBtn" style="width:100%">▣ PC-VERSION STARTEN</button>
+            <div style="font-size:11px;opacity:.55;line-height:1.45;margin-top:6px">Zeigt die A.R.I-Oberfläche wie am PC direkt in der App (Planet + Astro, Live-Werte vom PC). Solange sie an ist, <b>bleibt der Bildschirm an</b> und geht nicht mehr aus.</div>
+          </div>
           <div id="pcSimBox">
           <div class="pc-sim-head">
             <div class="pc-sim-head-brand"><span class="pc-sim-head-name">A.R.I</span><span class="pc-sim-head-sub">SYSTEM SIMULATION</span></div>
@@ -727,6 +747,20 @@ main{touch-action:pan-y}
         </div>
       </div>
     </details>
+    <details class="set-section" id="plugSection">
+      <summary>🧩 PLUGINS</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h cy"><span class="ico">🧩</span><span class="t">ERWEITERUNGEN</span><span class="syncspin" style="margin-left:auto;margin-right:8px"></span><span class="tag" id="plugTag">0</span></div>
+          <div class="dim">Plugins erweitern A.R.I – und laufen hier auch <b>ohne PC</b>. Am PC eingeschaltete Plugins werden automatisch übernommen (einmal einrichten genügt). Du kannst auch selbst eine <b>plugin.json</b> hinzufügen oder A.R.I sagen: „Bau dir ein Plugin, das …“.</div>
+          <div class="row" style="margin-top:10px;align-items:center"><button class="btn" id="plugSyncBtn">↻ MIT PC ABGLEICHEN</button></div>
+          <div class="dim2" id="plugSyncMsg" style="margin-top:4px"></div>
+          <div id="plugList" style="margin-top:10px"></div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="plugAdd">+ PLUGIN HINZUFÜGEN</button><input type="file" id="plugFile" accept=".json,application/json" style="display:none"></div>
+          <div class="dim2" id="plugMsg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </details>
+
     <details class="set-section" id="notifFwdSection" style="display:none">
       <summary>✉ HANDY-BENACHRICHTIGUNGEN AM PC</summary>
       <div class="set-section-body">
