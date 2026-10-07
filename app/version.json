@@ -1,7 +1,7 @@
 {
-    "versionCode":  63,
-    "versionName":  "1.63",
+    "versionCode":  73,
+    "versionName":  "1.73",
     "apk":  "ARI.apk",
-    "notes":  "Nachrichten und Anrufe ansagen, auf Antwort warten, Antworten auf WhatsApp/Discord, kurze Fehlermeldungen",
+    "notes":  "Event-Ankuendigungen aus der App entfernt",
     "sizeMb":  6.4
 }
