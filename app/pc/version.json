@@ -1,9 +1,9 @@
 {
-    "version":  76,
-    "name":  "1.6.47",
+    "version":  77,
+    "name":  "1.6.48",
     "zip":  "ari-pc.zip",
-    "sha256":  "ca6effef63cee4f2f54af23a21c4ea585b746399fd68459eb7065f2a3fa9a91f",
+    "sha256":  "eb96c373a501df5c7ee57dd1627039203a1085c26d34348e41f1d3703b81f540",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "8a6ae8e18aa291f821de230e908e90ead6506536d6d46c4fec9a6dc07a0ed8ba",
-    "notes":  "Neu: MODS in den Einstellungen - Erweiterungen zum Anklicken, die sich selbst installieren und aktualisieren. Die Spiel-Integration ist jetzt ein Mod. Geloeschte Benachrichtigungen kommen nicht mehr kurz zurueck."
+    "lhm_sha256":  "150c81c544ea5b8b6a9615504551ee70f53d2d08f4ec91d9bbff0f0e432966b0",
+    "notes":  "Discord: Streams öffnen automatisch als Pop-out in der Hauptkachel (ohne Titelleiste, bedienbar, mit Astro davor), Umschalter oben in der Leiste, kein Spiegeln mehr. Dazu: Stream-Fix, Übersetzer und Benachrichtigungen verbessert."
 }
