@@ -507,7 +507,8 @@ function speakWeb(t){if(!window.speechSynthesis)return;const u=new SpeechSynthes
 // Native Android-Sprachausgabe statt der Browser-Stimme, wenn moeglich: nutzt bevorzugt Samsungs eigene
 // TTS-Engine (klingt natuerlicher), faellt automatisch auf die Web-Stimme zurueck, wenn nicht verfuegbar.
 // Fuer die Sprachausgabe: Emojis, Markdown-Zeichen und Links weglassen (sonst liest die Stimme sie vor)
-function speechClean(t){return String(t||'').replace(/[\p{Extended_Pictographic}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu,' ').replace(/https?:\/\/\S+/g,' ').replace(/[*_`#~|]+/g,' ').replace(/\s{2,}/g,' ').trim();}
+const LINKSAY=/^en/i.test((typeof cfg!=='undefined'&&cfg&&cfg.lang)||'')?'see the link':'siehe den Link';   // Links werden nicht vorgelesen
+function speechClean(t){return String(t||'').replace(/[\p{Extended_Pictographic}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu,' ').replace(/\[([^\]]+)\]\((?:https?:\/\/|www\.)[^)\s]+\)/gi,'$1, '+LINKSAY).replace(/(?:https?:\/\/|www\.)[^\s<>"')\]]*[^\s<>"')\].,;:!?]/gi,' '+LINKSAY+' ').replace(new RegExp('(?:'+LINKSAY+'[\\s,;.]*){2,}','gi'),LINKSAY+' ').replace(/[*_`#~|]+/g,' ').replace(/\s{2,}/g,' ').trim();}
 let edgeAudio=null;
 const EDGE_VOICES={'edge:katja':'de-DE-KatjaNeural','edge:conrad':'de-DE-ConradNeural','edge:amala':'de-DE-AmalaNeural'};
 // Die gleichen Stimmen wie am PC (Microsoft Edge: Katja, Conrad, Amala) - direkt vom Handy, ohne PC. Braucht Internet;
