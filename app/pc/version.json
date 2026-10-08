@@ -1,9 +1,9 @@
 {
-    "version":  77,
-    "name":  "1.6.48",
+    "version":  78,
+    "name":  "1.6.49",
     "zip":  "ari-pc.zip",
-    "sha256":  "eb96c373a501df5c7ee57dd1627039203a1085c26d34348e41f1d3703b81f540",
+    "sha256":  "9f6ea4ebde72372a28cb25d2ab36670b517bf958e205ea05378db1649399155e",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "150c81c544ea5b8b6a9615504551ee70f53d2d08f4ec91d9bbff0f0e432966b0",
-    "notes":  "Discord: Streams öffnen automatisch als Pop-out in der Hauptkachel (ohne Titelleiste, bedienbar, mit Astro davor), Umschalter oben in der Leiste, kein Spiegeln mehr. Dazu: Stream-Fix, Übersetzer und Benachrichtigungen verbessert."
+    "lhm_sha256":  "b00dfe1f5e3e55938e95db5eff5afb4e024890e0627e496a9304918ecc802bed",
+    "notes":  "Mods werden nicht mehr mitgeliefert: In den Einstellungen unter MODS auf INSTALLIEREN klicken, dann wird der Mod geladen und installiert. Discord-Mod 1.1.1 ohne Stream-Fix."
 }
