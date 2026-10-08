@@ -4,10 +4,10 @@
                      "id":  "discord",
                      "name":  "Discord",
                      "description":  "Discord im HUD: Sprachkanal-Kachel, private Nachrichten und Erwähnungen, Stream im Planeten – mit Stream-Fix.",
-                     "version":  "1.1.0",
+                     "version":  "1.1.1",
                      "icon":  "💬",
-                     "zip":  "discord-1.1.0.zip",
-                     "sha256":  "2aeb5b98755b961f3ed1fe72d4219bd8b4bf1b3bdb7df6bb7944477a59c0777d",
+                     "zip":  "discord-1.1.1.zip",
+                     "sha256":  "7542d45d87a2b104f8652780f5efb6140b2021b0eac830859593648b2512caec",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -16,7 +16,6 @@
                                      "Stream in der Hauptkachel: Schaust du in Discord einen Stream an, löst A.R.I ihn von selbst als Pop-out-Fenster heraus (Klick auf „Pop-out“, ohne deine Maus zu bewegen) und legt dieses echte Fenster direkt über die Master-Kachel – ohne Titelleiste, voll bedienbar (z. B. anderen Stream wählen), ohne Spiegeln und ohne Zusatzlast. Astro bleibt davor. Oben in der Kopfleiste neben dem Spielmodus erscheint der Umschalter „⇄ STREAM / PLANET“, nur solange ein Stream läuft. Ist der Stream zu Ende, wird das leere Fenster geschlossen. Abschaltbar in den Einstellungen.",
                                      "Erkennung: Der Stream wird am roten „LIVE“-Schild in Discords Stream-Ansicht erkannt. Scrollst du oder verschiebst das HUD, folgt das Fenster der Kachel und blendet sich aus, wenn die Kachel nicht ganz zu sehen ist.",
                                      "Leistung: Es wird nichts mehr aufgenommen oder gespiegelt – das Pop-out ist Discords eigenes Fenster. Nur alle paar Sekunden prüft A.R.I kurz, ob ein Stream läuft.",
-                                     "Stream-Fix: Discord pausiert den Stream, wenn andere Fenster darüber liegen. Dieser Mod startet Discord deshalb direkt mit einer Zusatzoption (CalculateNativeWinOcclusion aus), damit der Stream auch bei verdecktem Fenster weiterläuft. Beim Installieren wird das SOFORT angewendet – Discord startet dabei einmal neu, auch wenn du gerade im Sprachkanal bist –, danach auch der Windows-Autostart von Discord. Später startet A.R.I Discord nie neu, solange du in einem Sprachkanal bist. In den Einstellungen abschaltbar. Discord wird dabei immer mit normalen Benutzerrechten gestartet (nicht als Administrator), damit Stream Deck, Soundboards und andere Programme weiter funktionieren.",
                                      "Einrichtung: Die Discord-Entwickler-App legt A.R.I auf Wunsch automatisch an. Anmelden und „Autorisieren“ machst du selbst."
                                  ]
                  },
@@ -27,7 +26,7 @@
                      "version":  "1.0.1",
                      "icon":  "🎮",
                      "zip":  "spiel-integration-1.0.1.zip",
-                     "sha256":  "44463f3e473e68bc4edbf674e5186834c5bea257bedaa7409097c4cb587fa3ef",
+                     "sha256":  "b700f232345820b1aa88773231c00a78105f1194162df0d0d2a3d229f3b77dc1",
                      "min_core":  76,
                      "details":  [
                                      "Spielmodus: A.R.I erkennt von selbst, welches deiner eingerichteten Spiele läuft (z. B. Star Citizen) und zeigt das oben in der Kopfzeile an.",
