@@ -1,9 +1,9 @@
 {
-    "version":  78,
-    "name":  "1.6.49",
+    "version":  79,
+    "name":  "1.6.50",
     "zip":  "ari-pc.zip",
-    "sha256":  "9f6ea4ebde72372a28cb25d2ab36670b517bf958e205ea05378db1649399155e",
+    "sha256":  "02e2604521c3320b6082ed56cdca5f7de9e83f5ce12fd5a9bcb01a39b478c081",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "b00dfe1f5e3e55938e95db5eff5afb4e024890e0627e496a9304918ecc802bed",
-    "notes":  "Mods werden nicht mehr mitgeliefert: In den Einstellungen unter MODS auf INSTALLIEREN klicken, dann wird der Mod geladen und installiert. Discord-Mod 1.1.1 ohne Stream-Fix."
+    "lhm_sha256":  "0e03f68b82dd534755cfb61330682dd4a12bb78417d19c76905722cf0991b8e0",
+    "notes":  "Neu: A.R.I begrüßt dich beim Start (abwechslungsreich, abschaltbar). Mod-Kacheln schalten sich nach der Installation von selbst ein. Autostart nur noch einmal in der Liste, Discord-Pop-out verbessert."
 }
