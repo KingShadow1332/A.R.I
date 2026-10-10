@@ -1,9 +1,9 @@
 {
-    "version":  80,
-    "name":  "1.6.51",
+    "version":  81,
+    "name":  "1.6.52",
     "zip":  "ari-pc.zip",
-    "sha256":  "59eef3f4297f9b92fd5d8cb604c261e7d526c2c4a78e157a0897d2a6729bbf2a",
+    "sha256":  "decdc554b102a2e22bef9c0d00bb9f3cf527a9c4dea22593b0d077cbdbc3f0ce",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "c2a2a0e0f48dec1f60658d88097d1b3f38bd6da068e638b92af010a41fc84a7e",
-    "notes":  "Wichtig: Zugangsdaten werden jetzt absturzsicher gespeichert (mit Sicherung). Einstellungen neu und übersichtlich geordnet (Suche, Kategorien). Discord: ein Knopf VERBINDEN, Pop-out läuft stabiler, Stumm/Taub-Symbole, Alle Benachrichtigungen per Sprache löschen, Weckwort lernt dazu, doppelte WhatsApp-Meldungen behoben, Autostart nur noch einmal."
+    "lhm_sha256":  "beaeac0000d91803ac22ada0e3a58cd6995359ec76d9e56983c82b66758c6ac5",
+    "notes":  "Neu: A.R.I mischt neue Musik im eigenen Geschmack unter (oder auf Zuruf: spiel was Neues). A.R.I kennt das heutige Datum. Kalender: Linien bei mehrtägigen Terminen mit Uhrzeit ohne Lücke. Discord-Einrichtung robuster (Redirect-Feld, KI-Limit nur noch kurz abwarten)."
 }
