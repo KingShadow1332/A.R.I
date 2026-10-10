@@ -1,9 +1,9 @@
 {
-    "version":  79,
-    "name":  "1.6.50",
+    "version":  80,
+    "name":  "1.6.51",
     "zip":  "ari-pc.zip",
-    "sha256":  "02e2604521c3320b6082ed56cdca5f7de9e83f5ce12fd5a9bcb01a39b478c081",
+    "sha256":  "59eef3f4297f9b92fd5d8cb604c261e7d526c2c4a78e157a0897d2a6729bbf2a",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "0e03f68b82dd534755cfb61330682dd4a12bb78417d19c76905722cf0991b8e0",
-    "notes":  "Neu: A.R.I begrüßt dich beim Start (abwechslungsreich, abschaltbar). Mod-Kacheln schalten sich nach der Installation von selbst ein. Autostart nur noch einmal in der Liste, Discord-Pop-out verbessert."
+    "lhm_sha256":  "c2a2a0e0f48dec1f60658d88097d1b3f38bd6da068e638b92af010a41fc84a7e",
+    "notes":  "Wichtig: Zugangsdaten werden jetzt absturzsicher gespeichert (mit Sicherung). Einstellungen neu und übersichtlich geordnet (Suche, Kategorien). Discord: ein Knopf VERBINDEN, Pop-out läuft stabiler, Stumm/Taub-Symbole, Alle Benachrichtigungen per Sprache löschen, Weckwort lernt dazu, doppelte WhatsApp-Meldungen behoben, Autostart nur noch einmal."
 }
