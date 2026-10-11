@@ -4,10 +4,10 @@
                      "id":  "discord",
                      "name":  "Discord",
                      "description":  "Discord im HUD: Sprachkanal-Kachel, private Nachrichten und Erwähnungen, Stream im Planeten – mit Stream-Fix.",
-                     "version":  "1.1.2",
+                     "version":  "1.1.3",
                      "icon":  "💬",
-                     "zip":  "discord-1.1.2.zip",
-                     "sha256":  "abd61cbfe71cd49a2358c7bbc52bd008361e845227910e48fe3d4b4376336768",
+                     "zip":  "discord-1.1.3.zip",
+                     "sha256":  "64943815d9137f6a32bc9f95e138b55deb05a7051be7ea187ed5bd20a5acfe0a",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -26,7 +26,7 @@
                      "version":  "1.0.1",
                      "icon":  "🎮",
                      "zip":  "spiel-integration-1.0.1.zip",
-                     "sha256":  "91d7e886520a09cc7779ab71d3bd73e6a1feeed76028a22ffcf163b9e7c2032a",
+                     "sha256":  "1fc03b1b2ea7e85a24696ab2cb5b488e8b12a80399bb498bec2de1fbf3a8bf27",
                      "min_core":  76,
                      "details":  [
                                      "Spielmodus: A.R.I erkennt von selbst, welches deiner eingerichteten Spiele läuft (z. B. Star Citizen) und zeigt das oben in der Kopfzeile an.",
