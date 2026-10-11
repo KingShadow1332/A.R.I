@@ -1,9 +1,9 @@
 {
-    "version":  81,
-    "name":  "1.6.52",
+    "version":  82,
+    "name":  "1.6.53",
     "zip":  "ari-pc.zip",
-    "sha256":  "decdc554b102a2e22bef9c0d00bb9f3cf527a9c4dea22593b0d077cbdbc3f0ce",
+    "sha256":  "f403929c468e3778aeede3a1bb97f9801f0522d6f461290cc01b1d13d37c406c",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "beaeac0000d91803ac22ada0e3a58cd6995359ec76d9e56983c82b66758c6ac5",
-    "notes":  "Neu: A.R.I mischt neue Musik im eigenen Geschmack unter (oder auf Zuruf: spiel was Neues). A.R.I kennt das heutige Datum. Kalender: Linien bei mehrtägigen Terminen mit Uhrzeit ohne Lücke. Discord-Einrichtung robuster (Redirect-Feld, KI-Limit nur noch kurz abwarten)."
+    "lhm_sha256":  "bf5c9127775ae3cd81e3fe949955a96b78c3a8dd30ecba859fb7b1a4c073932f",
+    "notes":  "Neu: Sprech-Tastenkürzel (frei wählbar per Tastendruck, wird nicht geschluckt - z. B. F24 mit Discord Push-to-Mute), Messenger-Meldungen einzeln pro App abschaltbar, Begrüßung ohne doppeltes Sprechen, Benachrichtigungen suchen nach Verbindungsverlust sofort neu."
 }
