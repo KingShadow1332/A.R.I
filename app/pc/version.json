@@ -1,9 +1,9 @@
 {
-    "version":  82,
-    "name":  "1.6.53",
+    "version":  84,
+    "name":  "1.6.54",
     "zip":  "ari-pc.zip",
-    "sha256":  "f403929c468e3778aeede3a1bb97f9801f0522d6f461290cc01b1d13d37c406c",
+    "sha256":  "6895154ec5104b4a2b033c9b646e189c8552da9aed2769abd67c6b5049392051",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "bf5c9127775ae3cd81e3fe949955a96b78c3a8dd30ecba859fb7b1a4c073932f",
-    "notes":  "Neu: Sprech-Tastenkürzel (frei wählbar per Tastendruck, wird nicht geschluckt - z. B. F24 mit Discord Push-to-Mute), Messenger-Meldungen einzeln pro App abschaltbar, Begrüßung ohne doppeltes Sprechen, Benachrichtigungen suchen nach Verbindungsverlust sofort neu."
+    "lhm_sha256":  "e0dc330f0aa0fb668c335c6661133c19d816b1206b2d4258871fff85885d9ad0",
+    "notes":  "Neu: A.R.I lernt Sprach-Korrekturen selbst (nein, ich meine ...), auch auf dem Handy. Sprech-Hotkey wahlweise nur aktivieren oder solange gedrückt halten. Neuer Ton wenn A.R.I nichts hört. Spielmodus geht mit dem Spiel von selbst an und aus. Spiel-Integration: Suchfeld per Doppelklick, eigener Klick für das Suchergebnis. Benachrichtigungen löschen/antworten per Sprache funktioniert zuverlässig."
 }
