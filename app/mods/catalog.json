@@ -7,7 +7,7 @@
                      "version":  "1.1.3",
                      "icon":  "💬",
                      "zip":  "discord-1.1.3.zip",
-                     "sha256":  "64943815d9137f6a32bc9f95e138b55deb05a7051be7ea187ed5bd20a5acfe0a",
+                     "sha256":  "5241558ae535646af556688da9824ec17fd11483c9963e7a040413a14895c20d",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -23,10 +23,10 @@
                      "id":  "spiel-integration",
                      "name":  "Spiel-Integration",
                      "description":  "Spielmodus, Spiel-Tasten und Mausklicks per Sprache (z. B. Star Citizen), Routenplanung und Spiele-Editor.",
-                     "version":  "1.0.1",
+                     "version":  "1.0.3",
                      "icon":  "🎮",
-                     "zip":  "spiel-integration-1.0.1.zip",
-                     "sha256":  "1fc03b1b2ea7e85a24696ab2cb5b488e8b12a80399bb498bec2de1fbf3a8bf27",
+                     "zip":  "spiel-integration-1.0.3.zip",
+                     "sha256":  "a376d2602783755588d0fcf821d29507ddcd40ae032a7b69c97f843a1d5911e6",
                      "min_core":  76,
                      "details":  [
                                      "Spielmodus: A.R.I erkennt von selbst, welches deiner eingerichteten Spiele läuft (z. B. Star Citizen) und zeigt das oben in der Kopfzeile an.",
