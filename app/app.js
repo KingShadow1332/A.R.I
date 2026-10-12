@@ -535,10 +535,49 @@ function speak(t){
   if(v!=='device'&&cfg.lang==='de-DE'&&NATIVE){speakEdge(t,v).catch(()=>speakDevice(t));return;}   // die Edge-Stimmen gibt es hier fuer Deutsch; sonst Handy-Stimme
   speakDevice(t);
 }
+// ---- Sprach-Korrekturen (lernt selbst): was die Spracherkennung bei DIESEM Nutzer falsch schreibt -> was er meint (z. B. "Orisa" -> "Orison") ----
+const SF={get(){try{return JSON.parse(localStorage.getItem('ari_speechfix')||'[]').filter(x=>x&&x.heard&&x.meant);}catch(e){return [];}},set(l){try{localStorage.setItem('ari_speechfix',JSON.stringify(l.slice(-200)));}catch(e){}}};
+const SF_STOP=new Set('der die das den dem des ein eine einen einem einer und oder aber nicht kein keine ich du er sie es wir ihr mir mich dir dich ihm ihn uns euch mein meine meinen dein ist sind war bin bist hat habe haben wird wurde kann mach mache machen spiel spiele sag sage zeig zeige oeffne öffne schliess schließe such suche wie was wer wo wann warum wieso welche welcher auf in an aus bei mit von zu zum zur im am um nach vor ueber über unter dann jetzt heute morgen mal bitte danke nein doch ja ok okay eben sondern meinte meine sagte gesagt falsch richtig ari'.split(' '));
+function sfApply(t){let o=String(t||'');SF.get().sort((x,y)=>y.heard.length-x.heard.length).forEach(f=>{try{o=o.replace(new RegExp('(?<![\\p{L}\\p{N}_])'+f.heard.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\p{L}\\p{N}_])','giu'),f.meant);}catch(e){}});return o;}
+function sfRatio(x,y){x=x.toLowerCase();y=y.toLowerCase();const m=x.length,n=y.length;if(!m||!n)return 0;let p=new Array(n+1).fill(0);for(let i=1;i<=m;i++){const c=new Array(n+1).fill(0);for(let j=1;j<=n;j++)c[j]=x[i-1]===y[j-1]?p[j-1]+1:Math.max(p[j],c[j-1]);p=c;}return 2*p[n]/(m+n);}
+function sfRemember(heard,meant){const l=SF.get().filter(f=>f.heard.toLowerCase()!==heard.toLowerCase());l.push({heard,meant});SF.set(l);
+  try{if(sync.token&&sync.origin)hubFetch('/phone/api/speechfix',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({heard,meant})}).catch(()=>{});}catch(e){}}
+// Korrigiert der Nutzer direkt nach einem Verhoerer ("nein, ich meine Orison", "nicht Orisa sondern Orison"), merkt sich A.R.I das selbst. Gibt den neuen Text (vorherige Anfrage, korrigiert) oder null.
+function sfAutoLearn(cur,prev){
+  cur=(cur||'').trim();prev=(prev||'').trim();
+  if(!cur||!prev||cur.length>90||cur.split(/\s+/).length>9)return null;
+  let heard=null,meant=null,m=cur.match(/nicht\s+(.+?)\s*,?\s+sondern\s+(.+?)[\s.!?]*$/i);
+  if(m){heard=m[1].trim();meant=m[2].trim();}
+  else{
+    const sig=/^(?:nein|nee|ne|falsch|quatsch|ich\s+(?:meine|meinte|sagte)|gemeint|es\s+hei(?:ß|ss)t|das\s+hei(?:ß|ss)t)\b/i.test(cur);
+    const c=cur.match(/^(?:nein|nee|ne|falsch|quatsch|doch|nicht\s+das)?[\s,.!:-]*(?:ich\s+(?:meine|meinte|sagte|habe\s+\S+\s+gesagt)|gemeint\s+(?:ist|war)|es\s+hei(?:ß|ss)t|das\s+hei(?:ß|ss)t|ich\s+will)?[\s,.!:-]*(.+?)[\s.!?]*$/i);
+    if(!c||!sig)return null;meant=c[1].trim();if(meant.split(/\s+/).length>3)return null;
+  }
+  meant=meant.replace(/^["'„“]+|["'“”]+$/g,'').trim();
+  if(meant.length<3||SF_STOP.has(meant.toLowerCase()))return null;
+  const toks=prev.match(/[\p{L}\p{N}_-]+/gu)||[];
+  if(heard===null){
+    if(meant.split(/\s+/).some(w=>SF_STOP.has(w.toLowerCase())))return null;
+    const nm=meant.split(/\s+/).length;
+    const cands=nm===1?toks.filter(t=>t.length>=3&&!SF_STOP.has(t.toLowerCase())):nm===2?toks.slice(0,-1).map((t,i)=>[t,toks[i+1]]).filter(([x,y])=>!SF_STOP.has(x.toLowerCase())&&!SF_STOP.has(y.toLowerCase())).map(([x,y])=>x+' '+y):[];
+    if(cands.some(x=>x.toLowerCase()===meant.toLowerCase()))return null;
+    let best=null,score=0;cands.forEach(x=>{const s=sfRatio(x,meant);if(s>score){best=x;score=s;}});
+    if(!best||score<0.55||score>0.97)return null;heard=best;
+  }
+  heard=heard.replace(/^["'„“]+|["'“”]+$/g,'').trim();
+  if(heard.length<3||heard.toLowerCase()===meant.toLowerCase()||SF_STOP.has(heard.toLowerCase()))return null;
+  sfRemember(heard,meant);
+  return sfApply(prev)+'\n(Hinweis: Ich habe mir gemerkt, dass „'+heard+'“ eigentlich „'+meant+'“ heisst. Bestätige das kurz in einem Halbsatz und mach dann die vorherige Anfrage mit dem richtigen Wort.)';
+}
+let sfSynced=false;
+async function sfSyncOnce(){if(sfSynced||!(sync.token&&sync.origin))return;sfSynced=true;try{const r=await hubFetch('/phone/api/speechfix',{headers:{'X-Ari-Token':sync.token}});const d=await r.json();const l=SF.get();(d.fixes||[]).forEach(f=>{if(!l.some(x=>x.heard.toLowerCase()===f.heard.toLowerCase()))l.push(f);});SF.set(l);}catch(e){}}
 async function send(text){
   text=(text||'').trim();if(!text)return;
-  addMsg('u',text);hist.push({role:'user',content:text});const w=addMsg('a','…');orbBusy(true);
-  const reply=await ask(text);
+  sfSyncOnce();
+  const prevU=[...hist].reverse().find(m=>m.role==='user');
+  const learned=prevU?sfAutoLearn(text,prevU.content):null;   // Korrektur erkannt: vorherige Anfrage mit richtigem Wort nochmal stellen
+  addMsg('u',text);hist.push({role:'user',content:learned||sfApply(text)});const w=addMsg('a','…');orbBusy(true);
+  const reply=await ask(learned||sfApply(text));
   if(reply===''){w.remove();orbBusy(false);hist.pop();return;}   // stiller Fehler: kein Fehlertext, keine Sprachausgabe
   w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.appendChild(a);});
   hist.push({role:'assistant',content:reply});if(hist.length>20)hist.splice(0,hist.length-20);
