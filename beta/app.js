@@ -258,17 +258,10 @@ function renderPlugins(){
   const off=plugOff(),rows=[];
   plugHub.forEach(p=>rows.push({p,src:'hub',on:!off[p.id]}));
   plugLocal.forEach(p=>rows.push({p,src:'phone',on:!!p.enabled&&!off[p.id]}));
-  $('#plugTag').textContent=(rows.filter(x=>x.on).length+1)+' AN';
-  // Eingebautes Plugin: Event-Ankuendigungen (immer da, hat einen eigenen Bereich weiter unten)
-  const annN=(store.get('ari-ann-events',[])||[]).length;
-  const builtin=`<div class="mem" data-pid="builtin-ann" data-src="builtin" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Event-Ankündigungen (TruckersMP)</b><small>EINGEBAUT · AN</small></div>
-      <div class="dim2">Sendet Event-Ankündigungen automatisch an WhatsApp und Discord – am Vortag um 22:00 und 2 Std. vor Beginn.${annN?' Geplant: '+annN+'.':''}</div>
-      <div class="row" style="margin-top:8px"><button class="btn pri" data-pa="open">ÖFFNEN</button></div>
-      <div class="dim2" style="margin-top:8px">TESTS (senden nichts)</div>
-      <div class="row" style="margin-top:4px;flex-wrap:wrap"><button class="btn" data-pa="t-prev">VORSCHAU BEISPIEL</button><button class="btn" data-pa="t-err">FEHLER SIMULIEREN</button><button class="btn" data-pa="t-alarm">TEST-ALARM 1 MIN</button></div></div>`;
+  $('#plugTag').textContent=rows.filter(x=>x.on).length+' AN';
   const pcCards=plugPcOnly.map(p=>`<div class="mem" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>NUR AM PC · AN</small></div><div class="dim2">${escHtml(p.description||'')}</div><div class="dim2">Läuft am PC (Python) – Wünsche mit diesen Stichwörtern gehen automatisch über den PC: ${escHtml((p.keywords||[]).slice(0,6).join(', '))}</div></div>`).join('');
-  if(!rows.length){list.innerHTML=builtin+pcCards+'<div class="dim2">Keine weiteren Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
-  list.innerHTML=builtin+pcCards+rows.map(({p,src,on})=>{
+  if(!rows.length){list.innerHTML=pcCards+'<div class="dim2">Noch keine Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  list.innerHTML=pcCards+rows.map(({p,src,on})=>{
     const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
     return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
       <div class="dim2">${escHtml(p.description||'')}</div>${tools?`<div class="dim2">Werkzeuge: ${tools}</div>`:''}
@@ -276,9 +269,6 @@ function renderPlugins(){
 }
 $('#plugList')&&($('#plugList').onclick=e=>{
   const b=e.target.closest('[data-pa]');if(!b)return;const card=b.closest('[data-pid]'),id=card.dataset.pid,src=card.dataset.src;
-  const tmap={'t-prev':'#annDevPrev','t-err':'#annDevErr','t-alarm':'#annDevAlarm'};
-  if(tmap[b.dataset.pa]){const t=$(tmap[b.dataset.pa]);if(t){const d=$('#annSection');if(b.dataset.pa==='t-alarm'&&d)d.open=true;t.click();}return;}
-  if(b.dataset.pa==='open'){const d=$('#annSection');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}return;}
   if(b.dataset.pa==='del'){if(!confirm('Plugin entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin entfernt.');return;}
   if(src==='phone'){
     const p=plugLocal.find(x=>x.id===id);if(!p)return;
@@ -517,7 +507,8 @@ function speakWeb(t){if(!window.speechSynthesis)return;const u=new SpeechSynthes
 // Native Android-Sprachausgabe statt der Browser-Stimme, wenn moeglich: nutzt bevorzugt Samsungs eigene
 // TTS-Engine (klingt natuerlicher), faellt automatisch auf die Web-Stimme zurueck, wenn nicht verfuegbar.
 // Fuer die Sprachausgabe: Emojis, Markdown-Zeichen und Links weglassen (sonst liest die Stimme sie vor)
-function speechClean(t){return String(t||'').replace(/[\p{Extended_Pictographic}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu,' ').replace(/https?:\/\/\S+/g,' ').replace(/[*_`#~|]+/g,' ').replace(/\s{2,}/g,' ').trim();}
+const LINKSAY=/^en/i.test((typeof cfg!=='undefined'&&cfg&&cfg.lang)||'')?'see the link':'siehe den Link';   // Links werden nicht vorgelesen
+function speechClean(t){return String(t||'').replace(/[\p{Extended_Pictographic}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}]/gu,' ').replace(/\[([^\]]+)\]\((?:https?:\/\/|www\.)[^)\s]+\)/gi,'$1, '+LINKSAY).replace(/(?:https?:\/\/|www\.)[^\s<>"')\]]*[^\s<>"')\].,;:!?]/gi,' '+LINKSAY+' ').replace(new RegExp('(?:'+LINKSAY+'[\\s,;.]*){2,}','gi'),LINKSAY+' ').replace(/[*_`#~|]+/g,' ').replace(/\s{2,}/g,' ').trim();}
 let edgeAudio=null;
 const EDGE_VOICES={'edge:katja':'de-DE-KatjaNeural','edge:conrad':'de-DE-ConradNeural','edge:amala':'de-DE-AmalaNeural'};
 // Die gleichen Stimmen wie am PC (Microsoft Edge: Katja, Conrad, Amala) - direkt vom Handy, ohne PC. Braucht Internet;
@@ -544,10 +535,49 @@ function speak(t){
   if(v!=='device'&&cfg.lang==='de-DE'&&NATIVE){speakEdge(t,v).catch(()=>speakDevice(t));return;}   // die Edge-Stimmen gibt es hier fuer Deutsch; sonst Handy-Stimme
   speakDevice(t);
 }
+// ---- Sprach-Korrekturen (lernt selbst): was die Spracherkennung bei DIESEM Nutzer falsch schreibt -> was er meint (z. B. "Orisa" -> "Orison") ----
+const SF={get(){try{return JSON.parse(localStorage.getItem('ari_speechfix')||'[]').filter(x=>x&&x.heard&&x.meant);}catch(e){return [];}},set(l){try{localStorage.setItem('ari_speechfix',JSON.stringify(l.slice(-200)));}catch(e){}}};
+const SF_STOP=new Set('der die das den dem des ein eine einen einem einer und oder aber nicht kein keine ich du er sie es wir ihr mir mich dir dich ihm ihn uns euch mein meine meinen dein ist sind war bin bist hat habe haben wird wurde kann mach mache machen spiel spiele sag sage zeig zeige oeffne öffne schliess schließe such suche wie was wer wo wann warum wieso welche welcher auf in an aus bei mit von zu zum zur im am um nach vor ueber über unter dann jetzt heute morgen mal bitte danke nein doch ja ok okay eben sondern meinte meine sagte gesagt falsch richtig ari'.split(' '));
+function sfApply(t){let o=String(t||'');SF.get().sort((x,y)=>y.heard.length-x.heard.length).forEach(f=>{try{o=o.replace(new RegExp('(?<![\\p{L}\\p{N}_])'+f.heard.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\p{L}\\p{N}_])','giu'),f.meant);}catch(e){}});return o;}
+function sfRatio(x,y){x=x.toLowerCase();y=y.toLowerCase();const m=x.length,n=y.length;if(!m||!n)return 0;let p=new Array(n+1).fill(0);for(let i=1;i<=m;i++){const c=new Array(n+1).fill(0);for(let j=1;j<=n;j++)c[j]=x[i-1]===y[j-1]?p[j-1]+1:Math.max(p[j],c[j-1]);p=c;}return 2*p[n]/(m+n);}
+function sfRemember(heard,meant){const l=SF.get().filter(f=>f.heard.toLowerCase()!==heard.toLowerCase());l.push({heard,meant});SF.set(l);
+  try{if(sync.token&&sync.origin)hubFetch('/phone/api/speechfix',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({heard,meant})}).catch(()=>{});}catch(e){}}
+// Korrigiert der Nutzer direkt nach einem Verhoerer ("nein, ich meine Orison", "nicht Orisa sondern Orison"), merkt sich A.R.I das selbst. Gibt den neuen Text (vorherige Anfrage, korrigiert) oder null.
+function sfAutoLearn(cur,prev){
+  cur=(cur||'').trim();prev=(prev||'').trim();
+  if(!cur||!prev||cur.length>90||cur.split(/\s+/).length>9)return null;
+  let heard=null,meant=null,m=cur.match(/nicht\s+(.+?)\s*,?\s+sondern\s+(.+?)[\s.!?]*$/i);
+  if(m){heard=m[1].trim();meant=m[2].trim();}
+  else{
+    const sig=/^(?:nein|nee|ne|falsch|quatsch|ich\s+(?:meine|meinte|sagte)|gemeint|es\s+hei(?:ß|ss)t|das\s+hei(?:ß|ss)t)\b/i.test(cur);
+    const c=cur.match(/^(?:nein|nee|ne|falsch|quatsch|doch|nicht\s+das)?[\s,.!:-]*(?:ich\s+(?:meine|meinte|sagte|habe\s+\S+\s+gesagt)|gemeint\s+(?:ist|war)|es\s+hei(?:ß|ss)t|das\s+hei(?:ß|ss)t|ich\s+will)?[\s,.!:-]*(.+?)[\s.!?]*$/i);
+    if(!c||!sig)return null;meant=c[1].trim();if(meant.split(/\s+/).length>3)return null;
+  }
+  meant=meant.replace(/^["'„“]+|["'“”]+$/g,'').trim();
+  if(meant.length<3||SF_STOP.has(meant.toLowerCase()))return null;
+  const toks=prev.match(/[\p{L}\p{N}_-]+/gu)||[];
+  if(heard===null){
+    if(meant.split(/\s+/).some(w=>SF_STOP.has(w.toLowerCase())))return null;
+    const nm=meant.split(/\s+/).length;
+    const cands=nm===1?toks.filter(t=>t.length>=3&&!SF_STOP.has(t.toLowerCase())):nm===2?toks.slice(0,-1).map((t,i)=>[t,toks[i+1]]).filter(([x,y])=>!SF_STOP.has(x.toLowerCase())&&!SF_STOP.has(y.toLowerCase())).map(([x,y])=>x+' '+y):[];
+    if(cands.some(x=>x.toLowerCase()===meant.toLowerCase()))return null;
+    let best=null,score=0;cands.forEach(x=>{const s=sfRatio(x,meant);if(s>score){best=x;score=s;}});
+    if(!best||score<0.55||score>0.97)return null;heard=best;
+  }
+  heard=heard.replace(/^["'„“]+|["'“”]+$/g,'').trim();
+  if(heard.length<3||heard.toLowerCase()===meant.toLowerCase()||SF_STOP.has(heard.toLowerCase()))return null;
+  sfRemember(heard,meant);
+  return sfApply(prev)+'\n(Hinweis: Ich habe mir gemerkt, dass „'+heard+'“ eigentlich „'+meant+'“ heisst. Bestätige das kurz in einem Halbsatz und mach dann die vorherige Anfrage mit dem richtigen Wort.)';
+}
+let sfSynced=false;
+async function sfSyncOnce(){if(sfSynced||!(sync.token&&sync.origin))return;sfSynced=true;try{const r=await hubFetch('/phone/api/speechfix',{headers:{'X-Ari-Token':sync.token}});const d=await r.json();const l=SF.get();(d.fixes||[]).forEach(f=>{if(!l.some(x=>x.heard.toLowerCase()===f.heard.toLowerCase()))l.push(f);});SF.set(l);}catch(e){}}
 async function send(text){
   text=(text||'').trim();if(!text)return;
-  addMsg('u',text);hist.push({role:'user',content:text});const w=addMsg('a','…');orbBusy(true);
-  const reply=await ask(text);
+  sfSyncOnce();
+  const prevU=[...hist].reverse().find(m=>m.role==='user');
+  const learned=prevU?sfAutoLearn(text,prevU.content):null;   // Korrektur erkannt: vorherige Anfrage mit richtigem Wort nochmal stellen
+  addMsg('u',text);hist.push({role:'user',content:learned||sfApply(text)});const w=addMsg('a','…');orbBusy(true);
+  const reply=await ask(learned||sfApply(text));
   if(reply===''){w.remove();orbBusy(false);hist.pop();return;}   // stiller Fehler: kein Fehlertext, keine Sprachausgabe
   w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.appendChild(a);});
   hist.push({role:'assistant',content:reply});if(hist.length>20)hist.splice(0,hist.length-20);
@@ -1872,263 +1902,6 @@ if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.j
     else setTimeout(()=>{busy=false;next();},800+x.t.length*60);
   }
   setInterval(poll,5000);setTimeout(poll,3000);
-})();
-
-/* ---------- Event-Ankündigungen (TruckersMP -> WhatsApp / Discord) ---------- */
-(function annModule(){
-  const AN=window.AriAnnounce;if(!AN||!$('#annSection'))return;
-  const ANN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriAnnounce;
-  let tpl=Object.assign({},AN.DEFAULT_TEMPLATE,store.get('ari-ann-tpl',{}));
-  let events=store.get('ari-ann-events',[]);
-  let draft=null,perm=null,results={};
-  const saveEvents=()=>store.set('ari-ann-events',events);
-  const msg=(t,bad)=>{const e=$('#annMsg');e.textContent=t||'';e.style.color=bad?'var(--pink)':'';};
-  const COUNTRIES=[['ES','Spanien'],['PT','Portugal'],['FR','Frankreich'],['DE','Deutschland'],['IT','Italien'],['GB','Großbritannien'],['IE','Irland'],['NL','Niederlande'],['BE','Belgien'],['LU','Luxemburg'],['CH','Schweiz'],['AT','Österreich'],['DK','Dänemark'],['SE','Schweden'],['NO','Norwegen'],['FI','Finnland'],['IS','Island'],['EE','Estland'],['LV','Lettland'],['LT','Litauen'],['PL','Polen'],['CZ','Tschechien'],['SK','Slowakei'],['HU','Ungarn'],['RO','Rumänien'],['BG','Bulgarien'],['GR','Griechenland'],['TR','Türkei'],['RS','Serbien'],['HR','Kroatien'],['SI','Slowenien'],['BA','Bosnien'],['ME','Montenegro'],['MK','Nordmazedonien'],['AL','Albanien'],['XK','Kosovo'],['RU','Russland'],['BY','Belarus'],['UA','Ukraine'],['MD','Moldau']];
-
-  /* --- Event holen --- */
-  async function fetchEvent(id){
-    const r=await fetch('https://api.truckersmp.com/v2/events/'+id);
-    if(!r.ok)throw new Error(r.status===404?'Das Event wurde nicht gefunden – ist der Link richtig?':'TruckersMP antwortet gerade nicht ('+r.status+').');
-    const d=await r.json();if(d.error||!d.response)throw new Error('Das Event wurde nicht gefunden – ist der Link richtig?');
-    return d.response;
-  }
-
-  /* --- Entwurf --- */
-  function newDraft(ev,existing){
-    const start=AN.tmpTime(ev.start_at),now=new Date(),plan=start?AN.plan(start,tpl,now):[];
-    const last=store.get('ari-ann-last',{targets:{whatsapp:'',discord:''},auto:{whatsapp:true,discord:false}});
-    const d=existing?JSON.parse(JSON.stringify(existing)):{id:String(ev.id),lengthKm:0,flagFrom:'',flagTo:'',imgFile:'',useShot:false,targets:Object.assign({},last.targets),auto:Object.assign({},last.auto),sends:[]};
-    d.ev=ev;
-    d.sends=plan.map(p=>{const old=(d.sends||[]).find(x=>x.key===p.key);return {key:p.key,title:p.title,at:old&&old.custom?old.at:p.at.getTime(),custom:!!(old&&old.custom),enabled:old?old.enabled:!p.past};});
-    return d;
-  }
-  const toLocalInput=ms=>{const d=new Date(ms),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());};
-  const stateOf=(d,send)=>({tpl,lengthKm:d.lengthKm,flagFrom:d.flagFrom||undefined,flagTo:d.flagTo||undefined,targets:d.targets,sendAt:send?new Date(send.at):undefined});
-
-  function renderDraft(){
-    const d=draft,form=$('#annForm');if(!d){form.style.display='none';return;}
-    form.style.display='';
-    const ev=d.ev,m=AN.tmpTime(ev.meetup_at),s=AN.tmpTime(ev.start_at),fm=m&&AN.fmtBerlin(m),fs=s&&AN.fmtBerlin(s);
-    $('#annInfo').innerHTML='<b>'+escHtml(ev.name||'')+'</b><div class="dim2">'+escHtml(((ev.departure||{}).city||'?')+' → '+((ev.arrive||{}).city||'?'))+'</div><div class="dim2">'+(fs?'Treffpunkt '+(fm?fm.time:'?')+' · Abfahrt '+fs.time+' '+fs.tz+' · '+fs.date:'Keine Zeit im Event')+'</div>';
-    $('#annKm').value=d.lengthKm||'';
-    $('#annUseShot').checked=!!d.useShot;
-    $('#annWa').value=d.targets.whatsapp||'';$('#annDc').value=d.targets.discord||'';
-    $('#annAutoWa').checked=!!d.auto.whatsapp;$('#annAutoDc').checked=!!d.auto.discord;
-    // Flaggen: nur fragen, wenn A.R.I das Land nicht sicher kennt
-    const fl=[];
-    [['Treffpunkt',(ev.departure||{}).city,'flagFrom'],['Ziel',(ev.arrive||{}).city,'flagTo']].forEach(([n,city,key])=>{
-      if(!city||AN.countryOf(city))return;
-      fl.push('<label class="lbl">LAND VON „'+escHtml(city).toUpperCase()+'“ ('+n.toUpperCase()+') – FLAGGE</label><select data-flag="'+key+'"><option value="">– bitte wählen –</option>'+COUNTRIES.map(c=>'<option value="'+c[0]+'"'+(d[key]===c[0]?' selected':'')+'>'+AN.flagEmoji(c[0])+' '+c[1]+'</option>').join('')+'</select>');});
-    $('#annFlags').innerHTML=fl.join('');
-    $('#annSends').innerHTML=d.sends.map((x,i)=>'<div class="annsend"><input type="checkbox" data-sc="'+i+'" style="width:auto"'+(x.enabled?' checked':'')+'><div style="flex:none;font-size:12px;min-width:92px">'+escHtml(x.title)+'</div><input type="datetime-local" data-st="'+i+'" value="'+toLocalInput(x.at)+'"></div>').join('');
-    $('#annTpl').innerHTML=TPL_FIELDS.map(([k,l,t])=>'<label class="lbl">'+l+'</label><input type="'+(t||'text')+'" data-tpl="'+k+'" value="'+escHtml(String(tpl[k]==null?'':tpl[k]))+'">').join('');
-  }
-  const TPL_FIELDS=[['lead','FÜHRUNGSFAHRZEUG'],['ts','TEAMSPEAK-IP'],['dh','DH-EVENTKALENDER-LINK'],['reward','BELOHNUNG'],['paintText','LACKIERUNG (TEXT)'],['paintImg','LACKIERUNG (BILD-LINK)'],['maxWeight','MAX. LADEGEWICHT'],['playertagRgb','PLAYERTAG-FARBE (RGB)'],['playertag','PLAYERTAG'],['role','DISCORD-ROLLE (<@&…>)'],['eveningHour','UHRZEIT AM VORTAG (STUNDE)','number'],['minutesBefore','MINUTEN VOR BEGINN','number']];
-
-  /* --- Eingaben --- */
-  $('#annForm').addEventListener('input',e=>{
-    const t=e.target;if(!draft)return;
-    if(t.id==='annKm')draft.lengthKm=parseInt(t.value,10)||0;
-    else if(t.id==='annWa')draft.targets.whatsapp=t.value.trim();
-    else if(t.id==='annDc')draft.targets.discord=t.value.trim();
-    else if(t.id==='annAutoWa')draft.auto.whatsapp=t.checked;
-    else if(t.id==='annAutoDc'){if(t.checked&&!confirm('Achtung: Discord verbietet Automatisierung von Nutzerkonten – das Konto könnte gesperrt werden.\n\nTrotzdem automatisch senden?')){t.checked=false;return;}draft.auto.discord=t.checked;}
-    else if(t.id==='annUseShot')draft.useShot=t.checked;
-    else if(t.dataset.flag)draft[t.dataset.flag]=t.value;
-    else if(t.dataset.sc!=null)draft.sends[+t.dataset.sc].enabled=t.checked;
-    else if(t.dataset.st!=null){const ms=new Date(t.value).getTime();if(isFinite(ms)){draft.sends[+t.dataset.st].at=ms;draft.sends[+t.dataset.st].custom=true;}}
-    else if(t.dataset.tpl){const k=t.dataset.tpl;tpl[k]=t.type==='number'?(parseInt(t.value,10)||0):t.value;store.set('ari-ann-tpl',tpl);}
-  });
-  $('#annLoad').onclick=async()=>{
-    const id=AN.parseEventId($('#annUrl').value);if(!id){msg('Das ist kein TruckersMP-Link. Beispiel: https://truckersmp.com/events/35744-…',true);return;}
-    msg('Lade das Event …');
-    try{const ev=await fetchEvent(id);const ex=events.find(x=>x.id===String(ev.id));draft=newDraft(ev,ex);renderDraft();msg('Event geladen.'+(ex?' (Gespeicherte Einstellungen übernommen.)':''));}
-    catch(err){msg(String(err.message||err),true);}
-  };
-
-  /* --- Länge aus dem Screenshot lesen (Bild-KI) --- */
-  function shrink(file,maxW){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,maxW/img.width),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.85));};img.onerror=()=>rej(new Error('Bild nicht lesbar'));img.src=u;});}
-  async function visionLength(dataUrl){
-    const b64=dataUrl.split(',')[1],p=cfg.provider,P=PROV[p],keys=keyList(p);
-    if(!keys.length)throw new Error('Kein KI-Schlüssel – trage die Länge von Hand ein.');
-    let last;
-    for(const key of keys){
-      try{
-        if(!P.oa){
-          const d=await post(P.url,{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},{model:P.small,max_tokens:30,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:AN.LENGTH_PROMPT}]}]});
-          return AN.parseLength((d.content.find(b=>b.type==='text')||{}).text);
-        }
-        const model=p==='groq'?'meta-llama/llama-4-scout-17b-16e-instruct':P.small;
-        const d=await post(P.url,{Authorization:'Bearer '+key},{model,max_tokens:30,messages:[{role:'user',content:[{type:'text',text:AN.LENGTH_PROMPT},{type:'image_url',image_url:{url:dataUrl}}]}]});
-        return AN.parseLength(d.choices[0].message.content);
-      }catch(e){last=e;if(!isLimit(e))throw e;}
-    }
-    throw last;
-  }
-  $('#annShot').onclick=()=>$('#annShotFile').click();
-  $('#annShotFile').onchange=async e=>{
-    const f=e.target.files[0];e.target.value='';if(!f||!draft)return;
-    const out=$('#annShotMsg');out.style.color='';out.textContent='Lese die Länge aus dem Bild …';
-    try{
-      const url=await shrink(f,1280);
-      if(ANN())try{const r=await ANN().saveImage({name:'ann_'+draft.id+'.jpg',base64:url.split(',')[1]});draft.imgFile=r.file;}catch(er){}
-      const km=await visionLength(url);
-      if(km>0){draft.lengthKm=km;$('#annKm').value=km;out.textContent='Gelesen: '+km.toLocaleString('de-DE')+' km – bitte kurz mit dem Bild vergleichen.';}
-      else{out.style.color='var(--pink)';out.textContent='Die Länge war im Bild nicht sicher lesbar – bitte von Hand eintragen.';}
-    }catch(err){out.style.color='var(--pink)';out.textContent='Konnte die Länge nicht lesen ('+String(err.message||err).slice(0,80)+') – bitte von Hand eintragen.';}
-  };
-
-  /* --- Prüfen + Vorschau --- */
-  function checkAll(d){
-    const c=AN.check(d.ev,{lengthKm:d.lengthKm,flagFrom:d.flagFrom||undefined,flagTo:d.flagTo||undefined,targets:d.targets,tpl},new Date());
-    if(d.useShot&&!d.imgFile)c.errors.push('„Mein Screenshot“ ist angehakt, aber es wurde noch keiner gewählt.');
-    ['whatsapp','discord'].forEach(k=>{if(d.auto[k]&&!d.targets[k])c.errors.push((k==='discord'?'Discord':'WhatsApp')+': Automatisch senden ist an, aber der Chat-/Kanalname fehlt.');});
-    if(perm){
-      if((d.auto.whatsapp&&d.targets.whatsapp)||(d.auto.discord&&d.targets.discord)){if(!perm.accessibility)c.warnings.push('Die Bedienungshilfe ist aus – automatisches Senden geht erst, wenn du sie unten einschaltest (sonst wird nur vorbereitet).');}
-      if(!perm.exactAlarms)c.warnings.push('„Exakte Alarme“ sind nicht erlaubt – die Ankündigung kann einige Minuten zu spät kommen.');
-      if(d.targets.whatsapp&&!perm.whatsapp)c.warnings.push('WhatsApp ist auf diesem Handy nicht installiert.');
-      if(d.targets.discord&&!perm.discord)c.warnings.push('Discord ist auf diesem Handy nicht installiert.');
-    }
-    return c;
-  }
-  function showPreview(d,onSave){
-    const c=checkAll(d);let o=$('#annPreviewOv');if(o)o.remove();
-    o=document.createElement('div');o.id='annPreviewOv';
-    o.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:12px';
-    const sends=d.sends.filter(x=>x.enabled);
-    const blocks=(sends.length?sends:[null]).map(sd=>{
-      const lbl=sd&&AN.tmpTime(d.ev.start_at)?AN.dayLabel(new Date(sd.at),AN.tmpTime(d.ev.start_at)):'';
-      return '<div style="margin-top:8px"><b>'+(sd?escHtml(sd.title)+' · '+escHtml(AN.fmtBerlin(new Date(sd.at)).date+' '+AN.fmtBerlin(new Date(sd.at)).time)+' · '+escHtml(lbl):'Text')+'</b>'+
-        ['discord','whatsapp'].map(pl=>'<details'+(sd===sends[0]||!sd?'':'')+'><summary class="dim" style="cursor:pointer">'+(pl==='discord'?'Discord':'WhatsApp')+'-Text</summary><pre>'+escHtml(AN.buildText(pl,d.ev,stateOf(d,sd)))+'</pre></details>').join('')+'</div>';}).join('');
-    const img=d.useShot&&d.imgFile?'Eigener Screenshot':(d.ev.map?'<img src="'+escHtml(d.ev.map)+'" style="max-width:100%;border-radius:8px;margin-top:6px" alt="Routenbild">':'<span class="st-wait">kein Routenbild</span>');
-    o.innerHTML='<div style="width:min(560px,100%);max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#14121f);border:1px solid color-mix(in srgb,var(--cyan) 35%,transparent);border-radius:14px;padding:14px">'+
-      '<div style="font:700 11px var(--font-mono);letter-spacing:.14em;color:var(--cyan)">VORSCHAU</div><div style="font:700 15px var(--font-display);margin:4px 0 8px">'+escHtml(d.ev.name||'')+'</div>'+
-      (c.errors.length?'<div class="st-err" style="font-size:12px"><b>Das muss erst behoben werden:</b><ul style="margin:4px 0 8px 18px;padding:0">'+c.errors.map(x=>'<li>'+escHtml(x)+'</li>').join('')+'</ul></div>':'')+
-      (c.warnings.length?'<div class="st-wait" style="font-size:12px"><b>Hinweise:</b><ul style="margin:4px 0 8px 18px;padding:0">'+c.warnings.map(x=>'<li>'+escHtml(x)+'</li>').join('')+'</ul></div>':'')+
-      (!c.errors.length&&!c.warnings.length?'<div class="st-ok" style="font-size:12px">✓ Alles in Ordnung.</div>':'')+
-      '<div class="dim2">Bild: '+img+'</div>'+blocks+
-      '<div class="row" style="margin-top:12px"><button class="btn" id="annPvClose">SCHLIESSEN</button>'+(onSave?'<button class="btn pri" id="annPvSave"'+(c.errors.length?' disabled style="opacity:.4"':'')+'>SPEICHERN &amp; PLANEN</button>':'')+'</div></div>';
-    document.body.appendChild(o);
-    $('#annPvClose').onclick=()=>o.remove();o.onclick=ev=>{if(ev.target===o)o.remove();};
-    if(onSave&&!c.errors.length)$('#annPvSave').onclick=()=>{o.remove();onSave();};
-    return c;
-  }
-  $('#annPreview').onclick=()=>{if(draft)showPreview(draft,null);};
-
-  /* --- Planen --- */
-  function payloadFor(d,send){
-    const start=AN.tmpTime(d.ev.start_at),st=stateOf(d,send),pf=[];
-    if(d.targets.whatsapp)pf.push({name:'whatsapp',target:d.targets.whatsapp,text:AN.buildText('whatsapp',d.ev,st),auto:!!d.auto.whatsapp});
-    if(d.targets.discord)pf.push({name:'discord',target:d.targets.discord,text:AN.buildText('discord',d.ev,st),auto:!!d.auto.discord});
-    const own=d.useShot&&d.imgFile;
-    return {title:d.ev.name||'Event',when:send.title,imageUrl:own?'':(d.ev.map||''),imageFile:own?d.imgFile:'',deadline:start?start.getTime():0,platforms:pf,test:false};
-  }
-  async function scheduleEvent(d){
-    let planned=0,exactAll=true;
-    for(const s of d.sends){
-      const id='ann_'+d.id+'_'+s.key;
-      if(!ANN())continue;
-      if(!s.enabled||s.at<=Date.now()){try{await ANN().cancel({id});}catch(e){}continue;}
-      try{const r=await ANN().schedule({id,at:s.at,payload:payloadFor(d,s)});planned++;if(!r.exact)exactAll=false;}catch(e){throw new Error('Planen fehlgeschlagen: '+String(e.message||e));}
-    }
-    return {planned,exactAll};
-  }
-  async function saveDraft(){
-    const d=draft;if(!d)return;
-    const c=checkAll(d);
-    if(c.errors.length){showPreview(d,null);return;}
-    try{
-      const r=await scheduleEvent(d);
-      const i=events.findIndex(x=>x.id===d.id);if(i>=0)events[i]=d;else events.push(d);saveEvents();
-      store.set('ari-ann-last',{targets:d.targets,auto:d.auto});store.set('ari-ann-tpl',tpl);
-      renderList();
-      msg(ANN()?(r.planned+' Ankündigung(en) geplant.'+(r.exactAll?'':' (Ohne „Exakte Alarme“ kann es etwas später kommen.)')):'Gespeichert – geplant wird nur in der Handy-App (hier ist es nur eine Vorschau).');
-      draft=null;renderDraft();
-    }catch(err){msg(String(err.message||err),true);}
-  }
-  $('#annSaveBtn').onclick=()=>{if(draft)showPreview(draft,saveDraft);};
-
-  /* --- Liste + Status --- */
-  function statusOf(d,s){
-    const r=results['ann_'+d.id+'_'+s.key];
-    if(!s.enabled)return ['aus','',''];
-    if(r){const m={gesendet:['✓ gesendet','st-ok'],vorbereitet:['✓ vorbereitet – Senden tippen','st-wait'],fehler:['✗ Fehler','st-err'],wartet:['… wartet (Handy gesperrt)','st-wait']}[r.status]||[r.status,''];return [m[0],m[1],r.msg||''];}
-    if(s.at<=Date.now())return ['übersprungen / vorbei','',''];
-    return ['geplant','',''];
-  }
-  function renderList(){
-    const list=$('#annList');$('#annTag').textContent=events.length+'';
-    if(!events.length){list.innerHTML='<div class="dim2">Noch nichts geplant.</div>';return;}
-    list.innerHTML=events.map(d=>{
-      const f=AN.fmtBerlin(AN.tmpTime(d.ev.start_at)||new Date());
-      return '<div class="annev" data-eid="'+escHtml(d.id)+'"><b>'+escHtml(d.ev.name||'')+'</b><div class="dim2">'+f.date+' · '+escHtml(((d.ev.departure||{}).city||'?')+' → '+((d.ev.arrive||{}).city||'?'))+' · '+AN.fmtKm(d.lengthKm)+'</div>'+
-        d.sends.map(s=>{const st=statusOf(d,s),t=AN.fmtBerlin(new Date(s.at));return '<div style="font-size:12px;margin-top:4px">'+escHtml(s.title)+' · '+t.date+' '+t.time+' – <span class="'+st[1]+'">'+escHtml(st[0])+'</span>'+(st[2]?'<div class="dim2">'+escHtml(st[2])+'</div>':'')+'</div>';}).join('')+
-        '<div class="row" style="margin-top:8px"><button class="btn" data-aa="edit">BEARBEITEN</button><button class="btn dng" data-aa="del">LÖSCHEN</button></div></div>';}).join('');
-  }
-  $('#annList').onclick=async e=>{
-    const b=e.target.closest('[data-aa]');if(!b)return;const id=b.closest('[data-eid]').dataset.eid,d=events.find(x=>x.id===id);if(!d)return;
-    if(b.dataset.aa==='del'){if(!confirm('Diese Ankündigung samt Terminen löschen?'))return;try{if(ANN())await ANN().cancelPrefix({prefix:'ann_'+id+'_'});}catch(er){}events=events.filter(x=>x.id!==id);saveEvents();renderList();return;}
-    draft=newDraft(d.ev,d);renderDraft();$('#annForm').scrollIntoView({behavior:'smooth',block:'start'});
-  };
-  function renderPerm(){
-    const el=$('#annPerm');
-    if(!ANN()){el.textContent='Nur in der Handy-App verfügbar (hier siehst du nur Vorschau und Texte).';return;}
-    if(!perm){el.textContent='Prüfe …';return;}
-    const on=(v,t)=>'<div>'+(v?'<span class="st-ok">✓</span>':'<span class="st-err">✗</span>')+' '+t+'</div>';
-    el.innerHTML=on(perm.accessibility,'Bedienungshilfe „A.R.I Ankündigungen“ eingeschaltet')+on(perm.exactAlarms,'Exakte Alarme erlaubt')+on(perm.overlay,'„Über anderen Apps anzeigen“ erlaubt (nötig, damit A.R.I WhatsApp/Discord im Hintergrund öffnen darf)')+on(perm.whatsapp,'WhatsApp installiert')+on(perm.discord,'Discord installiert');
-  }
-  $('#annPermAcc').onclick=()=>{if(ANN())ANN().openAccessibilitySettings();};
-  $('#annPermAlarm').onclick=()=>{if(ANN())ANN().openExactAlarmSettings();};
-
-  /* --- Ergebnisse (auch ansagen) --- */
-  const reported=new Set(store.get('ari-ann-reported',[]));
-  async function poll(){
-    if(!ANN())return;
-    try{
-      const st=await ANN().status();perm=st;results=st.results||{};
-      renderPerm();renderList();
-      Object.entries(results).forEach(([id,r])=>{
-        const key=id+'@'+r.ts;if(reported.has(key)||r.status==='wartet')return;reported.add(key);store.set('ari-ann-reported',[...reported].slice(-100));
-        const ev=events.find(x=>id.startsWith('ann_'+x.id+'_')),name=ev?ev.ev.name:'Ankündigung';
-        if(/_test$/.test(id)){addMsg('a','Test-Alarm angekommen – es wurde nichts gesendet.');return;}
-        const t=r.status==='fehler'?'Ankündigung „'+name+'“ hat nicht geklappt: '+r.msg:r.status==='vorbereitet'?'Ankündigung „'+name+'“ ist vorbereitet – tippe in der App auf Senden.':'Ankündigung „'+name+'“ wurde gesendet.';
-        addMsg('a',t);hist.push({role:'assistant',content:t});speak(t);
-      });
-    }catch(e){}
-  }
-
-  /* --- Aenderungen am Event erkennen (Zeit/Ort) und neu planen --- */
-  async function refreshAll(){
-    for(const d of events){
-      const start=AN.tmpTime(d.ev.start_at);if(!start||start.getTime()<Date.now())continue;
-      try{
-        const ev=await fetchEvent(d.id);
-        const changed=['start_at','meetup_at'].some(k=>ev[k]!==d.ev[k])||JSON.stringify(ev.departure)!==JSON.stringify(d.ev.departure)||JSON.stringify(ev.arrive)!==JSON.stringify(d.ev.arrive);
-        const nd=newDraft(ev,d);
-        if(changed){Object.assign(d,nd);saveEvents();await scheduleEvent(d);addMsg('a','Das Event „'+ev.name+'“ wurde geändert – die Ankündigungen sind neu geplant.');}
-        else if(ANN())await scheduleEvent(d);
-      }catch(e){}
-    }
-    renderList();
-  }
-
-  /* --- Entwickler-Tests --- */
-  function sampleEvent(){
-    const t=new Date(Date.now()+24*3600*1000);t.setUTCMinutes(0,0,0);t.setUTCHours(18);
-    const f=d=>d.toISOString().slice(0,19).replace('T',' ');
-    return {id:35744,name:'Golden Phoenix Express #160',departure:{location:'Norrsken',city:'Valencia'},arrive:{location:'Nos Partugas',city:'Salamanca'},meetup_at:f(new Date(t.getTime()-3600000)),start_at:f(t),
-      map:'https://static.truckersmp.com/images/event/map/35744.1778927590.png',voice_link:'https://discord.gg/GPE',url:'/events/35744-golden-phoenix-express#160',server:{id:31,name:'ProMods'},vtc:{id:51501,name:'Golden Phoenix Express'},
-      dlcs:{'227310':'Going East!','304212':'Scandinavia','531130':'Vive la France !','558244':'Italia','925580':'Beyond the Baltic Sea','933610':'Krone Trailer Pack','1':'Road to the Black Sea','2':'Iberia','3':'West Balkans','4':'Feldbinder Trailer Pack','5':'Greece','6':'Nordic Horizons','7':'Iceland','8':'Isle of Ireland'}};
-  }
-  $('#annDevPrev').onclick=()=>{const d=newDraft(sampleEvent());d.lengthKm=1031;d.targets={whatsapp:'Test-Gruppe',discord:'test-kanal'};showPreview(d,null);};
-  $('#annDevErr').onclick=()=>{const ev=sampleEvent();ev.arrive={location:'Irgendwo',city:'Nirgendwo'};delete ev.map;const d=newDraft(ev);d.lengthKm=0;d.targets={whatsapp:'',discord:''};showPreview(d,null);};
-  $('#annDevAlarm').onclick=async()=>{
-    if(!ANN()){msg('Test-Alarm gibt es nur in der Handy-App.',true);return;}
-    try{await ANN().schedule({id:'ann_dev_test',at:Date.now()+60000,payload:{title:'Test-Alarm',test:true,platforms:[]}});msg('Test-Alarm kommt in 1 Minute (sendet nichts, zeigt nur eine Benachrichtigung).');}catch(e){msg('Konnte den Test-Alarm nicht planen: '+String(e.message||e),true);}
-  };
-
-  renderList();renderPerm();
-  if(ANN()){setTimeout(poll,1500);setInterval(poll,10000);setTimeout(refreshAll,8000);setInterval(refreshAll,30*60*1000);try{Capacitor.Plugins.App.addListener('appStateChange',st=>{if(st.isActive)poll();});}catch(e){}}
 })();
 
 })();
