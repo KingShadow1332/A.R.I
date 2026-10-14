@@ -1,7 +1,7 @@
 {
-    "versionCode":  74,
-    "versionName":  "1.74",
+    "versionCode":  75,
+    "versionName":  "1.75",
     "apk":  "ARI.apk",
-    "notes":  "Benachrichtigungen mit App-Symbol und Bildern (Vorschau am PC).",
+    "notes":  "Plugins heissen jetzt Mods. Benachrichtigungen mit App-Symbol und Bildern.",
     "sizeMb":  6.5
 }
