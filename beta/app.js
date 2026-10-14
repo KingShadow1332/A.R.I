@@ -193,7 +193,7 @@ function plugActive(){const off=plugOff();return [...plugHub.map(p=>Object.assig
 function pluginTools(){
   const out=[];
   plugActive().forEach(p=>(p.tools||[]).forEach(t=>{if(!t||!t.name||!t.action)return;
-    out.push({name:(String(p.id).replace(/[^A-Za-z0-9_]/g,'_')+'_'+t.name).slice(0,60),description:'[Plugin '+p.name+'] '+String(t.description||'').slice(0,600),parameters:t.input_schema||{type:'object',properties:{}},_t:t});}));
+    out.push({name:(String(p.id).replace(/[^A-Za-z0-9_]/g,'_')+'_'+t.name).slice(0,60),description:'[Mod '+p.name+'] '+String(t.description||'').slice(0,600),parameters:t.input_schema||{type:'object',properties:{}},_t:t});}));
   return out;
 }
 const allTools=()=>[...TOOLS,...pluginTools().map(t=>({name:t.name,description:t.description,parameters:t.parameters})),CREATE_PLUGIN_TOOL];
@@ -218,7 +218,7 @@ async function runDecl(tool,args){
     const url=dSub(act.url||'',args,true);
     if(!/^https?:\/\//i.test(url))return 'Ungueltige Adresse.';
     let host='';try{host=new URL(url).hostname;}catch(e){return 'Ungueltige Adresse.';}
-    if(/^(localhost|.*\.local|.*\.internal)$/i.test(host)||/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/.test(host))return 'Adressen im eigenen Netz sind fuer Plugins gesperrt.';
+    if(/^(localhost|.*\.local|.*\.internal)$/i.test(host)||/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/.test(host))return 'Adressen im eigenen Netz sind fuer Mods gesperrt.';
     const method=String(act.method||'GET').toUpperCase();if(method!=='GET'&&method!=='POST')return 'Nur GET oder POST.';
     const headers={};Object.entries(act.headers||{}).forEach(([k,v])=>headers[k]=dSub(v,args));
     const init={method,headers,redirect:'error'};
@@ -232,24 +232,24 @@ async function runDecl(tool,args){
 }
 async function runToolAsync(name,a){
   const pt=pluginTools().find(t=>t.name===name);
-  if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Das Plugin hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass das Plugin gerade nicht geklappt hat - ohne technische Details.';}}
+  if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Die Mod hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass die Mod gerade nicht geklappt hat - ohne technische Details.';}}
   if(name==='create_plugin')return createPluginFromAi(a||{});
   return runTool(name,a);
 }
 // A.R.I baut hier selbst ein (deklaratives) Plugin: immer erst AUS - der Nutzer prueft es und schaltet es ein.
-const CREATE_PLUGIN_TOOL={name:'create_plugin',description:'Baut ein neues PLUGIN fuer A.R.I (laeuft auch ohne PC), wenn der Nutzer sagt, du sollst dir eine neue Faehigkeit bauen. Ein Plugin ist ein JSON mit Werkzeugen; jedes Werkzeug hat name, description, input_schema und eine "action": '+
+const CREATE_PLUGIN_TOOL={name:'create_plugin',description:'Baut eine neue MOD fuer A.R.I (laeuft auch ohne PC), wenn der Nutzer sagt, du sollst dir eine neue Faehigkeit bauen. Eine Mod ist ein JSON mit Werkzeugen; jedes Werkzeug hat name, description, input_schema und eine "action": '+
   '{"type":"http","url":"https://api.../{param}","template":"Text mit {param} und {$.feld.0.wert} aus der JSON-Antwort"} | {"type":"open_url","url":"https://.../{param}"} | {"type":"text","template":"..."} | {"type":"random","min":1,"max":"{seiten}","count":"{anzahl}","template":"{values} Summe {sum}"}. '+
-  'Nur oeffentliche Adressen. Das Plugin ist nach dem Anlegen AUS - der Nutzer schaltet es selbst ein (sag ihm das kurz).',
+  'Nur oeffentliche Adressen. Die Mod ist nach dem Anlegen AUS - der Nutzer schaltet sie selbst ein (sag ihm das kurz).',
   parameters:{type:'object',properties:{name:{type:'string',description:'Kurzer Name, nur Kleinbuchstaben/Ziffern/Bindestrich'},title:{type:'string'},description:{type:'string'},keywords:{type:'array',items:{type:'string'}},tools:{type:'array',description:'Die Werkzeuge (siehe oben)',items:{type:'object'}}},required:['name','title','description','tools']}};
 function createPluginFromAi(a){
   const id=String(a.name||'').toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
-  if(!id)return 'Ungueltiger Plugin-Name.';
+  if(!id)return 'Ungueltiger Mod-Name.';
   const tools=Array.isArray(a.tools)?a.tools:[];
   if(!tools.length||tools.some(t=>!t||!/^[A-Za-z0-9_]{1,40}$/.test(String(t.name||''))||!t.action||!PLUGIN_ACTIONS.includes(t.action.type)))return 'Jedes Werkzeug braucht einen Namen (Buchstaben, Ziffern, _) und eine gueltige action (http, open_url, text oder random). Korrigiere das und versuche es nochmal.';
-  if(plugLocal.some(p=>p.id===id))return 'Es gibt schon ein Plugin "'+id+'". Nimm einen anderen Namen.';
+  if(plugLocal.some(p=>p.id===id))return 'Es gibt schon eine Mod "'+id+'". Nimm einen anderen Namen.';
   plugLocal.push({id,name:String(a.title||id).slice(0,60),description:String(a.description||'').slice(0,300),keywords:(a.keywords||[]).map(k=>String(k).toLowerCase()).slice(0,20),tools,enabled:false});
   store.set('ari-plugins-local',plugLocal);try{renderPlugins();}catch(e){}
-  return 'Plugin "'+(a.title||id)+'" wurde angelegt, ist aber noch AUS. Sag dem Nutzer kurz, was es tut - er schaltet es unter Einstellungen > Plugins selbst ein.';
+  return 'Mod "'+(a.title||id)+'" wurde angelegt, ist aber noch AUS. Sag dem Nutzer kurz, was sie tut - er schaltet sie unter Einstellungen > Mods selbst ein.';
 }
 /* ---------- Plugins: Einstellungen ---------- */
 function plugMsg(t,bad){const el=$('#plugMsg');if(el){el.textContent=t||'';el.style.color=bad?'var(--pink)':'';}}
@@ -260,7 +260,7 @@ function renderPlugins(){
   plugLocal.forEach(p=>rows.push({p,src:'phone',on:!!p.enabled&&!off[p.id]}));
   $('#plugTag').textContent=rows.filter(x=>x.on).length+' AN';
   const pcCards=plugPcOnly.map(p=>`<div class="mem" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>NUR AM PC · AN</small></div><div class="dim2">${escHtml(p.description||'')}</div><div class="dim2">Läuft am PC (Python) – Wünsche mit diesen Stichwörtern gehen automatisch über den PC: ${escHtml((p.keywords||[]).slice(0,6).join(', '))}</div></div>`).join('');
-  if(!rows.length){list.innerHTML=pcCards+'<div class="dim2">Noch keine Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  if(!rows.length){list.innerHTML=pcCards+'<div class="dim2">Noch keine Mods. Füge eine plugin.json hinzu – oder bau am PC eine, die kommt hier automatisch an.</div>';return;}
   list.innerHTML=pcCards+rows.map(({p,src,on})=>{
     const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
     return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
@@ -269,10 +269,10 @@ function renderPlugins(){
 }
 $('#plugList')&&($('#plugList').onclick=e=>{
   const b=e.target.closest('[data-pa]');if(!b)return;const card=b.closest('[data-pid]'),id=card.dataset.pid,src=card.dataset.src;
-  if(b.dataset.pa==='del'){if(!confirm('Plugin entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin entfernt.');return;}
+  if(b.dataset.pa==='del'){if(!confirm('Mod entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Mod entfernt.');return;}
   if(src==='phone'){
     const p=plugLocal.find(x=>x.id===id);if(!p)return;
-    if(!p.enabled){if(!confirm('Plugin „'+(p.name||id)+'“ einschalten?\n\nEs darf Internet-Adressen abrufen, die in der plugin.json stehen:\n'+(p.tools||[]).map(t=>'• '+t.name+(t.action&&t.action.url?' → '+String(t.action.url).slice(0,80):'')).join('\n')))return;}
+    if(!p.enabled){if(!confirm('Mod „'+(p.name||id)+'“ einschalten?\n\nEs darf Internet-Adressen abrufen, die in der plugin.json stehen:\n'+(p.tools||[]).map(t=>'• '+t.name+(t.action&&t.action.url?' → '+String(t.action.url).slice(0,80):'')).join('\n')))return;}
     p.enabled=!p.enabled;store.set('ari-plugins-local',plugLocal);
   }else{const off=plugOff();if(off[id])delete off[id];else off[id]=1;store.set('ari-plugins-off',off);}
   renderPlugins();
@@ -286,9 +286,9 @@ $('#plugFile')&&($('#plugFile').onchange=async e=>{
     const tools=(m.tools||[]).filter(t=>t&&t.name&&t.action&&PLUGIN_ACTIONS.includes(t.action.type));
     if(!tools.length){plugMsg('Die Datei braucht eine Liste "tools" mit je einer gültigen "action" (http, open_url, text, random).',true);return;}
     const id=String(m.id||f.name.replace(/\.json$/i,'')).toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'plugin';
-    if(plugLocal.some(p=>p.id===id)){plugMsg('Es gibt schon ein Plugin "'+id+'".',true);return;}
+    if(plugLocal.some(p=>p.id===id)){plugMsg('Es gibt schon eine Mod "'+id+'".',true);return;}
     plugLocal.push({id,name:String(m.name||id).slice(0,60),description:String(m.description||'').slice(0,300),keywords:(m.keywords||[]).map(k=>String(k).toLowerCase()),tools,enabled:false});
-    store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin hinzugefügt – noch AUS. Schalte es ein, wenn du ihm vertraust.');
+    store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Mod hinzugefügt – noch AUS. Schalte sie ein, wenn du ihr vertraust.');
   }catch(err){plugMsg('Keine gültige plugin.json.',true);}
 });
 setTimeout(()=>{try{renderPlugins();}catch(e){}},500);
@@ -306,7 +306,7 @@ async function refreshPlugins(manual){
     plugHub=(d.plugins||[]);store.set('ari-plugins-hub',plugHub);
     plugPcOnly=(d.pc_only||[]);store.set('ari-plugins-pconly',plugPcOnly);
     try{renderPlugins();}catch(e){}
-    say('✓ Abgeglichen · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+plugHub.length+' Plugin(s) übernommen'+(plugPcOnly.length?' · '+plugPcOnly.length+' nur am PC':''));
+    say('✓ Abgeglichen · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+plugHub.length+' Mod(s) übernommen'+(plugPcOnly.length?' · '+plugPcOnly.length+' nur am PC':''));
   }catch(e){say('PC nicht erreichbar – Handy und PC im selben WLAN? Es wird automatisch nochmal versucht.',true);}
   finally{setSyncing(false);}
 }
