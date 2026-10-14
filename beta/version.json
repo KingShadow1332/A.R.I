@@ -1,7 +1,7 @@
 {
-    "versionCode":  72,
-    "versionName":  "1.72",
+    "versionCode":  74,
+    "versionName":  "1.74",
     "apk":  "ARI.apk",
-    "notes":  "Planet wie im Hub (Ringspitzen rund), PC-Version als Knopf, Bildschirm bleibt an, Ankuendigungen, Plugins",
+    "notes":  "Benachrichtigungen mit App-Symbol und Bildern (Vorschau am PC).",
     "sizeMb":  6.5
 }
