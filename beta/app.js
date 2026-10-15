@@ -1436,6 +1436,16 @@ $('#gLogin').onclick=()=>{cfg.gClientId=$('#sGid').value.trim();saveCfg();gStart
 $('#gLogout').onclick=()=>{gTok=null;store.set('ari-app-gtok',null);calCache=null;store.set('ari-app-caldata',null);loadSet();loadCalData();};
 $('#sIcs').onchange=()=>{cfg.icsUrl=$('#sIcs').value.trim();saveCfg();calCache=null;store.set('ari-app-caldata',null);loadCalData();};
 $('#sImportBtn').onclick=()=>$('#sImport').click();
+$('#sPullBtn').onclick=async()=>{
+  const msg=$('#sImportMsg'),b=$('#sPullBtn');
+  if(!sync.token||!sync.origin){msg.textContent='Erst mit dem PC koppeln (Tab PC).';return;}
+  b.disabled=true;msg.textContent='Hole die Einstellungen vom PC …';
+  sync.dirtySet=false;sync.dirtyKeys=false;saveSync();   // nichts zum PC schicken - nur holen
+  await syncNow();
+  b.disabled=false;
+  const keys=['groq','gemini','openai','anthropic'].filter(p=>cfg.keys[p]).length;
+  msg.textContent=(sync.last&&Date.now()-sync.last<15000)?'✓ Übernommen: Anbieter '+cfg.provider+', '+keys+' Schlüssel, Sprache und Farben.':'Der PC ist gerade nicht erreichbar – Handy und PC im selben WLAN?';
+};
 $('#sImport').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;const msg=$('#sImportMsg');
   try{
