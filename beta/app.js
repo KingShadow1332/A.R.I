@@ -421,7 +421,7 @@ const PROV={
   groq:{url:'https://api.groq.com/openai/v1/chat/completions',small:'llama-3.1-8b-instant',big:'openai/gpt-oss-20b',oa:true},
   openai:{url:'https://api.openai.com/v1/chat/completions',small:'gpt-4o-mini',big:'gpt-4o',oa:true},
   gemini:{url:'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',small:'gemini-3.6-flash',big:'gemini-3.6-flash',oa:true},
-  anthropic:{url:'https://api.anthropic.com/v1/messages',small:'claude-haiku-4-5-20251001',big:'claude-sonnet-5',oa:false}
+  anthropic:{url:'https://api.anthropic.com/v1/messages',small:'claude-haiku-5-5',big:'claude-sonnet-5-5',oa:false}
 };
 const COMPLEX=/plan|zusammen|erklaer|erklär|schreib|verfass|vergleich|warum|wieso|weshalb|recherch|analys|uebersetz|übersetz|entwirf|idee|mail|reserv|geschichte|gedicht|unterschied/i;
 function sysPrompt(query){
@@ -509,6 +509,9 @@ async function ask(text){track('chat');
     if(small&&!isLimit(e)){try{return await runWithKeys(cfg.provider,keyList(cfg.provider),h,false,text);}catch(e2){e=e2;}}
     if(isLimit(e)&&cfg.fb&&cfg.fbKey&&cfg.fb!==cfg.provider){try{return await runProvider(cfg.fb,cfg.fbKey,h,small,text);}catch(e3){e=e3;}}
     const em=String(e&&e.message||e).toLowerCase();   // kurz sagen, was los ist - nie Fehlercodes
+    try{store.set('ari-last-error',{t:Date.now(),status:e&&e.status||0,msg:String(e&&e.message||e).slice(0,300),prov:cfg.provider});}catch(_){}   // fuer die Fehlersuche (Einstellungen > Daten)
+    if(e&&e.status===404||/not.?found|model.*(exist|available|deprecated|retired)/.test(em))return 'Das KI-Modell ist nicht mehr verfügbar, Sir – bitte in den Einstellungen einen anderen Anbieter wählen oder die App aktualisieren.';
+    if(/credit|balance|billing|insufficient|quota/.test(em)&&!isLimit(e))return 'Beim KI-Anbieter ist das Guthaben aufgebraucht, Sir – bitte dort aufladen oder einen anderen Anbieter wählen.';
     if(isLimit(e))return 'Das Limit ist erreicht, Sir – bitte gleich nochmal versuchen.';
     if(/api key|api_key|unauthorized|401|403|permission|authentication/.test(em))return 'Mit dem KI-Schlüssel stimmt etwas nicht, Sir – bitte in den Einstellungen prüfen.';
     if(/timeout|timed out|network|failed to fetch|connection|resolve/.test(em))return 'Keine Verbindung zur KI, Sir – bitte gleich nochmal versuchen.';
@@ -520,6 +523,11 @@ async function ask(text){track('chat');
 function addMsg(who,text,lk){
   const d=document.createElement('div');d.className='m '+(who==='u'?'u':'a');const tx=document.createElement('div');tx.textContent=text;d.appendChild(tx);d._tx=tx;
   (lk||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;d.appendChild(a);});
+  const cp=document.createElement('button');cp.type='button';cp.className='cp';cp.textContent='⧉ KOPIEREN';cp.setAttribute('aria-label','Nachricht kopieren');
+  cp.onclick=async e=>{e.stopPropagation();const t=String(tx.textContent||'');let ok=false;
+    try{await navigator.clipboard.writeText(t);ok=true;}catch(err){try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove();}catch(e2){}}
+    cp.textContent=ok?'✓ KOPIERT':'Kopieren nicht möglich';setTimeout(()=>{cp.textContent='⧉ KOPIEREN';},1600);};
+  d.appendChild(cp);
   $('#log').appendChild(d);$('#log').scrollTop=1e9;return d;
 }
 // Nur "bereit", wenn wirklich ein KI-Schluessel da ist
@@ -611,7 +619,7 @@ async function send(text){
   addMsg('u',text);hist.push({role:'user',content:learned||sfApply(text)});const w=addMsg('a','…');orbBusy(true);
   const reply=await ask(learned||sfApply(text));
   if(reply===''){w.remove();orbBusy(false);hist.pop();return;}   // stiller Fehler: kein Fehlertext, keine Sprachausgabe
-  w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.appendChild(a);});
+  w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.insertBefore(a,w.querySelector('.cp'));});
   hist.push({role:'assistant',content:reply});if(hist.length>20)hist.splice(0,hist.length-20);
   $('#log').scrollTop=1e9;orbBusy(false);speak(reply);
 }
@@ -1469,6 +1477,7 @@ $('#brImportBtn').onclick=()=>$('#brImport').click();
 $('#brImport').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());const arr=Array.isArray(d)?d:(d.nodes||[]);
   arr.forEach(n=>{const t=String(n.text||'').trim();if(t.length>=4&&!brain.some(m=>m.text.toLowerCase()===t.toLowerCase()))brain.push({id:String(n.id||Date.now()+Math.random()),text:t,cat:String(n.cat||n.category||'Wissen').slice(0,30),ts:Date.now()});});
   saveBrain();renderBrain();}catch(er){}e.target.value='';};
+$('#lastErr').onclick=()=>{const e=store.get('ari-last-error',null);$('#lastErrMsg').textContent=e?(new Date(e.t).toLocaleString('de-DE')+' · '+e.prov+(e.status?' · '+e.status:'')+' · '+e.msg):'Noch kein Fehler gespeichert.';};
 $('#wipe').onclick=()=>{if(!confirm('Alle Daten dieser App auf diesem Handy löschen (Schlüssel, Gehirn, gespeicherte PCs)?'))return;
   ['ari-app-cfg','ari-app-brain','ari-app-pcs','ari-app-theme'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});location.reload();};
 
