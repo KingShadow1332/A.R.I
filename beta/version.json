@@ -1,7 +1,7 @@
 {
-    "versionCode":  80,
-    "versionName":  "1.80",
+    "versionCode":  81,
+    "versionName":  "1.81",
     "apk":  "ARI.apk",
-    "notes":  "Vorhandene Benachrichtigungen werden nach dem Koppeln und alle 5 Minuten an den PC geschickt.",
+    "notes":  "Chat-Nachrichten kopieren, KI-Modelle aktualisiert, Loeschen am PC schliesst die Meldung auch am Handy zuverlaessiger.",
     "sizeMb":  6.5
 }
