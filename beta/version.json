@@ -1,7 +1,7 @@
 {
-    "versionCode":  79,
-    "versionName":  "1.79",
+    "versionCode":  80,
+    "versionName":  "1.80",
     "apk":  "ARI.apk",
-    "notes":  "Einstellungen: Suche nach Bedeutung (findet alles, auch mit eigenen Worten), Sprungzeile zum Tab PC.",
+    "notes":  "Vorhandene Benachrichtigungen werden nach dem Koppeln und alle 5 Minuten an den PC geschickt.",
     "sizeMb":  6.5
 }
