@@ -1501,26 +1501,112 @@ const saveSync=()=>store.set('ari-app-sync',sync);
     const known=GROUPS.flatMap(x=>x[1]),rest=sec.querySelector(':scope > .set-group[data-g="4"]');
     all.forEach(dd=>{if(!known.some(k=>title(dd).includes(k))&&dd.parentNode!==rest)rest.appendChild(dd);});
   }
-  const NORM=t=>String(t||'').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
-  const words=t=>NORM(t).split(/[^a-z0-9]+/).filter(Boolean);
-  const match=(ws,toks)=>toks.every(q=>ws.some(w=>w.startsWith(q)));
-  const label=f=>[...f.querySelectorAll('label,.btn,option')].map(e=>e.textContent).concat([...f.querySelectorAll('input[placeholder]')].map(e=>e.getAttribute('placeholder'))).join(' ');
-  function filter(){
-    const toks=words((document.getElementById('setSearch')||{}).value||'');let any=false;
-    sec.querySelectorAll('.set-group').forEach(g=>{
-      let vis=0;
-      g.querySelectorAll(':scope > details.set-section').forEach(d=>{
-        const tw=words((d.querySelector('summary')||{}).textContent),fields=[...d.querySelectorAll('.set,.panel-h')];
-        const tHit=!toks.length||match(tw,toks);let fh=0;
-        fields.forEach(f=>{f.classList.remove('set-fhide');if(!toks.length)return;f._hit=match(words(label(f)).concat(tw),toks);if(f._hit)fh++;});
-        const hit=!toks.length||tHit||fh>0;
-        if(toks.length&&hit&&!tHit)fields.forEach(f=>f.classList.toggle('set-fhide',!f._hit));
-        d.classList.toggle('set-hide',!hit);
-        if(hit&&d.style.display!=='none')vis++;
-        if(toks.length&&hit){d.open=true;d.dataset.auto='1';}else if(!toks.length&&d.dataset.auto){d.open=false;delete d.dataset.auto;}
-      });
-      g.classList.toggle('empty',vis===0);if(vis)any=true;
+  // Stichwoerter je Abschnitt (auch fuer Abschnitte im Tab PC): so findet man Einstellungen mit eigenen Worten ("pc verbinden" -> koppeln, uebertragen ...)
+  const KW={
+    'STIMME':'sprechen vorlesen antworten stimme edge katja ton audio tempo',
+    'HÖREN':'weckwort wake word zuhören zuhoeren hintergrund mikrofon immer',
+    'HANDY-BENACHRICHTIGUNGEN':'meldungen weiterleiten pc whatsapp benachrichtigungszugriff übertragen uebertragen senden',
+    'HINTERGRUND-BETRIEB':'termine mails hintergrund erinnerung akku',
+    'KI-ANBIETER':'gehirn ki schlüssel api groq gemini openai claude modell sprache anbieter',
+    'VOM PC ÜBERNEHMEN':'pc übertragen uebertragen einstellungen holen import schlüssel übernehmen synchronisieren verbinden',
+    'MODS':'plugins erweiterungen installieren zusatzfunktionen aktivieren',
+    'APP-UPDATE':'aktualisieren version beta neu herunterladen',
+    'DATEN':'gehirn export import löschen zurücksetzen einführung',
+    'STATISTIK':'anonym daten nutzung',
+    'UNTERSTÜTZEN':'spenden kaffee',
+    'DEV':'entwickler test',
+    'SYNCHRONISATION':'pc verbinden koppeln kopplung übertragen uebertragen sync synchronisieren google kalender ical verbindung',
+    'MIT DEM PC VERBINDEN':'koppeln kopplung koppelcode qr code scannen pc handy verbinden wlan übertragen uebertragen steuern bildschirm',
+    "SO GEHT'S":'hilfe anleitung erklärung anfang'
+  };
+  const kwOf=d=>{const t=title(d);const k=Object.keys(KW).find(x=>t.includes(x));return k?KW[k]:'';};
+
+  const SF_SYN = [
+    ['verbinden', 'verbindung', 'koppeln', 'kopplung', 'koppelcode', 'pairen', 'anbinden', 'anmelden', 'login', 'einloggen', 'verknuepfen'],
+    ['uebertragen', 'uebernehmen', 'synchronisieren', 'sync', 'abgleichen', 'importieren', 'exportieren', 'senden', 'schicken', 'weiterleiten', 'teilen'],
+    ['stimme', 'sprechen', 'sprache', 'sprachausgabe', 'vorlesen', 'reden', 'edge', 'katja', 'conrad'],
+    ['leise', 'leiser', 'laut', 'lauter', 'lautstaerke', 'volume', 'ton', 'audio', 'sound', 'klang'],
+    ['ausschalten', 'abschalten', 'deaktivieren', 'ausblenden', 'verstecken', 'stumm'],
+    ['einschalten', 'anschalten', 'aktivieren', 'einblenden', 'anzeigen', 'zeigen'],
+    ['farbe', 'farben', 'design', 'theme', 'aussehen', 'optik', 'akzent', 'dunkel', 'hell'],
+    ['hilfe', 'problem', 'fehler', 'log', 'protokoll', 'diagnose', 'kaputt', 'geht'],
+    ['loeschen', 'entfernen', 'zuruecksetzen', 'reset', 'leeren'],
+    ['benachrichtigung', 'benachrichtigungen', 'meldung', 'meldungen', 'nachricht', 'nachrichten', 'push', 'hinweis', 'ansage', 'ansagen'],
+    ['handy', 'smartphone', 'telefon', 'mobil'],
+    ['pc', 'computer', 'rechner', 'laptop'],
+    ['musik', 'spotify', 'lied', 'song', 'player', 'wiedergabe'],
+    ['mail', 'email', 'mails', 'postfach', 'gmail', 'yahoo', 'post'],
+    ['termin', 'termine', 'kalender', 'event', 'erinnerung'],
+    ['start', 'starten', 'autostart', 'windows', 'hochfahren'],
+    ['taste', 'hotkey', 'tastenkuerzel', 'shortcut', 'tastatur'],
+    ['ki', 'gehirn', 'anbieter', 'modell', 'schluessel', 'key', 'api', 'groq', 'gemini', 'openai', 'claude'],
+    ['mikrofon', 'mikro', 'zuhoeren', 'hoeren', 'weckwort', 'aufnahme'],
+    ['aktualisieren', 'update', 'version', 'neu', 'herunterladen'],
+    ['spiel', 'spiele', 'spielmodus', 'game', 'gaming'],
+    ['abmelden', 'ausloggen', 'logout', 'trennen', 'entkoppeln', 'widerrufen'],
+    ['bearbeiten', 'aendern', 'editieren', 'anpassen', 'konfigurieren'],
+    ['spenden', 'kaffee', 'unterstuetzen']
+  ];
+  const SF_NORM = t => String(t || '').toLowerCase().replace(/[äÄ]/g, 'ae').replace(/[öÖ]/g, 'oe').replace(/[üÜ]/g, 'ue').replace(/ß/g, 'ss');
+  const sfWords = t => SF_NORM(t).split(/[^a-z0-9]+/).filter(Boolean);
+  // Suchwort -> alle gleichbedeutenden Woerter (verbinden = koppeln = Verbindung ...)
+  function sfAlts(tok) {
+    const a = new Set([tok]);
+    SF_SYN.forEach(g => { if (g.some(x => x === tok || (tok.length >= 3 && x.startsWith(tok)))) g.forEach(x => a.add(x)); });
+    return [...a];
+  }
+  // Ein Wort passt, wenn es mit dem Suchwort BEGINNT oder denselben Wortstamm hat (verbinden ~ Verbindung); jedes Suchwort muss irgendwo vorkommen
+  const SF_STOP = new Set('der die das den dem des ein eine einen einem einer ich du er sie es wir mein meine meinen meiner dein deine wie was wo wann warum wieso wer welche welcher mit auf fuer von vom zu zum zur im in am an aus bei nach um und oder aber nicht kein keine mehr mal nur auch noch schon sehr ist sind war wird kann koennen soll will moechte moechten bitte aendern aendere einstellen einstellung einstellungen machen mache geben gib holen hol finden suchen hier da dann damit wenn dass ob man geht'.split(' '));
+  const sfTokens = q => { const all = sfWords(q), k = all.filter(w => !SF_STOP.has(w)); return k.length ? k : all; };   // Fuellwoerter ("wie", "vom", "aendern" ...) zaehlen nicht
+  // min = wie viele Suchwoerter mindestens passen muessen (null = alle)
+  const sfMatch = (words, toks, min) => { let n = 0; for (const q of toks) { const alts = sfAlts(q); if (words.some(w => alts.some(x => w.startsWith(x) || (x.length >= 5 && w.length >= 5 && x.slice(0, 5) === w.slice(0, 5))))) n++; } return n >= (min == null ? toks.length : Math.max(1, Math.min(min, toks.length))) && n > 0; };
+  const sfFieldText = f => f.textContent + ' ' + [...f.querySelectorAll('[placeholder]')].map(e => e.getAttribute('placeholder')).join(' ') + ' ' + [...f.querySelectorAll('[title]')].map(e => e.getAttribute('title')).join(' ');
+
+  // Auch Bedienelemente ausserhalb eines Einstellungs-Feldes (einzelne Haken/Knoepfe) einzeln auffindbar machen
+  function sfFields(d, sel) {
+    const base = [...d.querySelectorAll(sel)], extra = new Set();
+    d.querySelectorAll('input,select,button,textarea').forEach(c => {
+      if (c.type === 'hidden' || c.closest(sel)) return;
+      let e = c.closest('label');
+      if (!e) { const p = c.parentElement; e = (!p || p === d || (p.className || '').toString().indexOf('set-section-body') >= 0 || p.querySelectorAll('input,select,button,textarea').length > 3) ? c : p; }   // einzeln stehende Knoepfe/Haken: das Element selbst
+      if (!e || e === d || e.tagName === 'SUMMARY' || e.querySelector('summary') || base.some(b => e.contains(b))) return;
+      extra.add(e);
     });
+    return base.concat([...extra]);
+  }
+
+  const words=sfWords,match=sfMatch;
+  function filter(){
+    const toks=sfTokens((document.getElementById('setSearch')||{}).value||''),rel=Math.ceil(toks.length/2);
+    const apply=(weak,min)=>{
+      let any=false;
+      sec.querySelectorAll('.set-group').forEach(g=>{
+        let vis=0;
+        g.querySelectorAll(':scope > details.set-section').forEach(d=>{
+          const tw=words((d.querySelector('summary')||{}).textContent),fields=sfFields(d,'.set,.panel-h');
+          const tHit=!toks.length||match(tw.concat(words(kwOf(d))),toks,min);let fh=0;
+          fields.forEach(f=>{f.classList.remove('set-fhide');if(!toks.length)return;f._hit=match(words(sfFieldText(f)).concat(tw),toks,min);if(f._hit)fh++;});
+          let hit=!toks.length||tHit||fh>0;
+          if(toks.length&&hit&&!tHit)fields.forEach(f=>f.classList.toggle('set-fhide',!f._hit));
+          if(toks.length&&!hit&&weak&&match(words(d.textContent).concat(tw),toks,min))hit=true;
+          d.classList.toggle('set-hide',!hit);
+          if(hit&&d.style.display!=='none')vis++;
+          if(toks.length&&hit){d.open=true;d.dataset.auto='1';}else if(!toks.length&&d.dataset.auto){d.open=false;delete d.dataset.auto;}
+        });
+        g.classList.toggle('empty',vis===0);if(vis)any=true;
+      });
+      // Treffer in anderen Tabs (z. B. Kopplung im Tab PC): als Sprungzeilen unter dem Suchfeld
+      let xh=document.getElementById('setXhits');if(!xh){xh=document.createElement('div');xh.id='setXhits';const nh0=document.getElementById('setNoHit');nh0.parentNode.insertBefore(xh,nh0);}
+      xh.textContent='';let xAny=false;
+      if(toks.length)document.querySelectorAll('#t-pc details.set-section').forEach(d=>{
+        const tw=words((d.querySelector('summary')||{}).textContent);
+        if(!(match(tw.concat(words(kwOf(d))),toks,min)||(weak&&match(words(d.textContent).concat(tw),toks,min))))return;
+        xAny=true;const b=document.createElement('button');b.type='button';b.className='btn xhit';
+        b.innerHTML='<span>'+((d.querySelector('summary')||{}).textContent||'').trim()+'</span><small>im Tab PC öffnen →</small>';
+        b.onclick=()=>{goTab('pc');d.open=true;setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),150);};xh.appendChild(b);});
+      return any||xAny;
+    };
+    let any=apply(false,null);if(toks.length>1&&!any)any=apply(false,rel);if(toks.length&&!any)any=apply(true,null);if(toks.length>1&&!any)any=apply(true,rel);
     const nh=document.getElementById('setNoHit');if(nh)nh.style.display=(toks.length&&!any)?'block':'none';
   }
   organize();
