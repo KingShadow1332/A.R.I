@@ -1,7 +1,7 @@
 {
-    "versionCode":  77,
-    "versionName":  "1.77",
+    "versionCode":  78,
+    "versionName":  "1.78",
     "apk":  "ARI.apk",
-    "notes":  "Edge-Stimme repariert (neues Anmeldeverfahren von Microsoft). Einstellungen: Suche deckend, Vom PC uebernehmen per Knopf.",
+    "notes":  "Einstellungen: Suchfeld durchsichtig wie am PC.",
     "sizeMb":  6.5
 }
