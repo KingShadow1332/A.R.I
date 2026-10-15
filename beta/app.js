@@ -230,10 +230,40 @@ async function runDecl(tool,args){
   }
   throw new Error('Unbekannte Aktion');
 }
+// Direkt auf dem Handy ausfuehren (Maps oeffnen, App starten, Timer stellen). Gibt null zurueck, wenn das hier nicht geht (Web/aeltere App) - dann greift die Link-Variante.
+function parseWhen(w){
+  w=String(w||'').trim();if(!w)return 0;
+  let m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/.exec(w);if(m)return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]).getTime();
+  m=/^(\d{1,2})(?::|\.|h)?(\d{2})?\s*(?:uhr)?$/i.exec(w);if(!m)return 0;
+  const d=new Date();d.setHours(+m[1],+(m[2]||0),0,0);if(d.getTime()<Date.now()-30000)d.setDate(d.getDate()+1);return d.getTime();
+}
+async function nativeAction(name,a){
+  const W=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;if(!W)return null;
+  try{
+    if(name==='open_app'){const r=await W.openApp({name:String(a.name||'')});return (r&&r.label||a.name)+' ist geoeffnet.';}
+    if(name==='set_timer'){const sec=Math.round(Number(a.minutes)*60);if(!(sec>=1))return 'Keine gueltige Dauer.';await W.setTimer({seconds:sec,label:String(a.label||'A.R.I').slice(0,40)});
+      return 'Timer fuer '+(sec>=60?Math.round(sec/60*10)/10+' Minuten':sec+' Sekunden')+' ist gestellt (in der Uhr-App des Handys).';}
+    if(name==='maps_route'){
+      const d=String(a.destination||'').trim();if(!d)return 'Kein Ziel.';
+      const mode={driving:'d',walking:'w',bicycling:'b'}[a.mode];
+      const url=(!a.origin&&mode)?'google.navigation:q='+encodeURIComponent(d)+'&mode='+mode
+        :'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode='+(({driving:1,walking:1,bicycling:1,transit:1})[a.mode]?a.mode:'driving')+(a.origin?'&origin='+encodeURIComponent(a.origin):'');
+      const pkg='com.google.android.apps.maps',at=parseWhen(a.when);
+      if(at>Date.now()+20000){
+        const r=await W.scheduleOpen({url,pkg,at,title:'Route nach '+d});
+        const t=new Date(at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),day=new Date(at).toDateString()===new Date().toDateString()?'':' morgen/am '+new Date(at).toLocaleDateString('de-DE');
+        return 'Geplant: Um '+t+' Uhr'+day+' startet Google Maps von selbst mit der Route nach '+d+'.'+(r&&r.overlay===false?' Hinweis fuer den Nutzer: Damit Maps sich von selbst oeffnet, muss A.R.I unter Android "Ueber anderen Apps anzeigen" duerfen - sonst kommt zur Uhrzeit eine Benachrichtigung zum Antippen.':'');
+      }
+      await W.openUrl({url,pkg});return 'Google Maps ist geoeffnet mit der Route nach '+d+'.';
+    }
+  }catch(e){return null;}
+  return null;
+}
 async function runToolAsync(name,a){
   const pt=pluginTools().find(t=>t.name===name);
   if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Die Mod hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass die Mod gerade nicht geklappt hat - ohne technische Details.';}}
   if(name==='create_plugin')return createPluginFromAi(a||{});
+  if(name==='maps_route'||name==='open_app'||name==='set_timer'){const r=await nativeAction(name,a||{});if(r!==null)return r;}
   return runTool(name,a);
 }
 // A.R.I baut hier selbst ein (deklaratives) Plugin: immer erst AUS - der Nutzer prueft es und schaltet es ein.
@@ -314,7 +344,9 @@ const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
   {name:'forget',description:'Loescht Erinnerungen, die zum Suchbegriff passen.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
-  {name:'maps_route',description:'Plant eine Route (Auto/zu Fuss/Fahrrad/OePNV) in Google Maps.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']}},required:['destination']}},
+  {name:'maps_route',description:'Oeffnet Google Maps DIREKT mit der Route (die App startet selbst - nie einen Link nennen). Mit "when" (z.B. "16:00" oder "2026-10-20 08:30") startet Maps erst zu dieser Uhrzeit von selbst, sonst sofort.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']},when:{type:'string',description:'Optional: Uhrzeit HH:MM (heute, sonst morgen) oder YYYY-MM-DD HH:MM, zu der Maps starten soll'}},required:['destination']}},
+  {name:'open_app',description:'Startet eine auf dem Handy installierte App (z.B. Spotify, WhatsApp, Kamera, Einstellungen).',parameters:{type:'object',properties:{name:{type:'string'}},required:['name']}},
+  {name:'set_timer',description:'Stellt einen Timer in der Uhr-App des Handys (laeuft auch weiter, wenn A.R.I zu ist).',parameters:{type:'object',properties:{minutes:{type:'number',description:'Dauer in Minuten (auch Kommazahlen, z.B. 0.5)'},label:{type:'string'}},required:['minutes']}},
   {name:'find_restaurant',description:'Sucht ein Restaurant und bereitet die Tischreservierung vor (Personenzahl/Zeit vorausgefuellt). Bucht nicht selbst - der Nutzer bestaetigt auf der Seite.',parameters:{type:'object',properties:{query:{type:'string'},people:{type:'integer'},when:{type:'string',description:'YYYY-MM-DD HH:MM'}},required:['query']}}
 ];
 /* ---------- Streaming-Dienste (wie am PC im Gehirn ankreuzbar) ---------- */
@@ -400,7 +432,7 @@ function sysPrompt(query){
   const mem=nodes.slice(0,30).map(n=>'- ['+n.cat+'] '+n.text).join('\n');
   const now=new Date().toLocaleString('de-DE',{dateStyle:'full',timeStyle:'short'});
   return 'Du bist A.R.I, der persoenliche Sprachassistent des Nutzers - kurz, freundlich, direkt (meist 1-3 Saetze). Antworte in der Sprache des Nutzers ('+cfg.lang+'). '+
-   'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen planen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
+   'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen planen (Google Maps oeffnet sich DIREKT, auch zu einer genannten Uhrzeit - nenne niemals einen Link dafuer), Apps oeffnen, Timer stellen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
    'Aktuell: '+now+'. Speichere Dauerhaftes ueber den Nutzer mit dem Werkzeug remember; erfinde nichts, Fragen ueber den Nutzer beantwortest du nur aus dem Gedaechtnis.'+(mem?'\n\nGEDAECHTNIS:\n'+mem:'');
 }
 async function post(url,headers,body){
@@ -1020,10 +1052,12 @@ async function pcSimPoll(){
       const tag=$('#pcSimNotifTag'),list=$('#pcSimNotifList');
       if(tag)tag.textContent=items.length?items.length+' NEU':'KEINE';
       const sig=items.map(it=>it.id).join(',');
-      if(list&&list.dataset.sig!==sig){list.dataset.sig=sig;list.innerHTML=items.length?items.map(it=>{
+      const sig2=sig+'|'+items.map(it=>(it.has_pic?'p':'')+(it.has_icon?'i':'')+(it.has_vid?'v':'')).join('');
+      if(list&&list.dataset.sig!==sig2){list.dataset.sig=sig2;list.innerHTML=items.length?items.map(it=>{
         const color=pcSimColor(it.app||'?'),initial=(String(it.app||'?').charAt(0)||'?').toUpperCase();
-        return `<li class="pcsim-row"><span class="badge" style="--rc:${color}">${escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span></span></li>`;
-      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';}   // nur neu zeichnen, wenn sich die Liste geaendert hat (sonst flackert sie bei jedem Abruf)
+        return `<li class="pcsim-row ncard" data-nid="${escHtml(it.id)}"><span class="badge" style="--rc:${color}">${it.has_icon?`<img data-nimg="/phone/notif-icon?app=${encodeURIComponent(it.app||'')}" alt="">`:escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span>${it.has_vid&&!it.has_pic?`<span class="npic" data-nvid="${escHtml(it.id)}"><b>▶ Video</b></span>`:''}${it.has_pic?`<span class="npic" data-npic="${escHtml(it.id)}"${it.has_vid?` data-nvid="${escHtml(it.id)}"`:''}><img data-nimg="/phone/notif-pic?id=${encodeURIComponent(it.id)}" alt="">${it.video?'<b>▶</b>':''}</span>`:''}</span><button type="button" class="ndel" data-ndel="${escHtml(it.id)}" aria-label="Entfernen">✕</button></li>`;
+      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';
+        list.querySelectorAll('img[data-nimg]').forEach(im=>{authImg(im.dataset.nimg).then(u=>{if(u)im.src=u;else if(im.parentNode.classList.contains('badge'))im.parentNode.textContent=initialOf(im.parentNode);});});}   // nur neu zeichnen, wenn sich die Liste geaendert hat (sonst flackert sie bei jedem Abruf)
     }
     pcSimRenderCal();
   }catch(e){}
@@ -1434,6 +1468,76 @@ $('#wipe').onclick=()=>{if(!confirm('Alle Daten dieser App auf diesem Handy lös
 let sync=store.get('ari-app-sync',{origin:'',token:'',deleted:[],dirtyKeys:false,dirtySet:false,last:0,groqAll:[],pc:{}});
 const saveSync=()=>store.set('ari-app-sync',sync);
 // Handy und PC muessen im selben WLAN sein - keine Cloud/Tunnel-Adresse wird akzeptiert.
+/* ---------- Einstellungen: Kategorien + genaue Suche (wie am PC) ---------- */
+(function(){
+  const GROUPS=[
+    ['SPRACHE & TON',['STIMME','HÖREN'],'Stimme, Vorlesen und Weckwort'],
+    ['BENACHRICHTIGUNGEN',['HANDY-BENACHRICHTIGUNGEN','HINTERGRUND-BETRIEB'],'Meldungen an den PC, Termine und Mails im Hintergrund'],
+    ['KONTEN & VERBINDUNGEN',['KI-ANBIETER','VOM PC ÜBERNEHMEN'],'Das „Gehirn“ von A.R.I und Einstellungen vom PC'],
+    ['ERWEITERUNGEN',['MODS'],'Mods installieren und verwalten'],
+    ['SONSTIGES',['APP-UPDATE','DATEN','STATISTIK','UNTERSTÜTZEN','DEV'],'Update, Daten, Unterstützen und Entwickler-Werkzeuge']
+  ];
+  const sec=document.getElementById('t-set');if(!sec)return;
+  const title=d=>((d.querySelector(':scope > summary')||{}).textContent||'').trim().toUpperCase();
+  function organize(){
+    const all=[...sec.querySelectorAll(':scope > details.set-section, :scope > .set-group > details.set-section')];
+    let anchor=document.getElementById('setNoHit');
+    GROUPS.forEach(([name,keys,desc],gi)=>{
+      let g=sec.querySelector(':scope > .set-group[data-g="'+gi+'"]');
+      if(!g){g=document.createElement('div');g.className='set-group';g.dataset.g=gi;g.innerHTML='<div class="set-group-h">'+name+'</div><div class="set-group-d">'+desc+'</div>';anchor.insertAdjacentElement('afterend',g);}
+      anchor=g;
+      keys.forEach(k=>{const dd=all.find(x=>title(x).includes(k));if(dd&&dd.parentNode!==g)g.appendChild(dd);});
+    });
+    const known=GROUPS.flatMap(x=>x[1]),rest=sec.querySelector(':scope > .set-group[data-g="4"]');
+    all.forEach(dd=>{if(!known.some(k=>title(dd).includes(k))&&dd.parentNode!==rest)rest.appendChild(dd);});
+  }
+  const NORM=t=>String(t||'').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+  const words=t=>NORM(t).split(/[^a-z0-9]+/).filter(Boolean);
+  const match=(ws,toks)=>toks.every(q=>ws.some(w=>w.startsWith(q)));
+  const label=f=>[...f.querySelectorAll('label,.btn,option')].map(e=>e.textContent).concat([...f.querySelectorAll('input[placeholder]')].map(e=>e.getAttribute('placeholder'))).join(' ');
+  function filter(){
+    const toks=words((document.getElementById('setSearch')||{}).value||'');let any=false;
+    sec.querySelectorAll('.set-group').forEach(g=>{
+      let vis=0;
+      g.querySelectorAll(':scope > details.set-section').forEach(d=>{
+        const tw=words((d.querySelector('summary')||{}).textContent),fields=[...d.querySelectorAll('.set,.panel-h')];
+        const tHit=!toks.length||match(tw,toks);let fh=0;
+        fields.forEach(f=>{f.classList.remove('set-fhide');if(!toks.length)return;f._hit=match(words(label(f)).concat(tw),toks);if(f._hit)fh++;});
+        const hit=!toks.length||tHit||fh>0;
+        if(toks.length&&hit&&!tHit)fields.forEach(f=>f.classList.toggle('set-fhide',!f._hit));
+        d.classList.toggle('set-hide',!hit);
+        if(hit&&d.style.display!=='none')vis++;
+        if(toks.length&&hit){d.open=true;d.dataset.auto='1';}else if(!toks.length&&d.dataset.auto){d.open=false;delete d.dataset.auto;}
+      });
+      g.classList.toggle('empty',vis===0);if(vis)any=true;
+    });
+    const nh=document.getElementById('setNoHit');if(nh)nh.style.display=(toks.length&&!any)?'block':'none';
+  }
+  organize();
+  const si=document.getElementById('setSearch');if(si)si.addEventListener('input',filter);
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.classList||!d.classList.contains('set-section')||!d.open||!sec.contains(d))return;
+    if(((document.getElementById('setSearch')||{}).value||'').trim())return;sec.querySelectorAll('details.set-section[open]').forEach(o=>{if(o!==d)o.open=false;});},true);
+})();
+// Bilder/Symbole vom PC brauchen den Geraete-Token: laden und als Blob-Adresse merken
+const _authImgs=new Map();
+async function authImg(path){
+  if(_authImgs.has(path))return _authImgs.get(path);
+  try{const r=await fetch(sync.origin+path,{headers:{'X-Ari-Token':sync.token}});if(!r.ok)return '';const u=URL.createObjectURL(await r.blob());_authImgs.set(path,u);return u;}catch(e){return '';}
+}
+const initialOf=b=>{const row=b.closest('.pcsim-row'),t=row&&row.querySelector('.t1');return ((t&&t.textContent||'?').charAt(0)||'?').toUpperCase();};
+function showNotifPic(src,video){
+  let v=document.getElementById('ariPicView');if(v)v.remove();
+  v=document.createElement('div');v.id='ariPicView';v.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9)';
+  v.innerHTML=video?'<video src="'+src+'" controls autoplay playsinline style="max-width:100vw;max-height:100vh"></video><button type="button" style="position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:1px solid #fff5;background:#0008;color:#fff;font-size:16px">✕</button>':'<img src="'+src+'" alt="" style="max-width:100vw;max-height:100vh;object-fit:contain">';v.onclick=ev=>{if(!video||ev.target.tagName!=='VIDEO')v.remove();};document.body.appendChild(v);
+}
+document.addEventListener('click',async e=>{
+  const del=e.target.closest('[data-ndel]'),pic=e.target.closest('[data-npic],[data-nvid]');
+  if(pic){
+    if(pic.dataset.nvid){const u=await authImg('/phone/notif-video?id='+encodeURIComponent(pic.dataset.nvid));if(u){showNotifPic(u,true);return;}}
+    const im=pic.querySelector('img');if(im&&im.src)showNotifPic(im.src);return;}
+  if(del){const id=del.dataset.ndel;const row=del.closest('.pcsim-row');if(row)row.remove();
+    try{await fetch(sync.origin+'/phone/api/notify-dismiss',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({id})});}catch(err){}}
+});
 async function hubFetch(path,opts){
   // Zeitlimit: antwortet der PC nicht (anderes WLAN, PC aus), darf das Drehzeichen nicht ewig drehen
   const ms=(opts&&opts.timeout)||10000,ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
