@@ -193,7 +193,7 @@ function plugActive(){const off=plugOff();return [...plugHub.map(p=>Object.assig
 function pluginTools(){
   const out=[];
   plugActive().forEach(p=>(p.tools||[]).forEach(t=>{if(!t||!t.name||!t.action)return;
-    out.push({name:(String(p.id).replace(/[^A-Za-z0-9_]/g,'_')+'_'+t.name).slice(0,60),description:'[Plugin '+p.name+'] '+String(t.description||'').slice(0,600),parameters:t.input_schema||{type:'object',properties:{}},_t:t});}));
+    out.push({name:(String(p.id).replace(/[^A-Za-z0-9_]/g,'_')+'_'+t.name).slice(0,60),description:'[Mod '+p.name+'] '+String(t.description||'').slice(0,600),parameters:t.input_schema||{type:'object',properties:{}},_t:t});}));
   return out;
 }
 const allTools=()=>[...TOOLS,...pluginTools().map(t=>({name:t.name,description:t.description,parameters:t.parameters})),CREATE_PLUGIN_TOOL];
@@ -218,7 +218,7 @@ async function runDecl(tool,args){
     const url=dSub(act.url||'',args,true);
     if(!/^https?:\/\//i.test(url))return 'Ungueltige Adresse.';
     let host='';try{host=new URL(url).hostname;}catch(e){return 'Ungueltige Adresse.';}
-    if(/^(localhost|.*\.local|.*\.internal)$/i.test(host)||/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/.test(host))return 'Adressen im eigenen Netz sind fuer Plugins gesperrt.';
+    if(/^(localhost|.*\.local|.*\.internal)$/i.test(host)||/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$)/.test(host))return 'Adressen im eigenen Netz sind fuer Mods gesperrt.';
     const method=String(act.method||'GET').toUpperCase();if(method!=='GET'&&method!=='POST')return 'Nur GET oder POST.';
     const headers={};Object.entries(act.headers||{}).forEach(([k,v])=>headers[k]=dSub(v,args));
     const init={method,headers,redirect:'error'};
@@ -230,26 +230,55 @@ async function runDecl(tool,args){
   }
   throw new Error('Unbekannte Aktion');
 }
+// Direkt auf dem Handy ausfuehren (Maps oeffnen, App starten, Timer stellen). Gibt null zurueck, wenn das hier nicht geht (Web/aeltere App) - dann greift die Link-Variante.
+function parseWhen(w){
+  w=String(w||'').trim();if(!w)return 0;
+  let m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/.exec(w);if(m)return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]).getTime();
+  m=/^(\d{1,2})(?::|\.|h)?(\d{2})?\s*(?:uhr)?$/i.exec(w);if(!m)return 0;
+  const d=new Date();d.setHours(+m[1],+(m[2]||0),0,0);if(d.getTime()<Date.now()-30000)d.setDate(d.getDate()+1);return d.getTime();
+}
+async function nativeAction(name,a){
+  const W=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;if(!W)return null;
+  try{
+    if(name==='open_app'){const r=await W.openApp({name:String(a.name||'')});return (r&&r.label||a.name)+' ist geoeffnet.';}
+    if(name==='set_timer'){const sec=Math.round(Number(a.minutes)*60);if(!(sec>=1))return 'Keine gueltige Dauer.';await W.setTimer({seconds:sec,label:String(a.label||'A.R.I').slice(0,40)});
+      return 'Timer fuer '+(sec>=60?Math.round(sec/60*10)/10+' Minuten':sec+' Sekunden')+' ist gestellt (in der Uhr-App des Handys).';}
+    if(name==='maps_route'){
+      const d=String(a.destination||'').trim();if(!d)return 'Kein Ziel.';
+      // Routenansicht oeffnen (Nutzer drueckt in Maps selbst auf "Start") - nicht google.navigation:, das startet die Navigation sofort
+      const url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode='+(({driving:1,walking:1,bicycling:1,transit:1})[a.mode]?a.mode:'driving')+(a.origin?'&origin='+encodeURIComponent(a.origin):'');
+      const pkg='com.google.android.apps.maps',at=parseWhen(a.when);
+      if(at>Date.now()+20000){
+        const r=await W.scheduleOpen({url,pkg,at,title:'Route nach '+d});
+        const t=new Date(at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),day=new Date(at).toDateString()===new Date().toDateString()?'':' morgen/am '+new Date(at).toLocaleDateString('de-DE');
+        return 'Geplant: Um '+t+' Uhr'+day+' startet Google Maps von selbst mit der Route nach '+d+'.'+(r&&r.overlay===false?' Hinweis fuer den Nutzer: Damit Maps sich von selbst oeffnet, muss A.R.I unter Android "Ueber anderen Apps anzeigen" duerfen - sonst kommt zur Uhrzeit eine Benachrichtigung zum Antippen.':'');
+      }
+      await W.openUrl({url,pkg});return 'Google Maps ist geoeffnet und zeigt die Route nach '+d+'. Gestartet ist nichts - der Nutzer drueckt in Maps selbst auf Start.';
+    }
+  }catch(e){return null;}
+  return null;
+}
 async function runToolAsync(name,a){
   const pt=pluginTools().find(t=>t.name===name);
-  if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Das Plugin hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass das Plugin gerade nicht geklappt hat - ohne technische Details.';}}
+  if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Die Mod hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass die Mod gerade nicht geklappt hat - ohne technische Details.';}}
   if(name==='create_plugin')return createPluginFromAi(a||{});
+  if(name==='maps_route'||name==='open_app'||name==='set_timer'){const r=await nativeAction(name,a||{});if(r!==null)return r;}
   return runTool(name,a);
 }
 // A.R.I baut hier selbst ein (deklaratives) Plugin: immer erst AUS - der Nutzer prueft es und schaltet es ein.
-const CREATE_PLUGIN_TOOL={name:'create_plugin',description:'Baut ein neues PLUGIN fuer A.R.I (laeuft auch ohne PC), wenn der Nutzer sagt, du sollst dir eine neue Faehigkeit bauen. Ein Plugin ist ein JSON mit Werkzeugen; jedes Werkzeug hat name, description, input_schema und eine "action": '+
+const CREATE_PLUGIN_TOOL={name:'create_plugin',description:'Baut eine neue MOD fuer A.R.I (laeuft auch ohne PC), wenn der Nutzer sagt, du sollst dir eine neue Faehigkeit bauen. Eine Mod ist ein JSON mit Werkzeugen; jedes Werkzeug hat name, description, input_schema und eine "action": '+
   '{"type":"http","url":"https://api.../{param}","template":"Text mit {param} und {$.feld.0.wert} aus der JSON-Antwort"} | {"type":"open_url","url":"https://.../{param}"} | {"type":"text","template":"..."} | {"type":"random","min":1,"max":"{seiten}","count":"{anzahl}","template":"{values} Summe {sum}"}. '+
-  'Nur oeffentliche Adressen. Das Plugin ist nach dem Anlegen AUS - der Nutzer schaltet es selbst ein (sag ihm das kurz).',
+  'Nur oeffentliche Adressen. Die Mod ist nach dem Anlegen AUS - der Nutzer schaltet sie selbst ein (sag ihm das kurz).',
   parameters:{type:'object',properties:{name:{type:'string',description:'Kurzer Name, nur Kleinbuchstaben/Ziffern/Bindestrich'},title:{type:'string'},description:{type:'string'},keywords:{type:'array',items:{type:'string'}},tools:{type:'array',description:'Die Werkzeuge (siehe oben)',items:{type:'object'}}},required:['name','title','description','tools']}};
 function createPluginFromAi(a){
   const id=String(a.name||'').toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
-  if(!id)return 'Ungueltiger Plugin-Name.';
+  if(!id)return 'Ungueltiger Mod-Name.';
   const tools=Array.isArray(a.tools)?a.tools:[];
   if(!tools.length||tools.some(t=>!t||!/^[A-Za-z0-9_]{1,40}$/.test(String(t.name||''))||!t.action||!PLUGIN_ACTIONS.includes(t.action.type)))return 'Jedes Werkzeug braucht einen Namen (Buchstaben, Ziffern, _) und eine gueltige action (http, open_url, text oder random). Korrigiere das und versuche es nochmal.';
-  if(plugLocal.some(p=>p.id===id))return 'Es gibt schon ein Plugin "'+id+'". Nimm einen anderen Namen.';
+  if(plugLocal.some(p=>p.id===id))return 'Es gibt schon eine Mod "'+id+'". Nimm einen anderen Namen.';
   plugLocal.push({id,name:String(a.title||id).slice(0,60),description:String(a.description||'').slice(0,300),keywords:(a.keywords||[]).map(k=>String(k).toLowerCase()).slice(0,20),tools,enabled:false});
   store.set('ari-plugins-local',plugLocal);try{renderPlugins();}catch(e){}
-  return 'Plugin "'+(a.title||id)+'" wurde angelegt, ist aber noch AUS. Sag dem Nutzer kurz, was es tut - er schaltet es unter Einstellungen > Plugins selbst ein.';
+  return 'Mod "'+(a.title||id)+'" wurde angelegt, ist aber noch AUS. Sag dem Nutzer kurz, was sie tut - er schaltet sie unter Einstellungen > Mods selbst ein.';
 }
 /* ---------- Plugins: Einstellungen ---------- */
 function plugMsg(t,bad){const el=$('#plugMsg');if(el){el.textContent=t||'';el.style.color=bad?'var(--pink)':'';}}
@@ -260,7 +289,7 @@ function renderPlugins(){
   plugLocal.forEach(p=>rows.push({p,src:'phone',on:!!p.enabled&&!off[p.id]}));
   $('#plugTag').textContent=rows.filter(x=>x.on).length+' AN';
   const pcCards=plugPcOnly.map(p=>`<div class="mem" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>NUR AM PC · AN</small></div><div class="dim2">${escHtml(p.description||'')}</div><div class="dim2">Läuft am PC (Python) – Wünsche mit diesen Stichwörtern gehen automatisch über den PC: ${escHtml((p.keywords||[]).slice(0,6).join(', '))}</div></div>`).join('');
-  if(!rows.length){list.innerHTML=pcCards+'<div class="dim2">Noch keine Plugins. Füge eine plugin.json hinzu – oder bau am PC eins, das kommt hier automatisch an.</div>';return;}
+  if(!rows.length){list.innerHTML=pcCards+'<div class="dim2">Noch keine Mods. Füge eine plugin.json hinzu – oder bau am PC eine, die kommt hier automatisch an.</div>';return;}
   list.innerHTML=pcCards+rows.map(({p,src,on})=>{
     const tools=(p.tools||[]).map(t=>escHtml(t.name)).join(', ');
     return `<div class="mem" data-pid="${escHtml(p.id)}" data-src="${src}" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${escHtml(p.name||p.id)}</b><small>${src==='hub'?'VOM PC':'AM HANDY'} · ${on?'AN':'AUS'}</small></div>
@@ -269,10 +298,10 @@ function renderPlugins(){
 }
 $('#plugList')&&($('#plugList').onclick=e=>{
   const b=e.target.closest('[data-pa]');if(!b)return;const card=b.closest('[data-pid]'),id=card.dataset.pid,src=card.dataset.src;
-  if(b.dataset.pa==='del'){if(!confirm('Plugin entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin entfernt.');return;}
+  if(b.dataset.pa==='del'){if(!confirm('Mod entfernen?'))return;plugLocal=plugLocal.filter(p=>p.id!==id);store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Mod entfernt.');return;}
   if(src==='phone'){
     const p=plugLocal.find(x=>x.id===id);if(!p)return;
-    if(!p.enabled){if(!confirm('Plugin „'+(p.name||id)+'“ einschalten?\n\nEs darf Internet-Adressen abrufen, die in der plugin.json stehen:\n'+(p.tools||[]).map(t=>'• '+t.name+(t.action&&t.action.url?' → '+String(t.action.url).slice(0,80):'')).join('\n')))return;}
+    if(!p.enabled){if(!confirm('Mod „'+(p.name||id)+'“ einschalten?\n\nEs darf Internet-Adressen abrufen, die in der plugin.json stehen:\n'+(p.tools||[]).map(t=>'• '+t.name+(t.action&&t.action.url?' → '+String(t.action.url).slice(0,80):'')).join('\n')))return;}
     p.enabled=!p.enabled;store.set('ari-plugins-local',plugLocal);
   }else{const off=plugOff();if(off[id])delete off[id];else off[id]=1;store.set('ari-plugins-off',off);}
   renderPlugins();
@@ -286,9 +315,9 @@ $('#plugFile')&&($('#plugFile').onchange=async e=>{
     const tools=(m.tools||[]).filter(t=>t&&t.name&&t.action&&PLUGIN_ACTIONS.includes(t.action.type));
     if(!tools.length){plugMsg('Die Datei braucht eine Liste "tools" mit je einer gültigen "action" (http, open_url, text, random).',true);return;}
     const id=String(m.id||f.name.replace(/\.json$/i,'')).toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'plugin';
-    if(plugLocal.some(p=>p.id===id)){plugMsg('Es gibt schon ein Plugin "'+id+'".',true);return;}
+    if(plugLocal.some(p=>p.id===id)){plugMsg('Es gibt schon eine Mod "'+id+'".',true);return;}
     plugLocal.push({id,name:String(m.name||id).slice(0,60),description:String(m.description||'').slice(0,300),keywords:(m.keywords||[]).map(k=>String(k).toLowerCase()),tools,enabled:false});
-    store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Plugin hinzugefügt – noch AUS. Schalte es ein, wenn du ihm vertraust.');
+    store.set('ari-plugins-local',plugLocal);renderPlugins();plugMsg('Mod hinzugefügt – noch AUS. Schalte sie ein, wenn du ihr vertraust.');
   }catch(err){plugMsg('Keine gültige plugin.json.',true);}
 });
 setTimeout(()=>{try{renderPlugins();}catch(e){}},500);
@@ -306,7 +335,7 @@ async function refreshPlugins(manual){
     plugHub=(d.plugins||[]);store.set('ari-plugins-hub',plugHub);
     plugPcOnly=(d.pc_only||[]);store.set('ari-plugins-pconly',plugPcOnly);
     try{renderPlugins();}catch(e){}
-    say('✓ Abgeglichen · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+plugHub.length+' Plugin(s) übernommen'+(plugPcOnly.length?' · '+plugPcOnly.length+' nur am PC':''));
+    say('✓ Abgeglichen · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' · '+plugHub.length+' Mod(s) übernommen'+(plugPcOnly.length?' · '+plugPcOnly.length+' nur am PC':''));
   }catch(e){say('PC nicht erreichbar – Handy und PC im selben WLAN? Es wird automatisch nochmal versucht.',true);}
   finally{setSyncing(false);}
 }
@@ -314,7 +343,9 @@ const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
   {name:'forget',description:'Loescht Erinnerungen, die zum Suchbegriff passen.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
-  {name:'maps_route',description:'Plant eine Route (Auto/zu Fuss/Fahrrad/OePNV) in Google Maps.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']}},required:['destination']}},
+  {name:'maps_route',description:'Oeffnet Google Maps SOFORT mit der Route (die App startet Maps selbst - nie einen Link nennen, nie "plane" oder "geplant" sagen). "when" NUR setzen, wenn der Nutzer AUSDRUECKLICH sagt, dass Maps erst zu einer Uhrzeit aufgehen/starten soll (z.B. "um 16 Uhr los", "oeffne um 16 Uhr Maps"). Sagt er nur, wann er ANKOMMEN will ("ich will um 7:30 da sein"), KEIN "when": Maps jetzt oeffnen und kurz sagen, dass er die Ankunftszeit in Maps einstellen kann.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']},when:{type:'string',description:'NUR bei ausdruecklichem Wunsch, dass Maps erst zu dieser Uhrzeit startet: HH:MM (heute, sonst morgen) oder YYYY-MM-DD HH:MM. Sonst weglassen.'}},required:['destination']}},
+  {name:'open_app',description:'Startet eine auf dem Handy installierte App (z.B. Spotify, WhatsApp, Kamera, Einstellungen).',parameters:{type:'object',properties:{name:{type:'string'}},required:['name']}},
+  {name:'set_timer',description:'Stellt einen Timer in der Uhr-App des Handys (laeuft auch weiter, wenn A.R.I zu ist).',parameters:{type:'object',properties:{minutes:{type:'number',description:'Dauer in Minuten (auch Kommazahlen, z.B. 0.5)'},label:{type:'string'}},required:['minutes']}},
   {name:'find_restaurant',description:'Sucht ein Restaurant und bereitet die Tischreservierung vor (Personenzahl/Zeit vorausgefuellt). Bucht nicht selbst - der Nutzer bestaetigt auf der Seite.',parameters:{type:'object',properties:{query:{type:'string'},people:{type:'integer'},when:{type:'string',description:'YYYY-MM-DD HH:MM'}},required:['query']}}
 ];
 /* ---------- Streaming-Dienste (wie am PC im Gehirn ankreuzbar) ---------- */
@@ -389,7 +420,7 @@ const PROV={
   groq:{url:'https://api.groq.com/openai/v1/chat/completions',small:'llama-3.1-8b-instant',big:'openai/gpt-oss-20b',oa:true},
   openai:{url:'https://api.openai.com/v1/chat/completions',small:'gpt-4o-mini',big:'gpt-4o',oa:true},
   gemini:{url:'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',small:'gemini-3.6-flash',big:'gemini-3.6-flash',oa:true},
-  anthropic:{url:'https://api.anthropic.com/v1/messages',small:'claude-haiku-4-5-20251001',big:'claude-sonnet-5',oa:false}
+  anthropic:{url:'https://api.anthropic.com/v1/messages',small:'claude-haiku-5-5',big:'claude-sonnet-5-5',oa:false}
 };
 const COMPLEX=/plan|zusammen|erklaer|erklär|schreib|verfass|vergleich|warum|wieso|weshalb|recherch|analys|uebersetz|übersetz|entwirf|idee|mail|reserv|geschichte|gedicht|unterschied/i;
 function sysPrompt(query){
@@ -400,7 +431,7 @@ function sysPrompt(query){
   const mem=nodes.slice(0,30).map(n=>'- ['+n.cat+'] '+n.text).join('\n');
   const now=new Date().toLocaleString('de-DE',{dateStyle:'full',timeStyle:'short'});
   return 'Du bist A.R.I, der persoenliche Sprachassistent des Nutzers - kurz, freundlich, direkt (meist 1-3 Saetze). Antworte in der Sprache des Nutzers ('+cfg.lang+'). '+
-   'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen planen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
+   'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen in Google Maps oeffnen (Maps oeffnet sich DIREKT - nenne niemals einen Link dafuer; zu einer Uhrzeit nur, wenn der Nutzer ausdruecklich sagt, dass es dann starten soll, nicht bei einer Ankunftszeit), Apps oeffnen, Timer stellen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
    'Aktuell: '+now+'. Speichere Dauerhaftes ueber den Nutzer mit dem Werkzeug remember; erfinde nichts, Fragen ueber den Nutzer beantwortest du nur aus dem Gedaechtnis.'+(mem?'\n\nGEDAECHTNIS:\n'+mem:'');
 }
 async function post(url,headers,body){
@@ -477,6 +508,9 @@ async function ask(text){track('chat');
     if(small&&!isLimit(e)){try{return await runWithKeys(cfg.provider,keyList(cfg.provider),h,false,text);}catch(e2){e=e2;}}
     if(isLimit(e)&&cfg.fb&&cfg.fbKey&&cfg.fb!==cfg.provider){try{return await runProvider(cfg.fb,cfg.fbKey,h,small,text);}catch(e3){e=e3;}}
     const em=String(e&&e.message||e).toLowerCase();   // kurz sagen, was los ist - nie Fehlercodes
+    try{store.set('ari-last-error',{t:Date.now(),status:e&&e.status||0,msg:String(e&&e.message||e).slice(0,300),prov:cfg.provider});}catch(_){}   // fuer die Fehlersuche (Einstellungen > Daten)
+    if(e&&e.status===404||/not.?found|model.*(exist|available|deprecated|retired)/.test(em))return 'Das KI-Modell ist nicht mehr verfügbar, Sir – bitte in den Einstellungen einen anderen Anbieter wählen oder die App aktualisieren.';
+    if(/credit|balance|billing|insufficient|quota/.test(em)&&!isLimit(e))return 'Beim KI-Anbieter ist das Guthaben aufgebraucht, Sir – bitte dort aufladen oder einen anderen Anbieter wählen.';
     if(isLimit(e))return 'Das Limit ist erreicht, Sir – bitte gleich nochmal versuchen.';
     if(/api key|api_key|unauthorized|401|403|permission|authentication/.test(em))return 'Mit dem KI-Schlüssel stimmt etwas nicht, Sir – bitte in den Einstellungen prüfen.';
     if(/timeout|timed out|network|failed to fetch|connection|resolve/.test(em))return 'Keine Verbindung zur KI, Sir – bitte gleich nochmal versuchen.';
@@ -1020,10 +1054,12 @@ async function pcSimPoll(){
       const tag=$('#pcSimNotifTag'),list=$('#pcSimNotifList');
       if(tag)tag.textContent=items.length?items.length+' NEU':'KEINE';
       const sig=items.map(it=>it.id).join(',');
-      if(list&&list.dataset.sig!==sig){list.dataset.sig=sig;list.innerHTML=items.length?items.map(it=>{
+      const sig2=sig+'|'+items.map(it=>(it.has_pic?'p':'')+(it.has_icon?'i':'')+(it.has_vid?'v':'')).join('');
+      if(list&&list.dataset.sig!==sig2){list.dataset.sig=sig2;list.innerHTML=items.length?items.map(it=>{
         const color=pcSimColor(it.app||'?'),initial=(String(it.app||'?').charAt(0)||'?').toUpperCase();
-        return `<li class="pcsim-row"><span class="badge" style="--rc:${color}">${escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span></span></li>`;
-      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';}   // nur neu zeichnen, wenn sich die Liste geaendert hat (sonst flackert sie bei jedem Abruf)
+        return `<li class="pcsim-row ncard" data-nid="${escHtml(it.id)}"><span class="badge" style="--rc:${color}">${it.has_icon?`<img data-nimg="/phone/notif-icon?app=${encodeURIComponent(it.app||'')}" alt="">`:escHtml(initial)}</span><span class="body"><span class="t1">${escHtml(it.title||it.app||'')}</span><span class="t2">${escHtml(it.text||'')}</span>${it.has_vid&&!it.has_pic?`<span class="npic" data-nvid="${escHtml(it.id)}"><b>▶ Video</b></span>`:''}${it.has_pic?`<span class="npic" data-npic="${escHtml(it.id)}"${it.has_vid?` data-nvid="${escHtml(it.id)}"`:''}><img data-nimg="/phone/notif-pic?id=${encodeURIComponent(it.id)}" alt="">${it.video?'<b>▶</b>':''}</span>`:''}</span><button type="button" class="ndel" data-ndel="${escHtml(it.id)}" aria-label="Entfernen">✕</button></li>`;
+      }).join(''):'<li class="pcsim-empty">Keine Benachrichtigungen.</li>';
+        list.querySelectorAll('img[data-nimg]').forEach(im=>{authImg(im.dataset.nimg).then(u=>{if(u)im.src=u;else if(im.parentNode.classList.contains('badge'))im.parentNode.textContent=initialOf(im.parentNode);});});}   // nur neu zeichnen, wenn sich die Liste geaendert hat (sonst flackert sie bei jedem Abruf)
     }
     pcSimRenderCal();
   }catch(e){}
@@ -1402,6 +1438,16 @@ $('#gLogin').onclick=()=>{cfg.gClientId=$('#sGid').value.trim();saveCfg();gStart
 $('#gLogout').onclick=()=>{gTok=null;store.set('ari-app-gtok',null);calCache=null;store.set('ari-app-caldata',null);loadSet();loadCalData();};
 $('#sIcs').onchange=()=>{cfg.icsUrl=$('#sIcs').value.trim();saveCfg();calCache=null;store.set('ari-app-caldata',null);loadCalData();};
 $('#sImportBtn').onclick=()=>$('#sImport').click();
+$('#sPullBtn').onclick=async()=>{
+  const msg=$('#sImportMsg'),b=$('#sPullBtn');
+  if(!sync.token||!sync.origin){msg.textContent='Erst mit dem PC koppeln (Tab PC).';return;}
+  b.disabled=true;msg.textContent='Hole die Einstellungen vom PC …';
+  sync.dirtySet=false;sync.dirtyKeys=false;saveSync();   // nichts zum PC schicken - nur holen
+  await syncNow();
+  b.disabled=false;
+  const keys=['groq','gemini','openai','anthropic'].filter(p=>cfg.keys[p]).length;
+  msg.textContent=(sync.last&&Date.now()-sync.last<15000)?'✓ Übernommen: Anbieter '+cfg.provider+', '+keys+' Schlüssel, Sprache und Farben.':'Der PC ist gerade nicht erreichbar – Handy und PC im selben WLAN?';
+};
 $('#sImport').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;const msg=$('#sImportMsg');
   try{
@@ -1425,6 +1471,7 @@ $('#brImportBtn').onclick=()=>$('#brImport').click();
 $('#brImport').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());const arr=Array.isArray(d)?d:(d.nodes||[]);
   arr.forEach(n=>{const t=String(n.text||'').trim();if(t.length>=4&&!brain.some(m=>m.text.toLowerCase()===t.toLowerCase()))brain.push({id:String(n.id||Date.now()+Math.random()),text:t,cat:String(n.cat||n.category||'Wissen').slice(0,30),ts:Date.now()});});
   saveBrain();renderBrain();}catch(er){}e.target.value='';};
+$('#lastErr').onclick=()=>{const e=store.get('ari-last-error',null);$('#lastErrMsg').textContent=e?(new Date(e.t).toLocaleString('de-DE')+' · '+e.prov+(e.status?' · '+e.status:'')+' · '+e.msg):'Noch kein Fehler gespeichert.';};
 $('#wipe').onclick=()=>{if(!confirm('Alle Daten dieser App auf diesem Handy löschen (Schlüssel, Gehirn, gespeicherte PCs)?'))return;
   ['ari-app-cfg','ari-app-brain','ari-app-pcs','ari-app-theme'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});location.reload();};
 
@@ -1434,6 +1481,162 @@ $('#wipe').onclick=()=>{if(!confirm('Alle Daten dieser App auf diesem Handy lös
 let sync=store.get('ari-app-sync',{origin:'',token:'',deleted:[],dirtyKeys:false,dirtySet:false,last:0,groqAll:[],pc:{}});
 const saveSync=()=>store.set('ari-app-sync',sync);
 // Handy und PC muessen im selben WLAN sein - keine Cloud/Tunnel-Adresse wird akzeptiert.
+/* ---------- Einstellungen: Kategorien + genaue Suche (wie am PC) ---------- */
+(function(){
+  const GROUPS=[
+    ['SPRACHE & TON',['STIMME','HÖREN'],'Stimme, Vorlesen und Weckwort'],
+    ['BENACHRICHTIGUNGEN',['HANDY-BENACHRICHTIGUNGEN','HINTERGRUND-BETRIEB'],'Meldungen an den PC, Termine und Mails im Hintergrund'],
+    ['KONTEN & VERBINDUNGEN',['KI-ANBIETER','VOM PC ÜBERNEHMEN'],'Das „Gehirn“ von A.R.I und Einstellungen vom PC'],
+    ['ERWEITERUNGEN',['MODS'],'Mods installieren und verwalten'],
+    ['SONSTIGES',['APP-UPDATE','DATEN','STATISTIK','UNTERSTÜTZEN','DEV'],'Update, Daten, Unterstützen und Entwickler-Werkzeuge']
+  ];
+  const sec=document.getElementById('t-set');if(!sec)return;
+  const title=d=>((d.querySelector(':scope > summary')||{}).textContent||'').trim().toUpperCase();
+  function organize(){
+    const all=[...sec.querySelectorAll(':scope > details.set-section, :scope > .set-group > details.set-section')];
+    let anchor=document.getElementById('setNoHit');
+    GROUPS.forEach(([name,keys,desc],gi)=>{
+      let g=sec.querySelector(':scope > .set-group[data-g="'+gi+'"]');
+      if(!g){g=document.createElement('div');g.className='set-group';g.dataset.g=gi;g.innerHTML='<div class="set-group-h">'+name+'</div><div class="set-group-d">'+desc+'</div>';anchor.insertAdjacentElement('afterend',g);}
+      anchor=g;
+      keys.forEach(k=>{const dd=all.find(x=>title(x).includes(k));if(dd&&dd.parentNode!==g)g.appendChild(dd);});
+    });
+    const known=GROUPS.flatMap(x=>x[1]),rest=sec.querySelector(':scope > .set-group[data-g="4"]');
+    all.forEach(dd=>{if(!known.some(k=>title(dd).includes(k))&&dd.parentNode!==rest)rest.appendChild(dd);});
+  }
+  // Stichwoerter je Abschnitt (auch fuer Abschnitte im Tab PC): so findet man Einstellungen mit eigenen Worten ("pc verbinden" -> koppeln, uebertragen ...)
+  const KW={
+    'STIMME':'sprechen vorlesen antworten stimme edge katja ton audio tempo',
+    'HÖREN':'weckwort wake word zuhören zuhoeren hintergrund mikrofon immer',
+    'HANDY-BENACHRICHTIGUNGEN':'meldungen weiterleiten pc whatsapp benachrichtigungszugriff übertragen uebertragen senden',
+    'HINTERGRUND-BETRIEB':'termine mails hintergrund erinnerung akku',
+    'KI-ANBIETER':'gehirn ki schlüssel api groq gemini openai claude modell sprache anbieter',
+    'VOM PC ÜBERNEHMEN':'pc übertragen uebertragen einstellungen holen import schlüssel übernehmen synchronisieren verbinden',
+    'MODS':'plugins erweiterungen installieren zusatzfunktionen aktivieren',
+    'APP-UPDATE':'aktualisieren version beta neu herunterladen',
+    'DATEN':'gehirn export import löschen zurücksetzen einführung',
+    'STATISTIK':'anonym daten nutzung',
+    'UNTERSTÜTZEN':'spenden kaffee',
+    'DEV':'entwickler test',
+    'SYNCHRONISATION':'pc verbinden koppeln kopplung übertragen uebertragen sync synchronisieren google kalender ical verbindung',
+    'MIT DEM PC VERBINDEN':'koppeln kopplung koppelcode qr code scannen pc handy verbinden wlan übertragen uebertragen steuern bildschirm',
+    "SO GEHT'S":'hilfe anleitung erklärung anfang'
+  };
+  const kwOf=d=>{const t=title(d);const k=Object.keys(KW).find(x=>t.includes(x));return k?KW[k]:'';};
+
+  const SF_SYN = [
+    ['verbinden', 'verbindung', 'koppeln', 'kopplung', 'koppelcode', 'pairen', 'anbinden', 'anmelden', 'login', 'einloggen', 'verknuepfen'],
+    ['uebertragen', 'uebernehmen', 'synchronisieren', 'sync', 'abgleichen', 'importieren', 'exportieren', 'senden', 'schicken', 'weiterleiten', 'teilen'],
+    ['stimme', 'sprechen', 'sprache', 'sprachausgabe', 'vorlesen', 'reden', 'edge', 'katja', 'conrad'],
+    ['leise', 'leiser', 'laut', 'lauter', 'lautstaerke', 'volume', 'ton', 'audio', 'sound', 'klang'],
+    ['ausschalten', 'abschalten', 'deaktivieren', 'ausblenden', 'verstecken', 'stumm'],
+    ['einschalten', 'anschalten', 'aktivieren', 'einblenden', 'anzeigen', 'zeigen'],
+    ['farbe', 'farben', 'design', 'theme', 'aussehen', 'optik', 'akzent', 'dunkel', 'hell'],
+    ['hilfe', 'problem', 'fehler', 'log', 'protokoll', 'diagnose', 'kaputt', 'geht'],
+    ['loeschen', 'entfernen', 'zuruecksetzen', 'reset', 'leeren'],
+    ['benachrichtigung', 'benachrichtigungen', 'meldung', 'meldungen', 'nachricht', 'nachrichten', 'push', 'hinweis', 'ansage', 'ansagen'],
+    ['handy', 'smartphone', 'telefon', 'mobil'],
+    ['pc', 'computer', 'rechner', 'laptop'],
+    ['musik', 'spotify', 'lied', 'song', 'player', 'wiedergabe'],
+    ['mail', 'email', 'mails', 'postfach', 'gmail', 'yahoo', 'post'],
+    ['termin', 'termine', 'kalender', 'event', 'erinnerung'],
+    ['start', 'starten', 'autostart', 'windows', 'hochfahren'],
+    ['taste', 'hotkey', 'tastenkuerzel', 'shortcut', 'tastatur'],
+    ['ki', 'gehirn', 'anbieter', 'modell', 'schluessel', 'key', 'api', 'groq', 'gemini', 'openai', 'claude'],
+    ['mikrofon', 'mikro', 'zuhoeren', 'hoeren', 'weckwort', 'aufnahme'],
+    ['aktualisieren', 'update', 'version', 'neu', 'herunterladen'],
+    ['spiel', 'spiele', 'spielmodus', 'game', 'gaming'],
+    ['abmelden', 'ausloggen', 'logout', 'trennen', 'entkoppeln', 'widerrufen'],
+    ['bearbeiten', 'aendern', 'editieren', 'anpassen', 'konfigurieren'],
+    ['spenden', 'kaffee', 'unterstuetzen']
+  ];
+  const SF_NORM = t => String(t || '').toLowerCase().replace(/[äÄ]/g, 'ae').replace(/[öÖ]/g, 'oe').replace(/[üÜ]/g, 'ue').replace(/ß/g, 'ss');
+  const sfWords = t => SF_NORM(t).split(/[^a-z0-9]+/).filter(Boolean);
+  // Suchwort -> alle gleichbedeutenden Woerter (verbinden = koppeln = Verbindung ...)
+  function sfAlts(tok) {
+    const a = new Set([tok]);
+    SF_SYN.forEach(g => { if (g.some(x => x === tok || (tok.length >= 3 && x.startsWith(tok)))) g.forEach(x => a.add(x)); });
+    return [...a];
+  }
+  // Ein Wort passt, wenn es mit dem Suchwort BEGINNT oder denselben Wortstamm hat (verbinden ~ Verbindung); jedes Suchwort muss irgendwo vorkommen
+  const SF_STOP = new Set('der die das den dem des ein eine einen einem einer ich du er sie es wir mein meine meinen meiner dein deine wie was wo wann warum wieso wer welche welcher mit auf fuer von vom zu zum zur im in am an aus bei nach um und oder aber nicht kein keine mehr mal nur auch noch schon sehr ist sind war wird kann koennen soll will moechte moechten bitte aendern aendere einstellen einstellung einstellungen machen mache geben gib holen hol finden suchen hier da dann damit wenn dass ob man geht'.split(' '));
+  const sfTokens = q => { const all = sfWords(q), k = all.filter(w => !SF_STOP.has(w)); return k.length ? k : all; };   // Fuellwoerter ("wie", "vom", "aendern" ...) zaehlen nicht
+  // min = wie viele Suchwoerter mindestens passen muessen (null = alle)
+  const sfMatch = (words, toks, min) => { let n = 0; for (const q of toks) { const alts = sfAlts(q); if (words.some(w => alts.some(x => w.startsWith(x) || (x.length >= 5 && w.length >= 5 && x.slice(0, 5) === w.slice(0, 5))))) n++; } return n >= (min == null ? toks.length : Math.max(1, Math.min(min, toks.length))) && n > 0; };
+  const sfFieldText = f => f.textContent + ' ' + [...f.querySelectorAll('[placeholder]')].map(e => e.getAttribute('placeholder')).join(' ') + ' ' + [...f.querySelectorAll('[title]')].map(e => e.getAttribute('title')).join(' ');
+
+  // Auch Bedienelemente ausserhalb eines Einstellungs-Feldes (einzelne Haken/Knoepfe) einzeln auffindbar machen
+  function sfFields(d, sel) {
+    const base = [...d.querySelectorAll(sel)], extra = new Set();
+    d.querySelectorAll('input,select,button,textarea').forEach(c => {
+      if (c.type === 'hidden' || c.closest(sel)) return;
+      let e = c.closest('label');
+      if (!e) { const p = c.parentElement; e = (!p || p === d || (p.className || '').toString().indexOf('set-section-body') >= 0 || p.querySelectorAll('input,select,button,textarea').length > 3) ? c : p; }   // einzeln stehende Knoepfe/Haken: das Element selbst
+      if (!e || e === d || e.tagName === 'SUMMARY' || e.querySelector('summary') || base.some(b => e.contains(b))) return;
+      extra.add(e);
+    });
+    return base.concat([...extra]);
+  }
+
+  const words=sfWords,match=sfMatch;
+  function filter(){
+    const toks=sfTokens((document.getElementById('setSearch')||{}).value||''),rel=Math.ceil(toks.length/2);
+    const apply=(weak,min)=>{
+      let any=false;
+      sec.querySelectorAll('.set-group').forEach(g=>{
+        let vis=0;
+        g.querySelectorAll(':scope > details.set-section').forEach(d=>{
+          const tw=words((d.querySelector('summary')||{}).textContent),fields=sfFields(d,'.set,.panel-h');
+          const tHit=!toks.length||match(tw.concat(words(kwOf(d))),toks,min);let fh=0;
+          fields.forEach(f=>{f.classList.remove('set-fhide');if(!toks.length)return;f._hit=match(words(sfFieldText(f)).concat(tw),toks,min);if(f._hit)fh++;});
+          let hit=!toks.length||tHit||fh>0;
+          if(toks.length&&hit&&!tHit)fields.forEach(f=>f.classList.toggle('set-fhide',!f._hit));
+          if(toks.length&&!hit&&weak&&match(words(d.textContent).concat(tw),toks,min))hit=true;
+          d.classList.toggle('set-hide',!hit);
+          if(hit&&d.style.display!=='none')vis++;
+          if(toks.length&&hit){d.open=true;d.dataset.auto='1';}else if(!toks.length&&d.dataset.auto){d.open=false;delete d.dataset.auto;}
+        });
+        g.classList.toggle('empty',vis===0);if(vis)any=true;
+      });
+      // Treffer in anderen Tabs (z. B. Kopplung im Tab PC): als Sprungzeilen unter dem Suchfeld
+      let xh=document.getElementById('setXhits');if(!xh){xh=document.createElement('div');xh.id='setXhits';const nh0=document.getElementById('setNoHit');nh0.parentNode.insertBefore(xh,nh0);}
+      xh.textContent='';let xAny=false;
+      if(toks.length)document.querySelectorAll('#t-pc details.set-section').forEach(d=>{
+        const tw=words((d.querySelector('summary')||{}).textContent);
+        if(!(match(tw.concat(words(kwOf(d))),toks,min)||(weak&&match(words(d.textContent).concat(tw),toks,min))))return;
+        xAny=true;const b=document.createElement('button');b.type='button';b.className='btn xhit';
+        b.innerHTML='<span>'+((d.querySelector('summary')||{}).textContent||'').trim()+'</span><small>im Tab PC öffnen →</small>';
+        b.onclick=()=>{goTab('pc');d.open=true;setTimeout(()=>d.scrollIntoView({behavior:'smooth',block:'start'}),150);};xh.appendChild(b);});
+      return any||xAny;
+    };
+    let any=apply(false,null);if(toks.length>1&&!any)any=apply(false,rel);if(toks.length&&!any)any=apply(true,null);if(toks.length>1&&!any)any=apply(true,rel);
+    const nh=document.getElementById('setNoHit');if(nh)nh.style.display=(toks.length&&!any)?'block':'none';
+  }
+  organize();
+  const si=document.getElementById('setSearch');if(si)si.addEventListener('input',filter);
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.classList||!d.classList.contains('set-section')||!d.open||!sec.contains(d))return;
+    if(((document.getElementById('setSearch')||{}).value||'').trim())return;sec.querySelectorAll('details.set-section[open]').forEach(o=>{if(o!==d)o.open=false;});},true);
+})();
+// Bilder/Symbole vom PC brauchen den Geraete-Token: laden und als Blob-Adresse merken
+const _authImgs=new Map();
+async function authImg(path){
+  if(_authImgs.has(path))return _authImgs.get(path);
+  try{const r=await fetch(sync.origin+path,{headers:{'X-Ari-Token':sync.token}});if(!r.ok)return '';const u=URL.createObjectURL(await r.blob());_authImgs.set(path,u);return u;}catch(e){return '';}
+}
+const initialOf=b=>{const row=b.closest('.pcsim-row'),t=row&&row.querySelector('.t1');return ((t&&t.textContent||'?').charAt(0)||'?').toUpperCase();};
+function showNotifPic(src,video){
+  let v=document.getElementById('ariPicView');if(v)v.remove();
+  v=document.createElement('div');v.id='ariPicView';v.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9)';
+  v.innerHTML=video?'<video src="'+src+'" controls autoplay playsinline style="max-width:100vw;max-height:100vh"></video><button type="button" style="position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:1px solid #fff5;background:#0008;color:#fff;font-size:16px">✕</button>':'<img src="'+src+'" alt="" style="max-width:100vw;max-height:100vh;object-fit:contain">';v.onclick=ev=>{if(!video||ev.target.tagName!=='VIDEO')v.remove();};document.body.appendChild(v);
+}
+document.addEventListener('click',async e=>{
+  const del=e.target.closest('[data-ndel]'),pic=e.target.closest('[data-npic],[data-nvid]');
+  if(pic){
+    if(pic.dataset.nvid){const u=await authImg('/phone/notif-video?id='+encodeURIComponent(pic.dataset.nvid));if(u){showNotifPic(u,true);return;}}
+    const im=pic.querySelector('img');if(im&&im.src)showNotifPic(im.src);return;}
+  if(del){const id=del.dataset.ndel;const row=del.closest('.pcsim-row');if(row)row.remove();
+    try{await fetch(sync.origin+'/phone/api/notify-dismiss',{method:'POST',headers:{'Content-Type':'application/json','X-Ari-Token':sync.token},body:JSON.stringify({id})});}catch(err){}}
+});
 async function hubFetch(path,opts){
   // Zeitlimit: antwortet der PC nicht (anderes WLAN, PC aus), darf das Drehzeichen nicht ewig drehen
   const ms=(opts&&opts.timeout)||10000,ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),ms);
