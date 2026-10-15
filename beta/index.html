@@ -357,6 +357,9 @@ canvas.spark{width:100%;height:54px;display:block}
 /* Chat */
 #log{flex:1;min-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:2px 0}
 .m{max-width:90%;padding:9px 12px;white-space:pre-wrap;word-wrap:break-word;border:1px solid var(--panel-border);font-size:13.5px}
+.m{user-select:text;-webkit-user-select:text}
+.m .cp{display:block;margin:6px 0 0 auto;padding:2px 8px;border:1px solid color-mix(in srgb,var(--cyan) 28%,transparent);border-radius:6px;background:transparent;color:var(--text-dim);font:600 9px var(--font-mono);letter-spacing:.1em;cursor:pointer}
+.m .cp:active{color:var(--cyan);border-color:var(--cyan)}
 .m.u{align-self:flex-end;background:color-mix(in srgb,var(--cyan) 12%,transparent);border-color:color-mix(in srgb,var(--cyan) 35%,transparent);border-radius:12px 12px 2px 12px}
 .m.a{align-self:flex-start;background:color-mix(in srgb,var(--pink) 8%,rgba(15,13,30,.8));border-radius:12px 12px 12px 2px}
 .m .tools{margin-top:6px;font-size:9.5px;letter-spacing:.1em;color:var(--cyan)}
@@ -849,6 +852,7 @@ body.syncing .syncspin{display:inline-block}
           <div class="row"><button class="btn" id="brExport">GEHIRN EXPORT</button><button class="btn" id="brImportBtn">GEHIRN IMPORT</button></div>
           <input type="file" id="brImport" accept="application/json" style="display:none">
           <button class="btn" id="tourReplay" style="width:100%;margin-top:10px">EINFÜHRUNG ANSEHEN</button>
+          <button class="btn" id="lastErr" style="width:100%;margin-top:10px">LETZTEN FEHLER ANZEIGEN</button><div class="dim2" id="lastErrMsg" style="margin-top:6px;word-break:break-word"></div>
           <button class="btn dng" id="wipe" style="width:100%;margin-top:10px">ALLE DATEN AUF DIESEM HANDY LÖSCHEN</button>
         </div>
       </div>
