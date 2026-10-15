@@ -1,7 +1,7 @@
 {
-    "versionCode":  81,
-    "versionName":  "1.81",
+    "versionCode":  82,
+    "versionName":  "1.82",
     "apk":  "ARI.apk",
-    "notes":  "Chat-Nachrichten kopieren, KI-Modelle aktualisiert, Loeschen am PC schliesst die Meldung auch am Handy zuverlaessiger.",
+    "notes":  "Route oeffnet Maps ohne die Navigation zu starten, Kopieren-Knopf entfernt (Text bleibt markierbar).",
     "sizeMb":  6.5
 }
