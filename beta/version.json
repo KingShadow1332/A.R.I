@@ -1,7 +1,7 @@
 {
-    "versionCode":  75,
-    "versionName":  "1.75",
+    "versionCode":  76,
+    "versionName":  "1.76",
     "apk":  "ARI.apk",
-    "notes":  "Plugins heissen jetzt Mods. Benachrichtigungen mit App-Symbol und Bildern.",
+    "notes":  "Maps oeffnet sich direkt (auch zur Uhrzeit), Apps oeffnen, Timer. Einstellungen mit Kategorien und Suche. Benachrichtigungen mit Symbol, Bild und Video.",
     "sizeMb":  6.5
 }
