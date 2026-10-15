@@ -1,7 +1,7 @@
 {
-    "versionCode":  73,
-    "versionName":  "1.73",
+    "versionCode":  82,
+    "versionName":  "1.82",
     "apk":  "ARI.apk",
-    "notes":  "Event-Ankuendigungen aus der App entfernt",
-    "sizeMb":  6.4
+    "notes":  "Route oeffnet Maps ohne die Navigation zu starten, Kopieren-Knopf entfernt (Text bleibt markierbar).",
+    "sizeMb":  6.5
 }
