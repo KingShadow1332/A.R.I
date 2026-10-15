@@ -1,7 +1,7 @@
 {
-    "versionCode":  76,
-    "versionName":  "1.76",
+    "versionCode":  77,
+    "versionName":  "1.77",
     "apk":  "ARI.apk",
-    "notes":  "Maps oeffnet sich direkt (auch zur Uhrzeit), Apps oeffnen, Timer. Einstellungen mit Kategorien und Suche. Benachrichtigungen mit Symbol, Bild und Video.",
+    "notes":  "Edge-Stimme repariert (neues Anmeldeverfahren von Microsoft). Einstellungen: Suche deckend, Vom PC uebernehmen per Knopf.",
     "sizeMb":  6.5
 }
