@@ -33,7 +33,7 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 |---|---|---|
 | PC (Windows) | 1.6.54 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
 | PC (Linux) | 1.6.54 | [ari-linux.zip](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip) |
-| Handy | 1.73 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
+| Handy | 1.82 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
 
 | PC (Windows) | 1.6.1 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
 | PC (Linux) | 1.6.1 | [ari-linux.zip](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip) |
