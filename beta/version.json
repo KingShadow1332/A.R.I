@@ -1,7 +1,7 @@
 {
-    "versionCode":  78,
-    "versionName":  "1.78",
+    "versionCode":  79,
+    "versionName":  "1.79",
     "apk":  "ARI.apk",
-    "notes":  "Einstellungen: Suchfeld durchsichtig wie am PC.",
+    "notes":  "Einstellungen: Suche nach Bedeutung (findet alles, auch mit eigenen Worten), Sprungzeile zum Tab PC.",
     "sizeMb":  6.5
 }
