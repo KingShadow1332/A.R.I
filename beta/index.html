@@ -266,8 +266,8 @@ input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px color-mix
 .set-section[open]>summary{color:var(--pink);border-bottom:1px solid color-mix(in srgb,var(--pink) 20%,transparent)}
 .set-section[open]>summary::after{content:'−';color:var(--pink)}
 .set-section-body{padding:12px 14px 14px}
-#setSearchWrap{position:sticky;top:0;z-index:3;padding:6px 0 10px;margin:-4px 0 4px;background:linear-gradient(180deg,rgba(8,10,20,.98) 70%,rgba(8,10,20,0))}
-#setSearch{width:100%;padding:10px 12px 10px 34px;border-radius:10px;border:1px solid color-mix(in srgb,var(--cyan) 22%,transparent);background:rgba(255,255,255,.04) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2329d3f5' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>") no-repeat 10px center/16px;color:var(--text);font:13px var(--font-mono)}
+#setSearchWrap{position:sticky;top:0;z-index:3;padding:6px 0 10px;margin:-4px 0 4px;background:#080a14;border-bottom:1px solid color-mix(in srgb,var(--cyan) 14%,transparent)}
+#setSearch{width:100%;padding:10px 12px 10px 34px;border-radius:10px;border:1px solid color-mix(in srgb,var(--cyan) 28%,transparent);background:#101326 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2329d3f5' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>") no-repeat 10px center/16px;color:var(--text);font:13px var(--font-mono)}
 #setSearch:focus{outline:none;border-color:var(--cyan)}
 .set-group{margin:14px 0 6px}
 .set-group-h{display:flex;align-items:center;gap:10px;margin:0 2px 8px;font:700 10.5px/1 var(--font-mono);letter-spacing:.18em;color:var(--cyan);opacity:.85}
@@ -830,7 +830,9 @@ body.syncing .syncspin{display:inline-block}
       <summary>⇪ VOM PC ÜBERNEHMEN</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h cy"><span class="ico">⇪</span><span class="t">VOM PC ÜBERNEHMEN</span></div>
-          <div class="dim" style="margin-bottom:10px">Am PC in A.R.I unter Einstellungen „EXPORTIEREN" und die Datei hier auswählen: Anbieter, Schlüssel, Sprache und Farben werden übernommen (die PC-Zugangsdaten für Google/Spotify NICHT).</div>
+          <div class="dim" style="margin-bottom:10px">Mit dem Knopf holt sich die App Anbieter, Schlüssel, Sprache und Farben direkt vom gekoppelten PC (Tab PC). Alternativ geht es auch mit der Datei vom PC („EXPORTIEREN" in den PC-Einstellungen). Die PC-Zugangsdaten für Google/Spotify werden NICHT übernommen.</div>
+          <button class="btn pri" id="sPullBtn" style="width:100%">JETZT VOM PC ÜBERNEHMEN</button>
+          <div class="dim2" style="text-align:center;margin:10px 0 8px">— oder —</div>
           <input type="file" id="sImport" accept="application/json" style="display:none">
           <button class="btn" id="sImportBtn" style="width:100%">EINSTELLUNGEN-DATEI WÄHLEN</button>
           <div class="dim2" id="sImportMsg" style="margin-top:8px"></div>
