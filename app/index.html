@@ -266,6 +266,19 @@ input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px color-mix
 .set-section[open]>summary{color:var(--pink);border-bottom:1px solid color-mix(in srgb,var(--pink) 20%,transparent)}
 .set-section[open]>summary::after{content:'−';color:var(--pink)}
 .set-section-body{padding:12px 14px 14px}
+#setSearchWrap{padding:0;margin:0 0 10px;background:none;border:0}
+#setSearch{width:100%;padding:10px 12px 10px 34px;border-radius:10px;border:1px solid color-mix(in srgb,var(--cyan) 28%,transparent);background:rgba(255,255,255,.04) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2329d3f5' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>") no-repeat 10px center/16px;color:var(--text);font:13px var(--font-mono)}
+#setSearch:focus{outline:none;border-color:var(--cyan)}
+.set-group{margin:14px 0 6px}
+.set-group-h{display:flex;align-items:center;gap:10px;margin:0 2px 8px;font:700 10.5px/1 var(--font-mono);letter-spacing:.18em;color:var(--cyan);opacity:.85}
+.set-group-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--cyan) 40%,transparent),transparent)}
+.set-group-d{margin:-2px 2px 9px;font-size:11.5px;opacity:.5}
+.set-group.empty{display:none}
+.set-section.set-hide{display:none}
+#setXhits{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+#setXhits .xhit{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;gap:10px}
+#setXhits .xhit small{opacity:.6;font-size:10px;letter-spacing:.06em;white-space:nowrap}
+.set-fhide{display:none !important}
 .set-section-body .panel{border:none;background:none;padding:0;margin-bottom:14px}
 .set-section-body .panel:last-child{margin-bottom:0}
 /* ===== TERMINE / BENACHRICHTIGUNGEN (identisch zum PC-Hub) ===== */
@@ -344,6 +357,7 @@ canvas.spark{width:100%;height:54px;display:block}
 /* Chat */
 #log{flex:1;min-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:2px 0}
 .m{max-width:90%;padding:9px 12px;white-space:pre-wrap;word-wrap:break-word;border:1px solid var(--panel-border);font-size:13.5px}
+.m{user-select:text;-webkit-user-select:text}
 .m.u{align-self:flex-end;background:color-mix(in srgb,var(--cyan) 12%,transparent);border-color:color-mix(in srgb,var(--cyan) 35%,transparent);border-radius:12px 12px 2px 12px}
 .m.a{align-self:flex-start;background:color-mix(in srgb,var(--pink) 8%,rgba(15,13,30,.8));border-radius:12px 12px 12px 2px}
 .m .tools{margin-top:6px;font-size:9.5px;letter-spacing:.1em;color:var(--cyan)}
@@ -712,7 +726,9 @@ body.syncing .syncspin{display:inline-block}
 
   <!-- EINSTELLUNGEN -->
   <section id="t-set">
-    <div class="dim2" style="margin-bottom:10px;opacity:.6">Kopplung mit dem PC und PC-Bildschirm: Tab „PC". Hier: KI, Hintergrund-Betrieb, Update, Daten.</div>
+    <div id="setSearchWrap"><input type="search" id="setSearch" placeholder="Einstellung suchen …" autocomplete="off"></div>
+    <div id="setNoHit" class="dim2" style="display:none;padding:8px 2px">Keine Einstellung gefunden.</div>
+    <div class="dim2" style="margin-bottom:10px;opacity:.6">Kopplung mit dem PC und PC-Bildschirm: Tab „PC".</div>
     <details class="set-section">
       <summary>◉ KI-ANBIETER</summary>
       <div class="set-section-body">
@@ -748,14 +764,14 @@ body.syncing .syncspin{display:inline-block}
       </div>
     </details>
     <details class="set-section" id="plugSection">
-      <summary>🧩 PLUGINS</summary>
+      <summary>🧩 MODS</summary>
       <div class="set-section-body">
-        <div class="panel"><div class="panel-h cy"><span class="ico">🧩</span><span class="t">ERWEITERUNGEN</span><span class="syncspin" style="margin-left:auto;margin-right:8px"></span><span class="tag" id="plugTag">0</span></div>
-          <div class="dim">Plugins erweitern A.R.I – und laufen hier auch <b>ohne PC</b>. Am PC eingeschaltete Plugins werden automatisch übernommen (einmal einrichten genügt). Du kannst auch selbst eine <b>plugin.json</b> hinzufügen oder A.R.I sagen: „Bau dir ein Plugin, das …“.</div>
+        <div class="panel"><div class="panel-h cy"><span class="ico">🧩</span><span class="t">MODS</span><span class="syncspin" style="margin-left:auto;margin-right:8px"></span><span class="tag" id="plugTag">0</span></div>
+          <div class="dim">Mods erweitern A.R.I – und laufen hier auch <b>ohne PC</b>. Am PC eingeschaltete Mods werden automatisch übernommen (einmal einrichten genügt). Du kannst auch selbst eine <b>plugin.json</b> hinzufügen oder A.R.I sagen: „Bau dir eine Mod, die …“.</div>
           <div class="row" style="margin-top:10px;align-items:center"><button class="btn" id="plugSyncBtn">↻ MIT PC ABGLEICHEN</button></div>
           <div class="dim2" id="plugSyncMsg" style="margin-top:4px"></div>
           <div id="plugList" style="margin-top:10px"></div>
-          <div class="row" style="margin-top:10px"><button class="btn pri" id="plugAdd">+ PLUGIN HINZUFÜGEN</button><input type="file" id="plugFile" accept=".json,application/json" style="display:none"></div>
+          <div class="row" style="margin-top:10px"><button class="btn pri" id="plugAdd">+ MOD HINZUFÜGEN</button><input type="file" id="plugFile" accept=".json,application/json" style="display:none"></div>
           <div class="dim2" id="plugMsg" style="margin-top:8px"></div>
         </div>
       </div>
@@ -818,7 +834,9 @@ body.syncing .syncspin{display:inline-block}
       <summary>⇪ VOM PC ÜBERNEHMEN</summary>
       <div class="set-section-body">
         <div class="panel"><div class="panel-h cy"><span class="ico">⇪</span><span class="t">VOM PC ÜBERNEHMEN</span></div>
-          <div class="dim" style="margin-bottom:10px">Am PC in A.R.I unter Einstellungen „EXPORTIEREN" und die Datei hier auswählen: Anbieter, Schlüssel, Sprache und Farben werden übernommen (die PC-Zugangsdaten für Google/Spotify NICHT).</div>
+          <div class="dim" style="margin-bottom:10px">Mit dem Knopf holt sich die App Anbieter, Schlüssel, Sprache und Farben direkt vom gekoppelten PC (Tab PC). Alternativ geht es auch mit der Datei vom PC („EXPORTIEREN" in den PC-Einstellungen). Die PC-Zugangsdaten für Google/Spotify werden NICHT übernommen.</div>
+          <button class="btn pri" id="sPullBtn" style="width:100%">JETZT VOM PC ÜBERNEHMEN</button>
+          <div class="dim2" style="text-align:center;margin:10px 0 8px">— oder —</div>
           <input type="file" id="sImport" accept="application/json" style="display:none">
           <button class="btn" id="sImportBtn" style="width:100%">EINSTELLUNGEN-DATEI WÄHLEN</button>
           <div class="dim2" id="sImportMsg" style="margin-top:8px"></div>
@@ -832,6 +850,7 @@ body.syncing .syncspin{display:inline-block}
           <div class="row"><button class="btn" id="brExport">GEHIRN EXPORT</button><button class="btn" id="brImportBtn">GEHIRN IMPORT</button></div>
           <input type="file" id="brImport" accept="application/json" style="display:none">
           <button class="btn" id="tourReplay" style="width:100%;margin-top:10px">EINFÜHRUNG ANSEHEN</button>
+          <button class="btn" id="lastErr" style="width:100%;margin-top:10px">LETZTEN FEHLER ANZEIGEN</button><div class="dim2" id="lastErrMsg" style="margin-top:6px;word-break:break-word"></div>
           <button class="btn dng" id="wipe" style="width:100%;margin-top:10px">ALLE DATEN AUF DIESEM HANDY LÖSCHEN</button>
         </div>
       </div>
