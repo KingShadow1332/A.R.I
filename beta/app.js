@@ -245,16 +245,15 @@ async function nativeAction(name,a){
       return 'Timer fuer '+(sec>=60?Math.round(sec/60*10)/10+' Minuten':sec+' Sekunden')+' ist gestellt (in der Uhr-App des Handys).';}
     if(name==='maps_route'){
       const d=String(a.destination||'').trim();if(!d)return 'Kein Ziel.';
-      const mode={driving:'d',walking:'w',bicycling:'b'}[a.mode];
-      const url=(!a.origin&&mode)?'google.navigation:q='+encodeURIComponent(d)+'&mode='+mode
-        :'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode='+(({driving:1,walking:1,bicycling:1,transit:1})[a.mode]?a.mode:'driving')+(a.origin?'&origin='+encodeURIComponent(a.origin):'');
+      // Routenansicht oeffnen (Nutzer drueckt in Maps selbst auf "Start") - nicht google.navigation:, das startet die Navigation sofort
+      const url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(d)+'&travelmode='+(({driving:1,walking:1,bicycling:1,transit:1})[a.mode]?a.mode:'driving')+(a.origin?'&origin='+encodeURIComponent(a.origin):'');
       const pkg='com.google.android.apps.maps',at=parseWhen(a.when);
       if(at>Date.now()+20000){
         const r=await W.scheduleOpen({url,pkg,at,title:'Route nach '+d});
         const t=new Date(at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),day=new Date(at).toDateString()===new Date().toDateString()?'':' morgen/am '+new Date(at).toLocaleDateString('de-DE');
         return 'Geplant: Um '+t+' Uhr'+day+' startet Google Maps von selbst mit der Route nach '+d+'.'+(r&&r.overlay===false?' Hinweis fuer den Nutzer: Damit Maps sich von selbst oeffnet, muss A.R.I unter Android "Ueber anderen Apps anzeigen" duerfen - sonst kommt zur Uhrzeit eine Benachrichtigung zum Antippen.':'');
       }
-      await W.openUrl({url,pkg});return 'Google Maps ist geoeffnet mit der Route nach '+d+'.';
+      await W.openUrl({url,pkg});return 'Google Maps ist geoeffnet und zeigt die Route nach '+d+'. Gestartet ist nichts - der Nutzer drueckt in Maps selbst auf Start.';
     }
   }catch(e){return null;}
   return null;
@@ -344,7 +343,7 @@ const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
   {name:'forget',description:'Loescht Erinnerungen, die zum Suchbegriff passen.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
-  {name:'maps_route',description:'Oeffnet Google Maps DIREKT mit der Route (die App startet selbst - nie einen Link nennen). Mit "when" (z.B. "16:00" oder "2026-10-20 08:30") startet Maps erst zu dieser Uhrzeit von selbst, sonst sofort.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']},when:{type:'string',description:'Optional: Uhrzeit HH:MM (heute, sonst morgen) oder YYYY-MM-DD HH:MM, zu der Maps starten soll'}},required:['destination']}},
+  {name:'maps_route',description:'Oeffnet Google Maps SOFORT mit der Route (die App startet Maps selbst - nie einen Link nennen, nie "plane" oder "geplant" sagen). "when" NUR setzen, wenn der Nutzer AUSDRUECKLICH sagt, dass Maps erst zu einer Uhrzeit aufgehen/starten soll (z.B. "um 16 Uhr los", "oeffne um 16 Uhr Maps"). Sagt er nur, wann er ANKOMMEN will ("ich will um 7:30 da sein"), KEIN "when": Maps jetzt oeffnen und kurz sagen, dass er die Ankunftszeit in Maps einstellen kann.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']},when:{type:'string',description:'NUR bei ausdruecklichem Wunsch, dass Maps erst zu dieser Uhrzeit startet: HH:MM (heute, sonst morgen) oder YYYY-MM-DD HH:MM. Sonst weglassen.'}},required:['destination']}},
   {name:'open_app',description:'Startet eine auf dem Handy installierte App (z.B. Spotify, WhatsApp, Kamera, Einstellungen).',parameters:{type:'object',properties:{name:{type:'string'}},required:['name']}},
   {name:'set_timer',description:'Stellt einen Timer in der Uhr-App des Handys (laeuft auch weiter, wenn A.R.I zu ist).',parameters:{type:'object',properties:{minutes:{type:'number',description:'Dauer in Minuten (auch Kommazahlen, z.B. 0.5)'},label:{type:'string'}},required:['minutes']}},
   {name:'find_restaurant',description:'Sucht ein Restaurant und bereitet die Tischreservierung vor (Personenzahl/Zeit vorausgefuellt). Bucht nicht selbst - der Nutzer bestaetigt auf der Seite.',parameters:{type:'object',properties:{query:{type:'string'},people:{type:'integer'},when:{type:'string',description:'YYYY-MM-DD HH:MM'}},required:['query']}}
@@ -432,7 +431,7 @@ function sysPrompt(query){
   const mem=nodes.slice(0,30).map(n=>'- ['+n.cat+'] '+n.text).join('\n');
   const now=new Date().toLocaleString('de-DE',{dateStyle:'full',timeStyle:'short'});
   return 'Du bist A.R.I, der persoenliche Sprachassistent des Nutzers - kurz, freundlich, direkt (meist 1-3 Saetze). Antworte in der Sprache des Nutzers ('+cfg.lang+'). '+
-   'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen planen (Google Maps oeffnet sich DIREKT, auch zu einer genannten Uhrzeit - nenne niemals einen Link dafuer), Apps oeffnen, Timer stellen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
+   'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen in Google Maps oeffnen (Maps oeffnet sich DIREKT - nenne niemals einen Link dafuer; zu einer Uhrzeit nur, wenn der Nutzer ausdruecklich sagt, dass es dann starten soll, nicht bei einer Ankunftszeit), Apps oeffnen, Timer stellen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
    'Aktuell: '+now+'. Speichere Dauerhaftes ueber den Nutzer mit dem Werkzeug remember; erfinde nichts, Fragen ueber den Nutzer beantwortest du nur aus dem Gedaechtnis.'+(mem?'\n\nGEDAECHTNIS:\n'+mem:'');
 }
 async function post(url,headers,body){
@@ -523,11 +522,6 @@ async function ask(text){track('chat');
 function addMsg(who,text,lk){
   const d=document.createElement('div');d.className='m '+(who==='u'?'u':'a');const tx=document.createElement('div');tx.textContent=text;d.appendChild(tx);d._tx=tx;
   (lk||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;d.appendChild(a);});
-  const cp=document.createElement('button');cp.type='button';cp.className='cp';cp.textContent='⧉ KOPIEREN';cp.setAttribute('aria-label','Nachricht kopieren');
-  cp.onclick=async e=>{e.stopPropagation();const t=String(tx.textContent||'');let ok=false;
-    try{await navigator.clipboard.writeText(t);ok=true;}catch(err){try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove();}catch(e2){}}
-    cp.textContent=ok?'✓ KOPIERT':'Kopieren nicht möglich';setTimeout(()=>{cp.textContent='⧉ KOPIEREN';},1600);};
-  d.appendChild(cp);
   $('#log').appendChild(d);$('#log').scrollTop=1e9;return d;
 }
 // Nur "bereit", wenn wirklich ein KI-Schluessel da ist
@@ -619,7 +613,7 @@ async function send(text){
   addMsg('u',text);hist.push({role:'user',content:learned||sfApply(text)});const w=addMsg('a','…');orbBusy(true);
   const reply=await ask(learned||sfApply(text));
   if(reply===''){w.remove();orbBusy(false);hist.pop();return;}   // stiller Fehler: kein Fehlertext, keine Sprachausgabe
-  w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.insertBefore(a,w.querySelector('.cp'));});
+  w._tx.textContent=String(reply).replace(/\*\*(.+?)\*\*/g,'$1');(links||[]).forEach(l=>{const a=document.createElement('a');a.className='lk';a.href=l.url;a.target='_blank';a.rel='noopener';a.textContent='↗ '+l.label;w.appendChild(a);});
   hist.push({role:'assistant',content:reply});if(hist.length>20)hist.splice(0,hist.length-20);
   $('#log').scrollTop=1e9;orbBusy(false);speak(reply);
 }
