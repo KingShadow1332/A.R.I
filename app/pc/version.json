@@ -1,9 +1,9 @@
 {
-    "version":  85,
-    "name":  "1.6.55",
+    "version":  86,
+    "name":  "1.6.56",
     "zip":  "ari-pc.zip",
-    "sha256":  "1619fefb4c07e88dc4ece3f3fabdde244fe29eb5f64118effb7701b4f1550d9e",
+    "sha256":  "ca1a463ed8ab822fac6ed9cc079cd106ac5c41fd5627a3ceaeeec0ac6a62d89b",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "489c5520dbf86b9e5b84c6d1cbb39357ec7b6ff307e8310897b2395bb4ced813",
-    "notes":  "Neu: Benachrichtigungen mit App-Symbol, Bild und Video; Nachrichten einer Person werden zu einer Karte zusammengefasst (Klick = ganzer Verlauf); Löschen am PC schließt die Meldung auch am Handy. Einstellungen mit Kategorien und Suche nach Bedeutung, Koppelcode erneuert sich selbst. Edge-Stimme repariert (Microsoft hat die Anmeldung geändert). Kalender mit besseren Terminbalken. Weckwort-Ton kommt schneller. Discord-Mod 1.1.5: Pop-out ohne Flackern, Astro nur einmal. Absturz bei Mail/Kalender behoben."
+    "lhm_sha256":  "472ebe558e7744e1a934b9c232fd8666313a4aec3b4ff9647bda87df6153d231",
+    "notes":  "Neu: Einstellung Weiter / Zurück / Pause steuert (Automatisch, Spotify oder Windows). Nächstes Lied, vorheriges Lied und Pause per Sprache laufen jetzt zuverlässig über Spotify. Die Einstellungs-Suche findet die neue Option."
 }
