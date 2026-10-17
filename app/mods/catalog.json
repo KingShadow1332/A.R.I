@@ -4,10 +4,10 @@
                      "id":  "discord",
                      "name":  "Discord",
                      "description":  "Discord im HUD: Sprachkanal-Kachel, private Nachrichten und Erwähnungen, Stream im Planeten – mit Stream-Fix.",
-                     "version":  "1.1.3",
+                     "version":  "1.1.5",
                      "icon":  "💬",
-                     "zip":  "discord-1.1.3.zip",
-                     "sha256":  "5241558ae535646af556688da9824ec17fd11483c9963e7a040413a14895c20d",
+                     "zip":  "discord-1.1.5.zip",
+                     "sha256":  "4830453f7046d9f213403121627c0cdf31d65ed06e016a8e7748324be4b0d395",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -16,7 +16,8 @@
                                      "Stream in der Hauptkachel: Schaust du in Discord einen Stream an, löst A.R.I ihn von selbst als Pop-out-Fenster heraus (Klick auf „Pop-out“, ohne deine Maus zu bewegen) und legt dieses echte Fenster direkt über die Master-Kachel – ohne Titelleiste, voll bedienbar (z. B. anderen Stream wählen), ohne Spiegeln und ohne Zusatzlast. Astro bleibt davor. Oben in der Kopfleiste neben dem Spielmodus erscheint der Umschalter „⇄ STREAM / PLANET“, nur solange ein Stream läuft. Ist der Stream zu Ende, wird das leere Fenster geschlossen. Abschaltbar in den Einstellungen.",
                                      "Erkennung: Der Stream wird am roten „LIVE“-Schild in Discords Stream-Ansicht erkannt. Scrollst du oder verschiebst das HUD, folgt das Fenster der Kachel und blendet sich aus, wenn die Kachel nicht ganz zu sehen ist.",
                                      "Leistung: Es wird nichts mehr aufgenommen oder gespiegelt – das Pop-out ist Discords eigenes Fenster. Nur alle paar Sekunden prüft A.R.I kurz, ob ein Stream läuft.",
-                                     "Einrichtung: Die Discord-Entwickler-App legt A.R.I auf Wunsch automatisch an. Anmelden und „Autorisieren“ machst du selbst."
+                                     "Einrichtung: Die Discord-Entwickler-App legt A.R.I auf Wunsch automatisch an. Anmelden und „Autorisieren“ machst du selbst.",
+                                     "Pop-out in der Kachel: kein Flackern mehr (auch mit zweitem HUD-Fenster), Astro nur noch einmal, Bild sofort da, A.R.I kommt nach vorn. Discord-Bilder erscheinen an der Benachrichtigung."
                                  ]
                  },
                  {
@@ -26,7 +27,7 @@
                      "version":  "1.0.3",
                      "icon":  "🎮",
                      "zip":  "spiel-integration-1.0.3.zip",
-                     "sha256":  "a376d2602783755588d0fcf821d29507ddcd40ae032a7b69c97f843a1d5911e6",
+                     "sha256":  "868e746c08292521cda58349b13b811c5cd8b5cf1c288cdd85b0d4e8a18cf76a",
                      "min_core":  76,
                      "details":  [
                                      "Spielmodus: A.R.I erkennt von selbst, welches deiner eingerichteten Spiele läuft (z. B. Star Citizen) und zeigt das oben in der Kopfzeile an.",
