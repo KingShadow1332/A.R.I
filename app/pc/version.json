@@ -1,9 +1,9 @@
 {
-    "version":  86,
-    "name":  "1.6.56",
+    "version":  87,
+    "name":  "1.6.57",
     "zip":  "ari-pc.zip",
-    "sha256":  "ca1a463ed8ab822fac6ed9cc079cd106ac5c41fd5627a3ceaeeec0ac6a62d89b",
+    "sha256":  "98f0e75918d039352586a17283ef6347c86498202c492152453704039ac6a015",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "472ebe558e7744e1a934b9c232fd8666313a4aec3b4ff9647bda87df6153d231",
-    "notes":  "Neu: Einstellung Weiter / Zurück / Pause steuert (Automatisch, Spotify oder Windows). Nächstes Lied, vorheriges Lied und Pause per Sprache laufen jetzt zuverlässig über Spotify. Die Einstellungs-Suche findet die neue Option."
+    "lhm_sha256":  "bf9d099a883a66137018c2f1d932910a3e4194f4cc859822fe914d7d6abbce38",
+    "notes":  "Neu: A.R.I hört jetzt auch auf das Weckwort "
 }
