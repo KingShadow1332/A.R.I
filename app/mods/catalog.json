@@ -7,7 +7,7 @@
                      "version":  "1.1.5",
                      "icon":  "💬",
                      "zip":  "discord-1.1.5.zip",
-                     "sha256":  "35bde1ce37cad720e0039d8ffb6e6f814690bc69cbe0c55b11b887a986a715e7",
+                     "sha256":  "bc17327af8b01fc2dcd0ace878f04641380f2c371ef74f491049447d8c78e025",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -27,7 +27,7 @@
                      "version":  "1.0.3",
                      "icon":  "🎮",
                      "zip":  "spiel-integration-1.0.3.zip",
-                     "sha256":  "23281d139d34feae63ec52715878bb0ec702c63f0e17ef4c2889e474cb7cbc9e",
+                     "sha256":  "50ae30717f1aaf4b4f31074f53e5d1e4e259d32b28418e578ec6959a0fc10696",
                      "min_core":  76,
                      "details":  [
                                      "Spielmodus: A.R.I erkennt von selbst, welches deiner eingerichteten Spiele läuft (z. B. Star Citizen) und zeigt das oben in der Kopfzeile an.",
