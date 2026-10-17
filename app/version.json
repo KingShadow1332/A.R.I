@@ -1,7 +1,7 @@
 {
-    "versionCode":  82,
-    "versionName":  "1.82",
+    "versionCode":  83,
+    "versionName":  "1.83",
     "apk":  "ARI.apk",
-    "notes":  "Route oeffnet Maps ohne die Navigation zu starten, Kopieren-Knopf entfernt (Text bleibt markierbar).",
+    "notes":  "Nachrichten einer Person werden zusammengefasst, zuverlaessigeres Loeschen, Route oeffnet Maps ohne Start, Mods, Einstellungen mit Suche, Edge-Stimme repariert.",
     "sizeMb":  6.5
 }
