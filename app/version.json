@@ -1,7 +1,7 @@
 {
-    "versionCode":  83,
-    "versionName":  "1.83",
+    "versionCode":  84,
+    "versionName":  "1.84",
     "apk":  "ARI.apk",
-    "notes":  "Nachrichten einer Person werden zusammengefasst, zuverlaessigeres Loeschen, Route oeffnet Maps ohne Start, Mods, Einstellungen mit Suche, Edge-Stimme repariert.",
+    "notes":  "Wetter und Temperatur ohne Ortsangabe: Mein Ort in den Einstellungen (optional aktueller Standort per GPS).",
     "sizeMb":  6.5
 }
