@@ -1,9 +1,9 @@
 {
-    "version":  87,
-    "name":  "1.6.57",
+    "version":  88,
+    "name":  "1.6.58",
     "zip":  "ari-pc.zip",
-    "sha256":  "98f0e75918d039352586a17283ef6347c86498202c492152453704039ac6a015",
+    "sha256":  "04f1deb85fc5bc0931e1bde5d36af95c4399f1cd35cbcab3f05b3b3fb8e1fc64",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "bf9d099a883a66137018c2f1d932910a3e4194f4cc859822fe914d7d6abbce38",
-    "notes":  "Neu: A.R.I hört jetzt auch auf das Weckwort "
+    "lhm_sha256":  "bdac5d09605892a024621b6d9d05c08f469270472824d09726ba052d64b97ca4",
+    "notes":  "Neu: Wetter und Temperatur ohne Ortsangabe (Einstellungen \u003e Mein Ort). Fenster-Herzschlag: A.R.I beendet sich nicht mehr, wenn das HUD kurz haengt. Pop-out-Geduld 5 s."
 }
