@@ -743,6 +743,18 @@ body.syncing .syncspin{display:inline-block}
         </div>
       </div>
     </details>
+    <details class="set-section">
+      <summary>⌖ MEIN ORT</summary>
+      <div class="set-section-body">
+        <div class="panel"><div class="panel-h"><span class="ico">⌖</span><span class="t">MEIN ORT</span></div>
+          <div class="set"><label>ORT FÜR WETTER &amp; TEMPERATUR</label><input id="sPlace" type="text" autocomplete="off" placeholder="z. B. Hamburg"></div>
+          <div class="row" style="margin-top:8px"><button class="btn" id="sPlaceSave">SPEICHERN</button></div>
+          <div class="dim2" id="placeInfo" style="margin-top:8px">…</div>
+          <div class="dim2">Ohne Ortsangabe („wie ist das Wetter?“) nimmt A.R.I diesen Ort. Leer lassen und speichern = automatisch erkennen.</div>
+          <label class="dim" style="display:flex;gap:8px;align-items:flex-start;margin-top:12px"><input type="checkbox" id="sPlaceGps" style="margin-top:3px"> <span>Bei Wetterfragen meinen aktuellen Standort (GPS) nehmen – nur dann wird der Standort abgefragt</span></label>
+        </div>
+      </div>
+    </details>
     <details class="set-section" id="bgSection" style="display:none">
       <summary>⟳ HINTERGRUND-BETRIEB (Termine/Mails ohne offene App)</summary>
       <div class="set-section-body">
@@ -805,7 +817,7 @@ body.syncing .syncspin{display:inline-block}
         <div class="dim" id="devInfo" style="font-family:var(--font-mono);font-size:11px;line-height:1.7;white-space:pre-wrap">wird geladen …</div>
         <div style="margin-top:10px"><label class="dim" id="betaRow" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="betaChan" style="margin-top:3px"> <span>Beta-Kanal: Test-Versionen vor allen anderen bekommen (kann Fehler haben)</span></label></div>
         <div class="row" style="margin-top:10px"><button class="btn" id="devUpd">UPDATE-PRÜFUNG ERZWINGEN</button><button class="btn" id="devReload">APP NEU LADEN</button></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="devTour">EINFÜHRUNG STARTEN</button><button class="btn" id="devVoice">STIMME TESTEN</button></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="devTour">EINFÜHRUNG STARTEN</button><button class="btn" id="devWeather">WETTER TESTEN</button><button class="btn" id="devVoice">STIMME TESTEN</button></div>
         <div class="row" style="margin-top:8px"><button class="btn" id="devStSend">STATISTIK JETZT SENDEN</button><button class="btn" id="devStPv">STATISTIK-VORSCHAU</button></div>
         <input type="password" id="devKey" placeholder="Admin-Schlüssel der Statistik" autocomplete="new-password" spellcheck="false" style="width:100%;box-sizing:border-box;margin-top:10px">
         <div class="row" style="margin-top:8px"><button class="btn" id="devStOpen">STATISTIK-SEITE ÖFFNEN</button><button class="btn" id="devOff">DEV-MODUS AUS</button></div>
