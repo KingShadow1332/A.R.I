@@ -258,10 +258,42 @@ async function nativeAction(name,a){
   }catch(e){return null;}
   return null;
 }
+/* ---------- Mein Ort + Wetter (ohne Ortsangabe gilt der Heimatort; optional aktueller Standort per GPS) ---------- */
+let homePlace=store.get('ari-place',null);   // {name,lat,lon,auto}
+const WMO={0:'klar',1:'meist klar',2:'teils bewoelkt',3:'bedeckt',45:'Nebel',48:'Reifnebel',51:'leichter Nieselregen',53:'Nieselregen',55:'starker Nieselregen',56:'gefrierender Nieselregen',57:'gefrierender Nieselregen',61:'leichter Regen',63:'Regen',65:'starker Regen',66:'gefrierender Regen',67:'gefrierender Regen',71:'leichter Schneefall',73:'Schneefall',75:'starker Schneefall',77:'Schneegriesel',80:'leichte Regenschauer',81:'Regenschauer',82:'heftige Regenschauer',85:'leichte Schneeschauer',86:'Schneeschauer',95:'Gewitter',96:'Gewitter mit Hagel',99:'Gewitter mit starkem Hagel'};
+async function jget(u,ms){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),ms||8000);try{const r=await fetch(u,{signal:ac.signal});return await r.json();}finally{clearTimeout(to);}}
+async function placeGeocode(n){try{const d=await jget('https://geocoding-api.open-meteo.com/v1/search?count=1&language=de&name='+encodeURIComponent(n));const r=(d.results||[])[0];
+  if(r){let l=r.name||n;if(r.admin1&&r.admin1.indexOf(l)<0)l+=', '+r.admin1;return{name:l,lat:r.latitude,lon:r.longitude};}}catch(e){}return null;}
+async function placeDetectIp(){try{const d=await jget('https://ipwho.is/?fields=success,city,latitude,longitude',6000);if(d.success&&d.city)return{name:d.city,lat:d.latitude,lon:d.longitude,auto:true};}catch(e){}return null;}
+function placeGps(ms){return new Promise(res=>{if(!navigator.geolocation)return res(null);
+  navigator.geolocation.getCurrentPosition(async p=>{const lat=p.coords.latitude,lon=p.coords.longitude;let name='Mein Standort';
+    try{const d=await jget('https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&accept-language=de&lat='+lat+'&lon='+lon,6000);const a=d.address||{};name=a.city||a.town||a.village||a.municipality||a.county||name;}catch(e){}
+    res({name,lat,lon,auto:true,gps:true});},()=>res(null),{enableHighAccuracy:false,timeout:ms||8000,maximumAge:600000});});}
+async function placeGet(){
+  if(cfg.placeGps==='1'){const g=await placeGps(7000);if(g)return g;}
+  if(homePlace)return homePlace;
+  const d=await placeDetectIp();if(d){homePlace=d;store.set('ari-place',d);}return d;
+}
+async function weatherTool(a){
+  const want=String(a.place||'').trim();let loc;
+  if(want){loc=await placeGeocode(want);if(!loc)return 'Den Ort "'+want+'" habe ich nicht gefunden.';}
+  else{loc=await placeGet();if(!loc)return 'Mein Ort ist noch nicht eingestellt und konnte nicht ermittelt werden - der Nutzer kann ihn unter Einstellungen > MEIN ORT eintragen.';}
+  try{
+    const n=Math.max(1,Math.min(parseInt(a.days,10)||1,7));
+    const w=await jget('https://api.open-meteo.com/v1/forecast?latitude='+loc.lat+'&longitude='+loc.lon+'&timezone=auto&forecast_days='+n+'&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max');
+    const c=w.current||{};
+    const out=['Wetter in '+loc.name+' jetzt: '+Math.round(c.temperature_2m)+' °C (gefuehlt '+Math.round(c.apparent_temperature)+' °C), '+(WMO[c.weather_code]||'wechselhaft')+', Wind '+Math.round(c.wind_speed_10m)+' km/h.'];
+    const dl=w.daily||{};
+    (dl.time||[]).forEach((day,i)=>{const pr=dl.precipitation_probability_max[i];
+      out.push((i===0?'Heute':i===1?'Morgen':day)+': '+Math.round(dl.temperature_2m_min[i])+' bis '+Math.round(dl.temperature_2m_max[i])+' °C, '+(WMO[dl.weather_code[i]]||'wechselhaft')+', Regenwahrscheinlichkeit '+(pr==null?0:pr)+' %.');});
+    return out.join(' ');
+  }catch(e){return 'Das Wetter konnte gerade nicht abgerufen werden.';}
+}
 async function runToolAsync(name,a){
   const pt=pluginTools().find(t=>t.name===name);
   if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Die Mod hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass die Mod gerade nicht geklappt hat - ohne technische Details.';}}
   if(name==='create_plugin')return createPluginFromAi(a||{});
+  if(name==='get_weather')return weatherTool(a||{});
   if(name==='maps_route'||name==='open_app'||name==='set_timer'){const r=await nativeAction(name,a||{});if(r!==null)return r;}
   return runTool(name,a);
 }
@@ -341,6 +373,7 @@ async function refreshPlugins(manual){
 }
 const TOOLS=[
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
+  {name:'get_weather',description:'Aktuelles Wetter/Temperatur und Vorhersage. IMMER nutzen bei Fragen zu Wetter, Temperatur, Regen, Sonne, Wind. "place" NUR angeben, wenn der Nutzer einen Ort nennt - sonst weglassen (dann gilt automatisch sein Heimatort bzw. aktueller Standort; NIEMALS nach dem Ort fragen).',parameters:{type:'object',properties:{place:{type:'string',description:'Ortsname, nur wenn der Nutzer einen nennt.'},days:{type:'integer',description:'Anzahl Tage Vorhersage (Standard 1; "morgen" = 2).'}}}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
   {name:'forget',description:'Loescht Erinnerungen, die zum Suchbegriff passen.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
   {name:'maps_route',description:'Oeffnet Google Maps SOFORT mit der Route (die App startet Maps selbst - nie einen Link nennen, nie "plane" oder "geplant" sagen). "when" NUR setzen, wenn der Nutzer AUSDRUECKLICH sagt, dass Maps erst zu einer Uhrzeit aufgehen/starten soll (z.B. "um 16 Uhr los", "oeffne um 16 Uhr Maps"). Sagt er nur, wann er ANKOMMEN will ("ich will um 7:30 da sein"), KEIN "when": Maps jetzt oeffnen und kurz sagen, dass er die Ankunftszeit in Maps einstellen kann.',parameters:{type:'object',properties:{destination:{type:'string'},origin:{type:'string',description:'Optional, sonst aktueller Standort'},mode:{type:'string',enum:['driving','walking','bicycling','transit']},when:{type:'string',description:'NUR bei ausdruecklichem Wunsch, dass Maps erst zu dieser Uhrzeit startet: HH:MM (heute, sonst morgen) oder YYYY-MM-DD HH:MM. Sonst weglassen.'}},required:['destination']}},
@@ -432,7 +465,7 @@ function sysPrompt(query){
   const now=new Date().toLocaleString('de-DE',{dateStyle:'full',timeStyle:'short'});
   return 'Du bist A.R.I, der persoenliche Sprachassistent des Nutzers - kurz, freundlich, direkt (meist 1-3 Saetze). Antworte in der Sprache des Nutzers ('+cfg.lang+'). '+
    'Diese App laeuft eigenstaendig auf dem Handy ohne PC: du kannst Erinnerungen speichern/vergessen, Routen in Google Maps oeffnen (Maps oeffnet sich DIREKT - nenne niemals einen Link dafuer; zu einer Uhrzeit nur, wenn der Nutzer ausdruecklich sagt, dass es dann starten soll, nicht bei einer Ankunftszeit), Apps oeffnen, Timer stellen und Restaurants suchen. PC-Steuerung (Lautstaerke, Programme, Spotify am PC usw.) geht nur ueber den Reiter "PC" - sag das ehrlich, statt so zu tun. '+
-   'Aktuell: '+now+'. Speichere Dauerhaftes ueber den Nutzer mit dem Werkzeug remember; erfinde nichts, Fragen ueber den Nutzer beantwortest du nur aus dem Gedaechtnis.'+(mem?'\n\nGEDAECHTNIS:\n'+mem:'');
+   'Aktuell: '+now+'. Wetter/Temperatur ohne Ortsangabe: Werkzeug get_weather ohne place nutzen'+(homePlace&&homePlace.name?' (Heimatort des Nutzers: '+homePlace.name+')':'')+' - NIE nach dem Ort fragen. Speichere Dauerhaftes ueber den Nutzer mit dem Werkzeug remember; erfinde nichts, Fragen ueber den Nutzer beantwortest du nur aus dem Gedaechtnis.'+(mem?'\n\nGEDAECHTNIS:\n'+mem:'');
 }
 async function post(url,headers,body){
   const r=await fetch(url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},headers),body:JSON.stringify(body)});
@@ -1427,6 +1460,20 @@ $('#sGroqMore').onchange=()=>{const more=$('#sGroqMore').value.split(new RegExp(
 $('#sProv2').onchange=()=>{cfg.fb=$('#sProv2').value;saveCfg();};
 $('#sKey2').onchange=()=>{cfg.fbKey=$('#sKey2').value.trim();saveCfg();};
 $('#sLang').onchange=()=>{cfg.lang=$('#sLang').value;saveCfg();};
+// Mein Ort
+function placeUi(){const i=$('#sPlace'),inf=$('#placeInfo');if(!i)return;
+  i.value=homePlace&&!homePlace.auto?homePlace.name:'';i.placeholder=homePlace?homePlace.name:'z. B. Hamburg';
+  $('#sPlaceGps').checked=cfg.placeGps==='1';
+  inf.textContent=homePlace?(homePlace.auto?'Automatisch erkannt: ':'Eingestellt: ')+homePlace.name:'Noch kein Ort - wird beim ersten Wetter automatisch erkannt oder trag ihn ein.';}
+$('#sPlaceSave').onclick=async()=>{const inf=$('#placeInfo'),n=$('#sPlace').value.trim();
+  if(!n){homePlace=null;store.set('ari-place',null);inf.textContent='Wird ermittelt …';homePlace=await placeDetectIp();store.set('ari-place',homePlace);placeUi();return;}
+  inf.textContent='Wird gespeichert …';const l=await placeGeocode(n);if(!l){inf.textContent='Diesen Ort habe ich nicht gefunden.';return;}
+  homePlace=l;store.set('ari-place',l);placeUi();};
+$('#sPlaceGps').onchange=async()=>{const on=$('#sPlaceGps').checked;cfg.placeGps=on?'1':'0';saveCfg();const inf=$('#placeInfo');
+  if(on){inf.textContent='Standort wird abgefragt …';const g=await placeGps(9000);
+    if(!g){cfg.placeGps='0';saveCfg();$('#sPlaceGps').checked=false;inf.textContent='Kein Standort erhalten - bitte in den Android-Einstellungen den Standort für A.R.I erlauben.';return;}
+    inf.textContent='Aktueller Standort: '+g.name;}else placeUi();};
+placeUi();
 $$('#sTts .btn').forEach(b=>b.onclick=()=>{cfg.tts=b.dataset.v;saveCfg();loadSet();});
 $('#sVoice').onchange=()=>{cfg.voice=$('#sVoice').value;saveCfg();speak('Das ist meine Stimme.');};
 $$('#sPc .btn').forEach(b=>b.onclick=()=>{cfg.pcRoute=b.dataset.v;saveCfg();loadSet();});
@@ -1518,6 +1565,7 @@ const saveSync=()=>store.set('ari-app-sync',sync);
     'STATISTIK':'anonym daten nutzung',
     'UNTERSTÜTZEN':'spenden kaffee',
     'DEV':'entwickler test',
+    'MEIN ORT':'wetter temperatur heimatort standort wohnort stadt ort zuhause gps regen vorhersage',
     'SYNCHRONISATION':'pc verbinden koppeln kopplung übertragen uebertragen sync synchronisieren google kalender ical verbindung',
     'MIT DEM PC VERBINDEN':'koppeln kopplung koppelcode qr code scannen pc handy verbinden wlan übertragen uebertragen steuern bildschirm',
     "SO GEHT'S":'hilfe anleitung erklärung anfang'
@@ -1904,6 +1952,7 @@ async function devRefresh(){
 const on=(id,fn)=>{const e=$(id);if(e)e.onclick=fn;};
 on('#devUpd',async()=>{msg('Suche …');try{await checkUpdate(true);msg('Update-Prüfung fertig (Ergebnis siehe APP-UPDATE).');}catch(e){msg('Fehler: '+e.message);}});
 on('#devReload',()=>location.reload());
+on('#devWeather',async()=>{msg('Hole Wetter …');msg(await weatherTool({days:2}));});
 on('#devTour',()=>{goTab('chat');tourStart();});
 on('#devVoice',async()=>{const v=cfg.voice||'edge:katja';msg('Teste '+v+' …');if(v==='device'||cfg.lang!=='de-DE'||!NATIVE){speakDevice('Hallo, ich bin A.R.I. Das ist die Handy-Stimme.');msg('Handy-Stimme gespielt.');return;}
   const t0=Date.now();try{await speakEdge('Hallo, ich bin A.R.I. Das ist die Stimme '+v.replace('edge:','')+'.',v);msg('Edge-Stimme ok ('+(Date.now()-t0)+' ms).');}catch(e){msg('Edge-Stimme nicht erreichbar ('+(e.message||e)+') - Handy-Stimme als Ersatz.');speakDevice('Hallo, ich bin A.R.I. Das ist die Handy-Stimme.');}});
