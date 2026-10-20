@@ -1,9 +1,9 @@
 {
-    "version":  90,
-    "name":  "1.6.60",
+    "version":  91,
+    "name":  "1.6.61",
     "zip":  "ari-pc.zip",
-    "sha256":  "2393e88372373421e241ea209378e2904c6c0299688898fc6c48faaf46ed4127",
+    "sha256":  "819ecd296d31edac790387074a4df481cc453960e73a214aaf3bab6189afc692",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "7e7ccda683d7c2c59f9c39f3389bcabbb3d747743a42c9953671ec89bd8d2751",
-    "notes":  "Zuhoeren endet nach 2 Sekunden, wenn nichts gesagt wird (laeuft weiter, sobald du sprichst)."
+    "lhm_sha256":  "9cc20a51016a6a6f35c0fc9c54b0439eaea4d33fe8b8ec7f72996dee6a6b6c25",
+    "notes":  "Spracherkennung: Hinweistext wird nicht mehr als erkannter Satz zurueckgegeben (keine falschen Weckwoerter mehr), schlankere Wortliste."
 }
