@@ -59,5 +59,6 @@
   {"version": 87, "name": "1.6.57", "notes": "Neu: A.R.I hört jetzt auch auf das Weckwort "},
   {"version": 88, "name": "1.6.58", "notes": "Neu: Wetter und Temperatur ohne Ortsangabe (Einstellungen > Mein Ort). Fenster-Herzschlag: A.R.I beendet sich nicht mehr, wenn das HUD kurz haengt. Pop-out-Geduld 5 s."},
   {"version": 89, "name": "1.6.59", "notes": "Neu: Wetter ohne Ortsangabe (Mein Ort), Emoji-Auswahl fuer Antworten, Suche im Gehirn, genauere Spracherkennung (waehlbar) mit Schnell-Stufe und Wortliste, Weckwort Ari auch ohne betontes R, Ostereier sprechen und Konami mit Ton, Erinnerungen sprechen ohne Klick, Sammelmeldungen werden zusammengefasst."},
-  {"version": 90, "name": "1.6.60", "notes": "Zuhoeren endet nach 2 Sekunden, wenn nichts gesagt wird (laeuft weiter, sobald du sprichst)."}
+  {"version": 90, "name": "1.6.60", "notes": "Zuhoeren endet nach 2 Sekunden, wenn nichts gesagt wird (laeuft weiter, sobald du sprichst)."},
+  {"version": 91, "name": "1.6.61", "notes": "Spracherkennung: Hinweistext wird nicht mehr als erkannter Satz zurueckgegeben (keine falschen Weckwoerter mehr), schlankere Wortliste."}
 ]
