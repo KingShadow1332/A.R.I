@@ -1,9 +1,9 @@
 {
-    "version":  88,
-    "name":  "1.6.58",
+    "version":  89,
+    "name":  "1.6.59",
     "zip":  "ari-pc.zip",
-    "sha256":  "04f1deb85fc5bc0931e1bde5d36af95c4399f1cd35cbcab3f05b3b3fb8e1fc64",
+    "sha256":  "503d56b0432a20a3082632911fd73445a797f5c752fae70152368b4bf8c49e4e",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "bdac5d09605892a024621b6d9d05c08f469270472824d09726ba052d64b97ca4",
-    "notes":  "Neu: Wetter und Temperatur ohne Ortsangabe (Einstellungen \u003e Mein Ort). Fenster-Herzschlag: A.R.I beendet sich nicht mehr, wenn das HUD kurz haengt. Pop-out-Geduld 5 s."
+    "lhm_sha256":  "12ab4e85e3abd76b44cdf98c6de012dcf6f95e7f49bb6545ec0a9f72f4c14931",
+    "notes":  "Neu: Wetter ohne Ortsangabe (Mein Ort), Emoji-Auswahl fuer Antworten, Suche im Gehirn, genauere Spracherkennung (waehlbar) mit Schnell-Stufe und Wortliste, Weckwort Ari auch ohne betontes R, Ostereier sprechen und Konami mit Ton, Erinnerungen sprechen ohne Klick, Sammelmeldungen werden zusammengefasst."
 }
