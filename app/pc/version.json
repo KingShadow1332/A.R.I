@@ -1,9 +1,9 @@
 {
-    "version":  89,
-    "name":  "1.6.59",
+    "version":  90,
+    "name":  "1.6.60",
     "zip":  "ari-pc.zip",
-    "sha256":  "503d56b0432a20a3082632911fd73445a797f5c752fae70152368b4bf8c49e4e",
+    "sha256":  "2393e88372373421e241ea209378e2904c6c0299688898fc6c48faaf46ed4127",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "12ab4e85e3abd76b44cdf98c6de012dcf6f95e7f49bb6545ec0a9f72f4c14931",
-    "notes":  "Neu: Wetter ohne Ortsangabe (Mein Ort), Emoji-Auswahl fuer Antworten, Suche im Gehirn, genauere Spracherkennung (waehlbar) mit Schnell-Stufe und Wortliste, Weckwort Ari auch ohne betontes R, Ostereier sprechen und Konami mit Ton, Erinnerungen sprechen ohne Klick, Sammelmeldungen werden zusammengefasst."
+    "lhm_sha256":  "7e7ccda683d7c2c59f9c39f3389bcabbb3d747743a42c9953671ec89bd8d2751",
+    "notes":  "Zuhoeren endet nach 2 Sekunden, wenn nichts gesagt wird (laeuft weiter, sobald du sprichst)."
 }
