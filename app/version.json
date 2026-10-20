@@ -1,7 +1,7 @@
 {
-    "versionCode":  84,
-    "versionName":  "1.84",
+    "versionCode":  85,
+    "versionName":  "1.85",
     "apk":  "ARI.apk",
-    "notes":  "Wetter und Temperatur ohne Ortsangabe: Mein Ort in den Einstellungen (optional aktueller Standort per GPS).",
+    "notes":  "Wetter ohne Ortsangabe, Mein Ort mit GPS-Option, frecher bei Beleidigungen, Emojis in Antworten.",
     "sizeMb":  6.5
 }
