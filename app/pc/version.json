@@ -1,9 +1,9 @@
 {
-    "version":  92,
-    "name":  "1.6.62",
+    "version":  93,
+    "name":  "1.6.63",
     "zip":  "ari-pc.zip",
-    "sha256":  "ee96be42bb0b73216cb94c1edb01bd8a57236259f68f1598dde930136a66c6a8",
+    "sha256":  "44840173077d075aac3f46239b8757fcab1b3f862744ff3fca693370ec05516f",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "ce4737b10b0ae3bac9d305e2612e15e217a781d7a5ddfee68c69cdee241b7644",
-    "notes":  "Spracherkennung deutlich schneller (schnelle Stufe entscheidet bei klaren Befehlen, Modelle werden beim Start aufgewaermt) und weniger erfundene Saetze bei Stille."
+    "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
+    "notes":  "Fehlerbehebung: Setup und Start nutzen jetzt automatisch Python 3.10 bis 3.13 (mit Python 3.14 oder neuer schlug die Installation der Pakete fehl). Das Setup kann A.R.I auch bei \u0027Neu installieren\u0027 in einen anderen Ordner (z. B. Dokumente) umziehen und nimmt dabei die Daten mit."
 }
