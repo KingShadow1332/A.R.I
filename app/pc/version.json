@@ -1,9 +1,9 @@
 {
-    "version":  91,
-    "name":  "1.6.61",
+    "version":  92,
+    "name":  "1.6.62",
     "zip":  "ari-pc.zip",
-    "sha256":  "819ecd296d31edac790387074a4df481cc453960e73a214aaf3bab6189afc692",
+    "sha256":  "ee96be42bb0b73216cb94c1edb01bd8a57236259f68f1598dde930136a66c6a8",
     "lhm_zip":  "ari-lhm.zip",
-    "lhm_sha256":  "9cc20a51016a6a6f35c0fc9c54b0439eaea4d33fe8b8ec7f72996dee6a6b6c25",
-    "notes":  "Spracherkennung: Hinweistext wird nicht mehr als erkannter Satz zurueckgegeben (keine falschen Weckwoerter mehr), schlankere Wortliste."
+    "lhm_sha256":  "ce4737b10b0ae3bac9d305e2612e15e217a781d7a5ddfee68c69cdee241b7644",
+    "notes":  "Spracherkennung deutlich schneller (schnelle Stufe entscheidet bei klaren Befehlen, Modelle werden beim Start aufgewaermt) und weniger erfundene Saetze bei Stille."
 }
