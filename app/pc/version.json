@@ -1,0 +1,9 @@
+{
+    "version":  93,
+    "name":  "1.6.63",
+    "zip":  "ari-pc.zip",
+    "sha256":  "44840173077d075aac3f46239b8757fcab1b3f862744ff3fca693370ec05516f",
+    "lhm_zip":  "ari-lhm.zip",
+    "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
+    "notes":  "Fehlerbehebung: Setup und Start nutzen jetzt automatisch Python 3.10 bis 3.13 (mit Python 3.14 oder neuer schlug die Installation der Pakete fehl). Das Setup kann A.R.I auch bei \u0027Neu installieren\u0027 in einen anderen Ordner (z. B. Dokumente) umziehen und nimmt dabei die Daten mit."
+}
