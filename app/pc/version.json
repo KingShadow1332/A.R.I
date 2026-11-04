@@ -1,9 +1,9 @@
 {
-    "version":  93,
-    "name":  "1.6.63",
+    "version":  94,
+    "name":  "1.6.64",
     "zip":  "ari-pc.zip",
-    "sha256":  "44840173077d075aac3f46239b8757fcab1b3f862744ff3fca693370ec05516f",
+    "sha256":  "d24e768e3c87131644a1fb07f259d0d7e018c80d74f1f41b2938693377d50cdd",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Fehlerbehebung: Setup und Start nutzen jetzt automatisch Python 3.10 bis 3.13 (mit Python 3.14 oder neuer schlug die Installation der Pakete fehl). Das Setup kann A.R.I auch bei \u0027Neu installieren\u0027 in einen anderen Ordner (z. B. Dokumente) umziehen und nimmt dabei die Daten mit."
+    "notes":  "Neu: Animation beim Knopf \u201eNach Updates suchen\u201c. A.R.I beendet sich jetzt sofort, wenn du das Fenster schlie\u00dft. Spracherkennung: S\u00e4tze erkennt jetzt Groq (genauer, in den Einstellungen abschaltbar) mit dem Modell auf dem PC als R\u00fcckfall; das Weckwort bleibt auf dem PC und l\u00f6st nur noch am Satzanfang aus. Weniger abgeschnittene S\u00e4tze und keine falschen Ausl\u00f6ser mehr durch Ger\u00e4usche. Die Einstellung \u201eLautst\u00e4rke: Spotify\u201c wird jetzt zuverl\u00e4ssig beachtet, Antworten und Best\u00e4tigungen sind abwechslungsreicher, und einfache Befehle laufen bei Groq ohne Umweg \u00fcber ein nicht mehr vorhandenes Modell."
 }
