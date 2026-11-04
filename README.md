@@ -10,15 +10,6 @@ A.R.I läuft als Command Center auf dem PC und als eigenständige App auf dem Ha
 
 A.R.I sucht beim Start selbst nach neueren Versionen und bietet ein Update per Klick an — nichts hier manuell nachziehen.
 
-## 🐧 Für Linux (Ubuntu/Debian, X11) — ⚠️ ungetestet
-
-1. **[ari-linux.zip herunterladen](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip)** und entpacken
-2. Im Terminal im entpackten Ordner: `bash linux/install.sh`
-3. Fertig — „A.R.I Assistant“ steht im Programmmenü (und optional auf dem Desktop, mit Icon)
-
-Die Linux-Version wurde noch nicht auf echtem Linux getestet und kann Fehler enthalten. Der Installer richtet Python-Umgebung, benötigte Pakete (xdotool, wmctrl, playerctl …), Starter und auf Wunsch Autostart ein. Optionen: `--with-piper` (lokale Stimme), `--autostart`, `--dir`, `--uninstall`.
-Unter **Wayland** sind Tasten-/Maussteuerung und Bildschirm-Ansicht eingeschränkt — beim Login „Ubuntu on Xorg“ wählen.
-
 ## 📱 Fürs Handy (Android)
 
 1. **[ARI.apk herunterladen](https://ari-stats.morice3474.workers.dev/dl/ARI.apk)**
@@ -32,11 +23,9 @@ Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Eins
 | | Version | Download |
 |---|---|---|
 | PC (Windows) | 1.6.64 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
-| PC (Linux) | 1.6.62 | [ari-linux.zip](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip) |
 | Handy | 1.85 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
 
 | PC (Windows) | 1.6.1 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
-| PC (Linux) | 1.6.1 | [ari-linux.zip](https://ari-stats.morice3474.workers.dev/dl/ari-linux.zip) |
 | Handy | 1.7.3 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
