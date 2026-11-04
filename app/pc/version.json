@@ -1,9 +1,9 @@
 {
-    "version":  94,
-    "name":  "1.6.64",
+    "version":  95,
+    "name":  "1.6.65",
     "zip":  "ari-pc.zip",
-    "sha256":  "ea4761d2854e94d2d54269af9d9287691a903f146ff29748f5dbdd27d1cecfaf",
+    "sha256":  "5268488e82572127459ad412fa4fc0e128a2cfc0262a037738040778a2927033",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Neu: Animation beim Knopf \u201eNach Updates suchen\u201c. A.R.I beendet sich jetzt sofort, wenn du das Fenster schlie\u00dft. Spracherkennung: S\u00e4tze erkennt jetzt Groq (genauer, in den Einstellungen abschaltbar) mit dem Modell auf dem PC als R\u00fcckfall; das Weckwort bleibt auf dem PC und l\u00f6st nur noch am Satzanfang aus. Weniger abgeschnittene S\u00e4tze und keine falschen Ausl\u00f6ser mehr durch Ger\u00e4usche. Die Einstellung \u201eLautst\u00e4rke: Spotify\u201c wird jetzt zuverl\u00e4ssig beachtet, Antworten und Best\u00e4tigungen sind abwechslungsreicher, und einfache Befehle laufen bei Groq ohne Umweg \u00fcber ein nicht mehr vorhandenes Modell."
+    "notes":  "Fehlerbehebung: Das Update auf 1.6.64 konnte sich bei manchen Installationen mehrfach wiederholen, und die Version blieb auf 1.6.63 stehen. Die Versionsnummer stimmt wieder, und der Updater erkennt jetzt, wenn dasselbe Paket schon installiert wurde, und installiert es nicht noch einmal in einer Schleife."
 }
