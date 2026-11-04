@@ -1,9 +1,9 @@
 {
-    "version":  95,
-    "name":  "1.6.65",
+    "version":  96,
+    "name":  "1.6.66",
     "zip":  "ari-pc.zip",
-    "sha256":  "5268488e82572127459ad412fa4fc0e128a2cfc0262a037738040778a2927033",
+    "sha256":  "cfcfb52df043b4ad3d0ef3329516c491b762977fa528f83b8d513cf06257353f",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Fehlerbehebung: Das Update auf 1.6.64 konnte sich bei manchen Installationen mehrfach wiederholen, und die Version blieb auf 1.6.63 stehen. Die Versionsnummer stimmt wieder, und der Updater erkennt jetzt, wenn dasselbe Paket schon installiert wurde, und installiert es nicht noch einmal in einer Schleife."
+    "notes":  "Die CPU-Temperatur-Anzeige ist ruhiger und verl\u00e4sslicher: Fehlmessungen (z. B. 108 \u00b0C) werden verworfen, kurze Spitzen gegl\u00e4ttet. Die Hitze-Warnung kommt erst, wenn CPU oder GPU l\u00e4nger (ca. 20 Sekunden) hei\u00df bleiben, und nicht mehr bei einer kurzen Spitze."
 }
