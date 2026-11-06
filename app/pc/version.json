@@ -1,9 +1,9 @@
 {
-    "version":  96,
-    "name":  "1.6.66",
+    "version":  97,
+    "name":  "1.6.67",
     "zip":  "ari-pc.zip",
-    "sha256":  "cfcfb52df043b4ad3d0ef3329516c491b762977fa528f83b8d513cf06257353f",
+    "sha256":  "bab76d60ed028e57d643d1246e1a4b013c21c64b6c4ed56f47450e2e903ca578",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Die CPU-Temperatur-Anzeige ist ruhiger und verl\u00e4sslicher: Fehlmessungen (z. B. 108 \u00b0C) werden verworfen, kurze Spitzen gegl\u00e4ttet. Die Hitze-Warnung kommt erst, wenn CPU oder GPU l\u00e4nger (ca. 20 Sekunden) hei\u00df bleiben, und nicht mehr bei einer kurzen Spitze."
+    "notes":  "Neu: Design-Editor in den Einstellungen mit gro\u00dfer Vorschau deines HUDs. Dort w\u00e4hlst du Farben, eigene Hintergrundbilder und zehn fertige Star-Citizen-Designs (Aegis, Anvil, Argo, Consolidated Outland, Crusader, Drake, MISC, Origin, RSI, Esperia). Gespeichert wird erst mit \u00dcBERNEHMEN. A.R.I startet au\u00dferdem schneller, und die Hinweistexte zur Spracherkennung sind k\u00fcrzer."
 }
