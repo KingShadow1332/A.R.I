@@ -1,9 +1,9 @@
 {
-    "version":  97,
-    "name":  "1.6.67",
+    "version":  98,
+    "name":  "1.6.68",
     "zip":  "ari-pc.zip",
-    "sha256":  "bab76d60ed028e57d643d1246e1a4b013c21c64b6c4ed56f47450e2e903ca578",
+    "sha256":  "b448b81fe0b6cd361fbab2ee919065c14572f3d04493acbb815fa11340e2e581",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Neu: Design-Editor in den Einstellungen mit gro\u00dfer Vorschau deines HUDs. Dort w\u00e4hlst du Farben, eigene Hintergrundbilder und zehn fertige Star-Citizen-Designs (Aegis, Anvil, Argo, Consolidated Outland, Crusader, Drake, MISC, Origin, RSI, Esperia). Gespeichert wird erst mit \u00dcBERNEHMEN. A.R.I startet au\u00dferdem schneller, und die Hinweistexte zur Spracherkennung sind k\u00fcrzer."
+    "notes":  "Behoben: Nach einem automatischen Update startete A.R.I nicht mehr von selbst neu. Der Neustart wartet jetzt zuverl\u00e4ssig, bis die alte Version beendet ist."
 }
