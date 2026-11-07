@@ -1,9 +1,9 @@
 {
-    "version":  100,
-    "name":  "1.6.70",
+    "version":  101,
+    "name":  "1.6.71",
     "zip":  "ari-pc.zip",
-    "sha256":  "12ba7a7bb1c0b132fbc281d0f95e88adda1e37fb519ac8956fe7fe11e952c37b",
+    "sha256":  "cc65cc3401a190f91b16aef168205dc1cc5a64de91863c830ef3f7c35a4d6038",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Kleine Korrektur an der Vordergrund-Wache: Discord (zum Beispiel ein maximiertes Discord-Fenster) gilt nicht mehr als Spiel. Dadurch darf das Stream-Pop-out wieder nach vorn kommen. Dazu geh\u00f6rt das Discord-Mod 1.1.8 mit der zuverl\u00e4ssigeren Pop-out-Erkennung."
+    "notes":  "A.R.I braucht deutlich weniger Rechenleistung: Das Netzwerk-Diagramm, die Verlaufslinien, der Musik-Balken und einige Schimmer-Effekte werden jetzt sparsamer gezeichnet (gleiches Aussehen, rund 40 % weniger Last im HUD). Das Protokoll wird \u00fcbersichtlicher, und die Einstellungs-Suche \u00f6ffnet nicht mehr ungewollt das Design-Fenster."
 }
