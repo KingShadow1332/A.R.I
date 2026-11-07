@@ -1,9 +1,9 @@
 {
-    "version":  99,
-    "name":  "1.6.69",
+    "version":  100,
+    "name":  "1.6.70",
     "zip":  "ari-pc.zip",
-    "sha256":  "84a6c16b66bb3cd66c295685fed6f9e44596888d4c2a48dfaf63e93cba5f2341",
+    "sha256":  "12ba7a7bb1c0b132fbc281d0f95e88adda1e37fb519ac8956fe7fe11e952c37b",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Die Linien f\u00fcr Auslastung und Temperatur passen sich jetzt dem gew\u00e4hlten Design an (Auslastung in der Hauptfarbe, Temperatur in einem passenden Ton), und der Planet folgt der Hauptfarbe. A.R.I schiebt sich au\u00dferdem nicht mehr ungefragt vor Spiele: Wird ein Vollbild-Programm verdr\u00e4ngt, bekommt es den Vordergrund sofort zur\u00fcck."
+    "notes":  "Kleine Korrektur an der Vordergrund-Wache: Discord (zum Beispiel ein maximiertes Discord-Fenster) gilt nicht mehr als Spiel. Dadurch darf das Stream-Pop-out wieder nach vorn kommen. Dazu geh\u00f6rt das Discord-Mod 1.1.8 mit der zuverl\u00e4ssigeren Pop-out-Erkennung."
 }
