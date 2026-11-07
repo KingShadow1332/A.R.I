@@ -4,10 +4,10 @@
                      "id":  "discord",
                      "name":  "Discord",
                      "description":  "Discord im HUD: Sprachkanal-Kachel, private Nachrichten und Erwähnungen, Stream im Planeten – mit Stream-Fix.",
-                     "version":  "1.1.5",
+                     "version":  "1.1.6",
                      "icon":  "💬",
-                     "zip":  "discord-1.1.5.zip",
-                     "sha256":  "493fe8fd7a4d07f47480b14225104211cd9d29d08cd1467a6d56d2ca0e4523c8",
+                     "zip":  "discord-1.1.6.zip",
+                     "sha256":  "2bba0a63e5dde55f08907a0964c56b040edba55eb48c423d2bc95c79f2e2db1a",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -17,7 +17,8 @@
                                      "Erkennung: Der Stream wird am roten „LIVE“-Schild in Discords Stream-Ansicht erkannt. Scrollst du oder verschiebst das HUD, folgt das Fenster der Kachel und blendet sich aus, wenn die Kachel nicht ganz zu sehen ist.",
                                      "Leistung: Es wird nichts mehr aufgenommen oder gespiegelt – das Pop-out ist Discords eigenes Fenster. Nur alle paar Sekunden prüft A.R.I kurz, ob ein Stream läuft.",
                                      "Einrichtung: Die Discord-Entwickler-App legt A.R.I auf Wunsch automatisch an. Anmelden und „Autorisieren“ machst du selbst.",
-                                     "Pop-out in der Kachel: kein Flackern mehr (auch mit zweitem HUD-Fenster), Astro nur noch einmal, Bild sofort da, A.R.I kommt nach vorn. Discord-Bilder erscheinen an der Benachrichtigung."
+                                     "Pop-out in der Kachel: kein Flackern mehr (auch mit zweitem HUD-Fenster), Astro nur noch einmal, Bild sofort da. Discord-Bilder erscheinen an der Benachrichtigung.",
+                                     "A.R.I holt sich nie von selbst in den Vordergrund und legt das Pop-out nicht über ein Vollbild-Spiel – das Spiel bleibt bedienbar."
                                  ]
                  },
                  {
