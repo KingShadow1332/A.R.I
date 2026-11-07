@@ -1,9 +1,9 @@
 {
-    "version":  98,
-    "name":  "1.6.68",
+    "version":  99,
+    "name":  "1.6.69",
     "zip":  "ari-pc.zip",
-    "sha256":  "b448b81fe0b6cd361fbab2ee919065c14572f3d04493acbb815fa11340e2e581",
+    "sha256":  "84a6c16b66bb3cd66c295685fed6f9e44596888d4c2a48dfaf63e93cba5f2341",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Behoben: Nach einem automatischen Update startete A.R.I nicht mehr von selbst neu. Der Neustart wartet jetzt zuverl\u00e4ssig, bis die alte Version beendet ist."
+    "notes":  "Die Linien f\u00fcr Auslastung und Temperatur passen sich jetzt dem gew\u00e4hlten Design an (Auslastung in der Hauptfarbe, Temperatur in einem passenden Ton), und der Planet folgt der Hauptfarbe. A.R.I schiebt sich au\u00dferdem nicht mehr ungefragt vor Spiele: Wird ein Vollbild-Programm verdr\u00e4ngt, bekommt es den Vordergrund sofort zur\u00fcck."
 }
