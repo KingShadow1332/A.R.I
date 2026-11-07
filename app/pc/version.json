@@ -1,9 +1,9 @@
 {
-    "version":  102,
-    "name":  "1.6.72",
+    "version":  103,
+    "name":  "1.6.73",
     "zip":  "ari-pc.zip",
-    "sha256":  "ebbec5dff8d2d7016fc3a39eb87460bd554f1eb66a7e7db4015488cf44bb374a",
+    "sha256":  "84cc2e13f956f014e0904c201f0d65fcd0e00ed841bd63165b0bb33b6eb44c6c",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Neu in den Einstellungen: Der Abschnitt \u201eEinf\u00fchrung\u201c mit einem Knopf, der das Tutorial startet. Die Suche findet ihn jetzt auch mit \u201eTutorial\u201c, \u201eTour\u201c oder \u201eAnleitung\u201c."
+    "notes":  "Im System\u00fcberblick haben jetzt alle Designs eine feste Farbregel: Die obere Reihe (CPU) zeigt die Hauptfarbe, die untere (GPU) die Akzentfarbe, auch bei den Ringen. Im Design-Editor zeichnen sich die Verlaufslinien in der Vorschau und auf den Design-Kacheln jetzt in den Farben des jeweiligen Designs."
 }
