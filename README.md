@@ -4,7 +4,7 @@ A.R.I läuft als Command Center auf dem PC und als eigenständige App auf dem Ha
 
 ## 🖥️ Für den PC
 
-1. **[ari-pc-setup.zip herunterladen](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip)**
+1. **[ari-pc-setup.zip herunterladen](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip)**
 2. Entpacken (z. B. auf den Desktop)
 3. **`ARI-Setup.exe` doppelklicken** und „Installieren“ wählen — richtet Python & alle Pakete automatisch ein
 
@@ -12,21 +12,32 @@ A.R.I sucht beim Start selbst nach neueren Versionen und bietet ein Update per K
 
 ## 📱 Fürs Handy (Android)
 
-1. **[ARI.apk herunterladen](https://ari-stats.morice3474.workers.dev/dl/ARI.apk)**
+1. **[ARI.apk herunterladen](https://kingshadow1332.github.io/A.R.I/app/ARI.apk)**
 2. Datei öffnen und installieren (Android fragt einmal nach Erlaubnis für „Unbekannte Apps“ bzw. blockiert es kurz über den Play-Protect-Schutz — dort „Trotzdem installieren“ wählen)
 3. App öffnen, mit dem PC koppeln (QR-Code am PC unter Einstellungen → HANDY)
 
 Die App läuft auch **ohne PC** eigenständig (eigener KI-Schlüssel in den Einstellungen).
 
+## 📋 Systemanforderungen
+
+| | Mindestens | Empfohlen |
+|---|---|---|
+| System | Windows 10 (64 Bit) | Windows 11 |
+| Python | 3.10 (das Setup installiert es bei Bedarf) | 3.12 oder 3.13 (das Setup installiert es bei Bedarf) |
+| Arbeitsspeicher | 4 GB | 8 GB oder mehr |
+| Speicherplatz | 2 GB frei | 5 GB frei |
+| Internet | ja | schnelle, stabile Verbindung |
+| KI | eigener Schlüssel (zum Beispiel Gemini oder local) | eigener Schlüssel (zum Beispiel Gemini oder local) |
+| KI (local) | 8 GB Arbeitsspeicher | 16 GB Arbeitsspeicher, schnelle CPU oder GPU |
+| Audio | Mikrofon und Lautsprecher | Headset oder gutes Mikrofon |
+| Handy (optional) | Android 8 (im selben WLAN) | Android 12 oder neuer (im selben WLAN) |
+
 ## Aktueller Stand
 
 | | Version | Download |
 |---|---|---|
-| PC (Windows) | 1.6.73 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
-| Handy | 1.85 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
-
-| PC (Windows) | 1.6.1 | [ari-pc-setup.zip](https://ari-stats.morice3474.workers.dev/dl/ari-pc-setup.zip) |
-| Handy | 1.7.3 | [ARI.apk](https://ari-stats.morice3474.workers.dev/dl/ARI.apk) |
+| PC (Windows) | 1.6.73 | [ari-pc-setup.zip](https://kingshadow1332.github.io/A.R.I/app/pc/ari-pc-setup.zip) |
+| Handy | 1.85 | [ARI.apk](https://kingshadow1332.github.io/A.R.I/app/ARI.apk) |
 
 Beide Programme aktualisieren sich danach selbst über diese Seite.
 
