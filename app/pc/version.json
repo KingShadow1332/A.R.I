@@ -1,9 +1,9 @@
 {
-    "version":  103,
-    "name":  "1.6.73",
+    "version":  104,
+    "name":  "1.6.74",
     "zip":  "ari-pc.zip",
-    "sha256":  "84cc2e13f956f014e0904c201f0d65fcd0e00ed841bd63165b0bb33b6eb44c6c",
+    "sha256":  "f6b00f1bbae60b3610e0ed7a2141a5d1e40c31dbbd9977bf5a290e988bb4ce13",
     "lhm_zip":  "ari-lhm.zip",
     "lhm_sha256":  "9444e9b19482188b4334a0343b1e9cfd01d270ec22b5af66f73ff6a84cbcae56",
-    "notes":  "Im System\u00fcberblick haben jetzt alle Designs eine feste Farbregel: Die obere Reihe (CPU) zeigt die Hauptfarbe, die untere (GPU) die Akzentfarbe, auch bei den Ringen. Im Design-Editor zeichnen sich die Verlaufslinien in der Vorschau und auf den Design-Kacheln jetzt in den Farben des jeweiligen Designs."
+    "notes":  "Erinnerungen und Timer: Die Zeit wird nicht mehr abgeschnitten, ab 24 Stunden steht sie mit Tagen davor (z. B. 2T 03:12:00). War A.R.I zu, als eine Erinnerung f\u00e4llig wurde, meldet es sie beim n\u00e4chsten Start als verpasst (bis zu 30 Tage lang). Erinnerungen lassen sich au\u00dferdem auf einen genauen Zeitpunkt setzen, z. B. \u201emorgen um 8\u201c. Stellt man dieselbe Erinnerung oder denselben Timer neu, ersetzt die neue die alte. Im Dev-Bereich \u00f6ffnet ein neuer Knopf bei der Statistik die Statistik-Seite im Browser."
 }
