@@ -289,11 +289,174 @@ async function weatherTool(a){
     return out.join(' ');
   }catch(e){return 'Das Wetter konnte gerade nicht abgerufen werden.';}
 }
+// ---- Handy-Werkzeuge: Termin anlegen/lesen, Musik, YouTube, Webseiten oeffnen ----
+function openLink(url,label,pkg){
+  const W=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;
+  const fallback=()=>{links.push({url,label});return false;};
+  if(W&&W.openUrl){return W.openUrl(pkg?{url,pkg}:{url}).then(()=>true).catch(()=>{return W.openUrl({url}).then(()=>true).catch(fallback);});}
+  return Promise.resolve(fallback());
+}
+const pad2=n=>String(n).padStart(2,'0');
+const calDate=d=>d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(d.getHours())+pad2(d.getMinutes())+'00';
+// ---- Timer/Erinnerungen in der App (melden sich, solange die App offen ist; Uhr-App-Timer als Reserve) ----
+const TM_KEY='ari-app-timers';
+const tmGet=()=>store.get(TM_KEY,[]);
+const tmPut=l=>store.set(TM_KEY,l.slice(-40));
+function tmAdd(sec,label,kind){const l=tmGet().filter(t=>!(t.kind===kind&&String(t.label||'').toLowerCase()===String(label||'').toLowerCase()));l.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),due:Date.now()+sec*1000,label:String(label||'').slice(0,60),kind});tmPut(l);}
+function tmTick(){
+  const l=tmGet();if(!l.length)return;const now=Date.now(),rest=[];let fired=false;
+  l.forEach(t=>{
+    if(t.due>now){rest.push(t);return;}
+    fired=true;const late=now-t.due;
+    const txt=t.kind==='reminder'?(late>90000?'Verpasste Erinnerung: ':'Erinnerung: ')+(t.label||'Die Zeit ist um')+'.':(t.label&&t.label!=='A.R.I'?'Dein Timer für '+t.label+' ist abgelaufen.':'Dein Timer ist abgelaufen.');
+    try{addMsg('a',txt);hist.push({role:'assistant',content:txt});const lg=document.getElementById('log');if(lg)lg.scrollTop=1e9;}catch(x){}
+    try{toast(txt);}catch(x){}try{speak(txt);}catch(x){}try{if(navigator.vibrate)navigator.vibrate([300,150,300]);}catch(x){}
+  });
+  if(fired)tmPut(rest);
+}
+setInterval(tmTick,5000);setTimeout(tmTick,2500);
+function tmLeft(s){s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return (d?d+(d===1?' Tag ':' Tage '):'')+(h?h+' Std ':'')+(m||(!d&&!h)?m+' Min':'');}
+// ---- Filme/Serien oeffnen (Film: wo moeglich direkt abspielen; Seite kommt durch das Android-Oeffnen nach vorn) ----
+function streamDirect(url,isMovie){
+  if(!isMovie||!url)return{url,auto:false};
+  const m=/netflix\.com\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?title\/(\d+)/.exec(url);if(m)return{url:'https://www.netflix.com/watch/'+m[1],auto:true};
+  if(/(watch|www)\.amazon\.[a-z.]+\//.test(url)&&url.indexOf('autoplay=')<0)return{url:url+(url.indexOf('?')<0?'?':'&')+'autoplay=1',auto:true};
+  return{url,auto:false};
+}
+async function streamOpen(a){
+  const t=String(a.title||'').trim();if(!t)return 'Kein Titel.';
+  const mine=streamMine().filter(x=>!/youtube|twitch/i.test(x)),want=String(a.provider||'').trim().toLowerCase();
+  const svc=STREAM.find(x=>want&&!/youtube|twitch/i.test(want)&&(x[0].toLowerCase().includes(want)||want.includes(x[0].toLowerCase().split(' ')[0])))||STREAM.find(x=>x[0]===mine[0]);
+  const fallback=svc?svc[1].replace('{q}',encodeURIComponent(t)):'https://www.google.com/search?q='+encodeURIComponent(t+' stream');
+  const r=await streamLookup(t,mine);
+  if(r){
+    const d=streamDirect(r.url,r.type==='MOVIE');
+    const ok=await openLink(d.url,'Jetzt ansehen: '+t+' ('+r.name+')');
+    return ok?(d.auto?'"'+t+'" ('+r.name+') ist geoeffnet und startet direkt (Film).':'"'+t+'" ist bei '+r.name+' geoeffnet - der Nutzer muss nur noch auf Play tippen.'):'Link zu "'+t+'" ('+r.name+') ist bereit - antippen.';
+  }
+  const ok=await openLink(fallback,'Jetzt ansehen: '+t+(svc?' ('+svc[0]+')':''));
+  return ok?'Die Suche nach "'+t+'"'+(svc?' bei '+svc[0]:'')+' ist geoeffnet.':'Ein Link zur Suche nach "'+t+'" ist bereit.';
+}
+async function phoneTools(name,a){
+  if(name==='set_reminder'){
+    const label=String(a.label||'').trim().slice(0,60);if(!label)return 'Wofuer soll die Erinnerung sein?';
+    let sec=0;
+    if(a.at){const at=parseWhen(a.at);if(!at)return 'Zeitpunkt unklar (erwartet JJJJ-MM-TT HH:MM).';sec=Math.round((at-Date.now())/1000);}
+    else sec=Math.round(Number(a.minutes)*60);
+    if(!(sec>=30))return 'Die Zeit muss mindestens 30 Sekunden in der Zukunft liegen.';
+    if(sec>30*86400)return 'Maximal 30 Tage voraus.';
+    tmAdd(sec,label,'reminder');
+    const W=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;
+    if(W&&W.setTimer&&sec<=86400){try{await W.setTimer({seconds:sec,label:('Erinnerung: '+label).slice(0,40)});}catch(x){}}
+    return 'Erinnerung gestellt: in '+tmLeft(sec)+' ('+label+').'+(sec>86400?' Sie meldet sich, sobald die App dann offen ist.':'');
+  }
+  if(name==='list_timers'){
+    const l=tmGet().sort((x,y)=>x.due-y.due);if(!l.length)return 'Es ist kein Timer und keine Erinnerung gespeichert.';
+    return l.map(t=>(t.kind==='reminder'?'Erinnerung ':'Timer ')+(t.label||'ohne Namen')+': noch '+tmLeft((t.due-Date.now())/1000)).join('; ');
+  }
+  if(name==='cancel_timer'){
+    const q=String(a.label||'').trim().toLowerCase(),generic=!q||/^(alle|alles|timer|den timer|erinnerung|die erinnerung)$/.test(q);
+    const l=tmGet(),keep=generic?[]:l.filter(t=>!(String(t.label||'').toLowerCase().includes(q)||q.includes(String(t.label||'').toLowerCase())&&t.label));
+    const gone=l.length-keep.length;if(!gone)return 'Keinen passenden Timer gefunden.';tmPut(keep);
+    return gone+' Timer/Erinnerung(en) abgebrochen. Ein schon in der Uhr-App gestellter Timer bleibt dort bestehen.';
+  }
+  if(name==='play_youtube_latest'){
+    const c=String(a.channel||'').trim();if(!c)return 'Kein Kanal.';
+    const ok=await openLink('https://www.youtube.com/results?search_query='+encodeURIComponent(c)+'&sp=CAI%253D','YouTube: neueste von '+c,'com.google.android.youtube');
+    return ok?'YouTube ist geoeffnet mit den neuesten Videos von "'+c+'" (nach Datum sortiert).':'Ein Link zu den neuesten Videos von "'+c+'" ist bereit.';
+  }
+  if(name==='search_web'){
+    const q=String(a.query||'').trim();if(!q)return 'Kein Suchbegriff.';
+    const ok=await openLink('https://www.google.com/search?q='+encodeURIComponent(q),'Suche: '+q);
+    return ok?'Die Google-Suche nach "'+q+'" ist geoeffnet.':'Ein Link zur Google-Suche nach "'+q+'" ist bereit.';
+  }
+  if(name==='read_emails'){
+    const m=((calCache&&calCache.mails)||[]);if(!m.length)return 'Es sind keine E-Mails geladen (Gmail nicht verbunden oder keine neuen).';
+    const q=String(a.query||'').trim().toLowerCase();const l=(q?m.filter(x=>(x.from+' '+x.subject).toLowerCase().includes(q)):m).slice(0,8);
+    return l.length?l.map(x=>'Von '+x.from+': '+(x.subject||'(ohne Betreff)')).join('; '):'Keine passende E-Mail gefunden.';
+  }
+  if(name==='send_email'){
+    const to=String(a.to||'').trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to))return 'Die E-Mail-Adresse des Empfaengers fehlt oder ist ungueltig.';
+    const url='mailto:'+encodeURIComponent(to).replace('%40','@')+'?subject='+encodeURIComponent(String(a.subject||'').slice(0,200))+'&body='+encodeURIComponent(String(a.body||'').slice(0,3000));
+    const ok=await openLink(url,'E-Mail an '+to);
+    return ok?'Die E-Mail an '+to+' ist in der Mail-App vorbereitet - der Nutzer tippt dort auf Senden.':'Ein Link zur E-Mail an '+to+' ist bereit - antippen, dann in der Mail-App auf Senden tippen.';
+  }
+  if(name==='wuerfeln'){
+    const sides=Math.max(2,Math.min(1000,Math.round(Number(a.sides)||6))),n=Math.max(1,Math.min(20,Math.round(Number(a.count)||1)));
+    const r=[];for(let i=0;i<n;i++)r.push(1+Math.floor(Math.random()*sides));
+    return n===1?'Gewuerfelt (W'+sides+'): '+r[0]+'.':'Gewuerfelt ('+n+'x W'+sides+'): '+r.join(', ')+' - Summe '+r.reduce((x,y)=>x+y,0)+'.';
+  }
+  if(name==='remember_speech_fix'){
+    const h=String(a.heard||'').trim(),m=String(a.meant||'').trim();if(!h||!m)return 'Es fehlt, was erkannt wurde oder was gemeint ist.';
+    try{sfRemember(h,m);}catch(x){return 'Das konnte nicht gespeichert werden.';}return 'Gemerkt: wenn ich "'+h+'" verstehe, meine ich "'+m+'".';
+  }
+  if(name==='change_setting'){
+    const s=String(a.setting||''),v=a.value==null||a.value===''?null:String(a.value).toLowerCase().trim();
+    const onoff=x=>/^(an|ein|true|1|ja|on)/.test(x)?true:/^(aus|false|0|nein|off)/.test(x)?false:null;
+    if(s==='tts'||s==='remind'){
+      const cur=s==='tts'?cfg.tts!=='0':cfg.remind!==false,lab=s==='tts'?'Antworten vorlesen':'Termin-Erinnerungen';
+      if(v==null)return lab+': '+(cur?'an':'aus')+'.';const w=onoff(v);if(w===null)return 'Bitte "an" oder "aus" angeben.';
+      if(s==='tts')cfg.tts=w?'1':'0';else cfg.remind=w;saveCfg();try{loadSet();}catch(x){}const cb=document.getElementById('appRemind');if(cb&&s==='remind')cb.checked=w;
+      return lab+' ist jetzt '+(w?'an':'aus')+'.';
+    }
+    if(s==='pc_route'){
+      if(v==null)return 'Befehle an den PC: '+(cfg.pcRoute||'auto')+'.';
+      const m={auto:'auto',automatisch:'auto',always:'always',immer:'always',off:'off',aus:'off'}[v];if(!m)return 'Moeglich: auto, always (immer) oder off (aus).';
+      cfg.pcRoute=m;saveCfg();try{loadSet();}catch(x){}return 'Befehle an den PC: '+m+'.';
+    }
+    return 'Diese Einstellung kenne ich in der App nicht.';
+  }
+  if(name==='set_colors'){
+    const ok=x=>/^#[0-9a-f]{6}$/i.test(x||'');
+    if(!a.primary&&!a.accent)return 'Welche Farbe soll es sein?';
+    if((a.primary&&!ok(a.primary))||(a.accent&&!ok(a.accent)))return 'Die Farbe ist ungueltig (erwartet #RRGGBB).';
+    const th=Object.assign({},store.get('ari-app-theme',{})||{});if(a.primary)th.primary=a.primary;if(a.accent)th.accent=a.accent;
+    store.set('ari-app-theme',th);try{applyThemeSaved();}catch(x){}return 'Die Farben der App sind geaendert.';
+  }
+  if(name==='create_calendar_event'){
+    const title=String(a.title||'').trim().slice(0,120);if(!title)return 'Kein Titel fuer den Termin.';
+    const st=parseWhen(a.start);if(!st)return 'Startzeit unklar (erwartet JJJJ-MM-TT HH:MM).';
+    let en=a.end?parseWhen(a.end):0;if(!en||en<=st)en=st+Math.max(5,Math.min(1440,Number(a.duration_minutes)||60))*60000;
+    const q={action:'TEMPLATE',text:title,dates:calDate(new Date(st))+'/'+calDate(new Date(en))};
+    if(a.location)q.location=String(a.location).slice(0,200);if(a.notes)q.details=String(a.notes).slice(0,500);
+    const url='https://calendar.google.com/calendar/render?'+Object.keys(q).map(k=>k+'='+encodeURIComponent(q[k])).join('&');
+    const ok=await openLink(url,'Termin speichern: '+title,'com.google.android.calendar');
+    return ok?'Der Termin "'+title+'" ist im Kalender vorbereitet - der Nutzer tippt dort nur noch auf Speichern.':'Der Termin "'+title+'" ist als Link bereit - antippen und im Kalender auf Speichern tippen.';
+  }
+  if(name==='list_calendar_events'){
+    const ev=((calCache&&calCache.events)||[]);if(!ev.length)return 'Es sind keine Termine geladen (Kalender nicht verbunden oder leer).';
+    const days=Math.max(1,Math.min(60,Number(a.days)||7)),to=Date.now()+days*86400000;
+    const list=ev.filter(e=>{const s=new Date(e.start).getTime();return s>=Date.now()-3600000&&s<=to;}).slice(0,15);
+    if(!list.length)return 'In den naechsten '+days+' Tagen steht nichts im Kalender.';
+    return list.map(e=>{const s=new Date(e.start);return s.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})+(e.allDay?' ganztaegig':' '+s.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))+' '+e.title+(e.location?' ('+e.location+')':'');}).join('; ');
+  }
+  if(name==='play_spotify'){
+    const q=String(a.query||'').trim();if(!q)return 'Kein Suchbegriff.';
+    const ok=await openLink('https://open.spotify.com/search/'+encodeURIComponent(q),'Spotify: '+q,'com.spotify.music');
+    return ok?'Spotify ist mit der Suche nach "'+q+'" geoeffnet. Abspielen tippt der Nutzer dort selbst an - die App kann auf dem Handy nicht selbst Musik starten.':'Ein Link zur Spotify-Suche nach "'+q+'" ist bereit - antippen, dann dort auf Abspielen tippen.';
+  }
+  if(name==='play_youtube'){
+    const q=String(a.query||'').trim();if(!q)return 'Kein Suchbegriff.';
+    const ok=await openLink('https://www.youtube.com/results?search_query='+encodeURIComponent(q),'YouTube: '+q,'com.google.android.youtube');
+    return ok?'YouTube ist mit der Suche nach "'+q+'" geoeffnet.':'Ein Link zur YouTube-Suche nach "'+q+'" ist bereit.';
+  }
+  if(name==='open_url'){
+    let u=String(a.url||'').trim();if(!u)return 'Keine Adresse.';if(!/^https?:\/\//i.test(u))u='https://'+u;
+    if(!/^https?:\/\/[^\s]+\.[^\s]+/i.test(u))return 'Das ist keine gueltige Adresse.';
+    const ok=await openLink(u,'Oeffnen: '+u.replace(/^https?:\/\//i,'').slice(0,40));
+    return ok?u+' ist geoeffnet.':'Ein Link zu '+u+' ist bereit - antippen zum Oeffnen.';
+  }
+  return null;
+}
 async function runToolAsync(name,a){
   const pt=pluginTools().find(t=>t.name===name);
   if(pt){try{return String(await runDecl(pt._t,a||{})).slice(0,6000);}catch(e){return 'Die Mod hat einen Fehler gemeldet. Sag dem Nutzer kurz, dass die Mod gerade nicht geklappt hat - ohne technische Details.';}}
   if(name==='create_plugin')return createPluginFromAi(a||{});
   if(name==='get_weather')return weatherTool(a||{});
+  if(name==='play_streaming_title')return streamOpen(a||{});
+  if(name==='recommend_titles')return streamRecommend(a||{});
+  if(['create_calendar_event','list_calendar_events','play_spotify','play_youtube','open_url','set_reminder','list_timers','cancel_timer','play_youtube_latest','search_web','read_emails','send_email','wuerfeln','remember_speech_fix','change_setting','set_colors'].includes(name)){const r=await phoneTools(name,a||{});if(r!==null)return r;}
+  if(name==='set_timer'){const s0=Math.round(Number(a.minutes)*60);if(s0>=1)tmAdd(s0,String((a||{}).label||'A.R.I').slice(0,40),'timer');}
   if(name==='maps_route'||name==='open_app'||name==='set_timer'){const r=await nativeAction(name,a||{});if(r!==null)return r;}
   return runTool(name,a);
 }
@@ -372,6 +535,7 @@ async function refreshPlugins(manual){
   finally{setSyncing(false);}
 }
 const TOOLS=[
+  {name:'recommend_titles',description:'Macht Film- und Serienvorschlaege (empfiehl mir einen Film, was kann ich heute schauen, etwas Lustiges, eine Serie wie Stranger Things). Zeigt beliebte, gut bewertete Titel, die bei den Streaming-Diensten des Nutzers im Abo laufen. Nenne 3-5 Titel kurz und frage, ob du einen starten sollst (play_streaming_title).',parameters:{type:'object',properties:{kind:{type:'string',description:'film oder serie'},genre:{type:'string',description:'z.B. Komoedie, Action, Horror, Sci-Fi, Thriller, Drama, Romantik, Krimi, Animation, Fantasy'},similar_to:{type:'string',description:'Optional: Titel, zu dem aehnliche Vorschlaege gewuenscht sind'},count:{type:'integer'}}}},
   {name:'play_streaming_title',description:'Oeffnet einen Film oder eine Serie beim passenden Streaming-Dienst (z.B. spiel Stranger Things ab). Sucht, wo der Titel laeuft, und bevorzugt die Dienste, die der Nutzer im Gehirn angekreuzt hat.',parameters:{type:'object',properties:{title:{type:'string'},provider:{type:'string',description:'Optional: Name des Dienstes, falls der Nutzer ihn nennt (z.B. Netflix)'}},required:['title']}},
   {name:'get_weather',description:'Aktuelles Wetter/Temperatur und Vorhersage. IMMER nutzen bei Fragen zu Wetter, Temperatur, Regen, Sonne, Wind. "place" NUR angeben, wenn der Nutzer einen Ort nennt - sonst weglassen (dann gilt automatisch sein Heimatort bzw. aktueller Standort; NIEMALS nach dem Ort fragen).',parameters:{type:'object',properties:{place:{type:'string',description:'Ortsname, nur wenn der Nutzer einen nennt.'},days:{type:'integer',description:'Anzahl Tage Vorhersage (Standard 1; "morgen" = 2).'}}}},
   {name:'remember',description:'Speichert etwas Dauerhaftes ueber den Nutzer (Vorlieben, Namen, Personen, Gewohnheiten, Ziele) als kurzen ganzen Satz. Keine Passwoerter.',parameters:{type:'object',properties:{text:{type:'string'},category:{type:'string',description:'Kurze Kategorie, z.B. Personen, Vorlieben, Projekte'}},required:['text']}},
@@ -381,6 +545,26 @@ const TOOLS=[
   {name:'set_timer',description:'Stellt einen Timer in der Uhr-App des Handys (laeuft auch weiter, wenn A.R.I zu ist).',parameters:{type:'object',properties:{minutes:{type:'number',description:'Dauer in Minuten (auch Kommazahlen, z.B. 0.5)'},label:{type:'string'}},required:['minutes']}},
   {name:'find_restaurant',description:'Sucht ein Restaurant und bereitet die Tischreservierung vor (Personenzahl/Zeit vorausgefuellt). Bucht nicht selbst - der Nutzer bestaetigt auf der Seite.',parameters:{type:'object',properties:{query:{type:'string'},people:{type:'integer'},when:{type:'string',description:'YYYY-MM-DD HH:MM'}},required:['query']}}
 ];
+TOOLS.push(
+  {name:'create_calendar_event',description:'Legt einen Termin im Google Kalender des Handys an (bereitet ihn vor - der Nutzer tippt im Kalender auf Speichern). Zeitpunkt als "JJJJ-MM-TT HH:MM" (Ortszeit) angeben, Datum aus "morgen/Freitag" selbst ausrechnen.',parameters:{type:'object',properties:{title:{type:'string'},start:{type:'string',description:'JJJJ-MM-TT HH:MM'},end:{type:'string',description:'optional, JJJJ-MM-TT HH:MM'},duration_minutes:{type:'number',description:'Dauer, wenn kein Ende genannt (Standard 60)'},location:{type:'string'},notes:{type:'string'}},required:['title','start']}},
+  {name:'list_calendar_events',description:'Liest die naechsten Termine aus dem Kalender der App (nur wenn ein Kalender verbunden ist).',parameters:{type:'object',properties:{days:{type:'number',description:'Wie viele Tage voraus (Standard 7)'}}}},
+  {name:'play_spotify',description:'Oeffnet Spotify auf dem Handy mit einer Suche (Song, Kuenstler, Playlist, Album). Abspielen tippt der Nutzer in Spotify selbst an - A.R.I kann auf dem Handy nicht selbst Musik starten. Das ehrlich sagen.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
+  {name:'play_youtube',description:'NUR bei Video, Trailer, Clip, Musikvideo oder ausdruecklich YouTube (z.B. Trailer zu Inception auf YouTube). Bei Film oder Serie NIE - dafuer play_streaming_title. Oeffnet YouTube auf dem Handy mit einer Suche.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
+  {name:'open_url',description:'Oeffnet eine Webseite (nur http/https) im Browser des Handys, z.B. "oeffne tagesschau.de".',parameters:{type:'object',properties:{url:{type:'string'}},required:['url']}}
+);
+TOOLS.push(
+  {name:'play_youtube_latest',description:'Oeffnet YouTube mit den NEUESTEN Videos eines Kanals (nach Datum sortiert), z.B. "das neueste Video von Dner".',parameters:{type:'object',properties:{channel:{type:'string'}},required:['channel']}},
+  {name:'search_web',description:'Oeffnet eine Google-Suche im Browser des Handys. Nur wenn der Nutzer ausdruecklich suchen will - Wissensfragen beantwortest du selbst.',parameters:{type:'object',properties:{query:{type:'string'}},required:['query']}},
+  {name:'read_emails',description:'Liest die zuletzt geladenen E-Mails (Absender und Betreff) aus der App, wenn Gmail verbunden ist.',parameters:{type:'object',properties:{query:{type:'string',description:'optional: Absender/Betreff enthaelt'}}}},
+  {name:'send_email',description:'Bereitet eine E-Mail in der Mail-App des Handys vor (Empfaenger, Betreff, Text) - der Nutzer tippt dort auf Senden. Auch fuer Antworten (Betreff mit "Re: ").',parameters:{type:'object',properties:{to:{type:'string'},subject:{type:'string'},body:{type:'string'}},required:['to']}},
+  {name:'wuerfeln',description:'Wuerfelt (Standard ein sechsseitiger Wuerfel).',parameters:{type:'object',properties:{sides:{type:'number'},count:{type:'number'}}}},
+  {name:'remember_speech_fix',description:'Merkt sich eine Sprach-Korrektur: wenn die Spracherkennung etwas Bestimmtes immer falsch schreibt (heard = was erkannt wird, meant = was gemeint ist).',parameters:{type:'object',properties:{heard:{type:'string'},meant:{type:'string'}},required:['heard','meant']}},
+  {name:'set_reminder',description:'Stellt eine Erinnerung zu einem Zeitpunkt oder in X Minuten ("erinnere mich morgen um 8 an ..."). Entweder minutes oder at (JJJJ-MM-TT HH:MM, Ortszeit, bis 30 Tage voraus). Meldet sich in der App; bei bis zu 24 Stunden zusaetzlich ueber die Uhr-App des Handys.',parameters:{type:'object',properties:{label:{type:'string'},minutes:{type:'number'},at:{type:'string'}},required:['label']}},
+  {name:'list_timers',description:'Zeigt die Timer und Erinnerungen, die A.R.I in der App gespeichert hat.',parameters:{type:'object',properties:{}}},
+  {name:'cancel_timer',description:'Bricht einen Timer/eine Erinnerung in der App ab (nach Name; leer = alle). Hinweis: ein schon in der Uhr-App des Handys gestellter Timer bleibt dort bestehen.',parameters:{type:'object',properties:{label:{type:'string'}}}},
+  {name:'change_setting',description:'Aendert eine Einstellung der App selbst: tts (Antworten vorlesen an/aus), remind (Termin-Erinnerungen an/aus), pc_route (Befehle an den PC: auto, always oder off). Ohne value wird nur der Stand genannt.',parameters:{type:'object',properties:{setting:{type:'string',enum:['tts','remind','pc_route']},value:{type:'string'}},required:['setting']}},
+  {name:'set_colors',description:'Aendert die Farben der App (Hauptfarbe und/oder Akzentfarbe als #RRGGBB), z.B. "mach die App gruen".',parameters:{type:'object',properties:{primary:{type:'string'},accent:{type:'string'}}}}
+);
 /* ---------- Streaming-Dienste (wie am PC im Gehirn ankreuzbar) ---------- */
 const STREAM=[['Netflix','https://www.netflix.com/search?q={q}',['netflix']],['Disney+','https://www.disneyplus.com/search/{q}',['disney']],
   ['Amazon Prime Video','https://www.amazon.de/s?k={q}&i=instant-video',['amazon','prime']],['Apple TV+','https://tv.apple.com/search?term={q}',['apple']],
@@ -408,15 +592,56 @@ function renderStream(){
 // Film/Serie suchen: JustWatch (wo laeuft der Titel?), eigene Dienste zuerst; klappt die Abfrage nicht, Suche beim ersten eigenen Dienst
 async function streamLookup(title,mine){
   try{
-    const q='query GetSearchTitles($f: TitleFilter!, $c: Country!, $l: Language!, $n: Int!) { popularTitles(country: $c, filter: $f, first: $n) { edges { node { offers(country: $c, platform: WEB) { monetizationType standardWebURL package { clearName } } } } } }';
+    const q='query GetSearchTitles($f: TitleFilter!, $c: Country!, $l: Language!, $n: Int!) { popularTitles(country: $c, filter: $f, first: $n) { edges { node { objectType offers(country: $c, platform: WEB) { monetizationType standardWebURL package { clearName } } } } } }';
     const ac=new AbortController(),to=setTimeout(()=>ac.abort(),6000);
     const r=await fetch('https://apis.justwatch.com/graphql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:{f:{searchQuery:title},c:'DE',l:'de',n:1}}),signal:ac.signal});clearTimeout(to);
-    const d=await r.json();const offers=(((d.data||{}).popularTitles||{}).edges||[]).map(e=>(e.node||{}).offers||[])[0]||[];
-    const flat=offers.filter(o=>o.monetizationType==='FLATRATE');
+    const d=await r.json();const node0=((((d.data||{}).popularTitles||{}).edges||[])[0]||{}).node||{};const offers=node0.offers||[];
+    const offersN=offers.filter(o=>!/youtube|twitch/i.test((o.package||{}).clearName||''));   // Filme/Serien nie ueber YouTube/Twitch
+    const flat=offersN.filter(o=>o.monetizationType==='FLATRATE');
     const mineOf=flat.filter(o=>mine.some(s=>streamMatch((o.package||{}).clearName,s)));
-    const pick=mineOf[0]||flat[0]||offers[0];if(pick&&pick.standardWebURL)return{name:(pick.package||{}).clearName||'',url:pick.standardWebURL};
+    const pick=mineOf[0]||flat[0]||offersN[0];if(pick&&pick.standardWebURL)return{name:(pick.package||{}).clearName||'',url:pick.standardWebURL,type:node0.objectType||''};
   }catch(e){}
   return null;
+}
+
+// ---- Film-/Serienvorschlaege (JustWatch Deutschland, nur Dienste im Abo des Nutzers) ----
+const JW_GENRES={action:'act',komoedie:'cmy','komödie':'cmy',lustig:'cmy',comedy:'cmy',krimi:'crm',thriller:'trl',spannend:'trl',spannung:'trl',horror:'hrr',gruselig:'hrr',grusel:'hrr',scifi:'scf','sci-fi':'scf','science fiction':'scf',fantasy:'fnt',drama:'drm',romantik:'rma',romantisch:'rma',liebe:'rma',animation:'ani',zeichentrick:'ani',anime:'ani',dokumentation:'doc',doku:'doc',familie:'fml',kinder:'fml',krieg:'war',western:'wsn',historisch:'hst',musik:'msc',sport:'spt',abenteuer:'act',mystery:'trl'};
+async function jwDiscover(f,n){
+  const q='query D($f: TitleFilter!, $c: Country!, $l: Language!, $n: Int!) { popularTitles(country: $c, filter: $f, first: $n, sortBy: POPULAR) { edges { node { objectType content(country: $c, language: $l) { title originalReleaseYear shortDescription scoring { imdbScore } genres { shortName } } offers(country: $c, platform: WEB) { monetizationType package { clearName } } } } } }';
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),8000);
+  const r=await fetch('https://apis.justwatch.com/graphql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,variables:{f,c:'DE',l:'de',n}}),signal:ac.signal});clearTimeout(to);
+  const d=await r.json();return (((d.data||{}).popularTitles||{}).edges||[]).map(e=>e.node||{});
+}
+async function streamRecommend(a){
+  try{
+    let typ=/serie|show/i.test(String(a.kind||''))?'SHOW':'MOVIE';
+    let genres=[];const g=String(a.genre||'').toLowerCase();Object.keys(JW_GENRES).forEach(w=>{if(g.indexOf(w)>=0&&genres.indexOf(JW_GENRES[w])<0)genres.push(JW_GENRES[w]);});
+    let ref='';
+    const sim=String(a.similar_to||'').trim();
+    if(sim){const f1=await jwDiscover({searchQuery:sim},1);const n0=f1[0];if(n0&&n0.content){ref=n0.content.title||sim;typ=n0.objectType||typ;const gs=(n0.content.genres||[]).map(x=>x.shortName).filter(Boolean).slice(0,2);if(gs.length)genres=gs;}}
+    const flt={objectTypes:[typ]};if(genres.length)flt.genres=genres.slice(0,2);
+    const nodes=await jwDiscover(flt,60);
+    const mine=streamMine();
+    const rows=[];
+    nodes.forEach(n=>{
+      const c=n.content||{};if(!c.title)return;
+      if(ref&&c.title.toLowerCase().replace(/\W+/g,'')===ref.toLowerCase().replace(/\W+/g,''))return;
+      const names=[];
+      (n.offers||[]).filter(o=>o.monetizationType==='FLATRATE').forEach(o=>{
+        const nm=(o.package||{}).clearName||'';if(!nm||/youtube|twitch/i.test(nm)||names.indexOf(nm)>=0)return;
+        if(!mine.length||mine.some(s=>streamMatch(nm,s)&&!(/ channel/i.test(nm)&&/amazon|apple/i.test(s))))names.push(nm);
+      });
+      if(mine.length&&!names.length)return;
+      const sc=(c.scoring||{}).imdbScore||0;if(sc&&sc<6.3)return;
+      rows.push({sc,t:c.title,y:c.originalReleaseYear,nm:names.slice(0,2),d:(c.shortDescription||'').slice(0,110)});
+    });
+    if(!rows.length)return mine.length?'Dazu habe ich bei deinen Streaming-Diensten nichts Passendes gefunden.':'Dazu habe ich nichts Passendes gefunden.';
+    rows.sort((x,y)=>y.sc-x.sc);
+    const pool=rows.slice(0,Math.max((a.count||5)+4,8));
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+    const pick=pool.slice(0,Math.max(1,Math.min(8,a.count||5))).sort((x,y)=>y.sc-x.sc);
+    return 'Vorschlaege'+(ref?" passend zu '"+ref+"'":'')+' ('+(typ==='SHOW'?'Serien':'Filme')+')'+(mine.length?' - nur bei deinen Diensten':'')+':\n'+pick.map(r=>'- '+r.t+(r.y?' ('+r.y+')':'')+(r.sc?', IMDb '+r.sc:'')+(r.nm.length?' - '+r.nm.join(', '):'')+(r.d?': '+r.d:'')).join('\n')+'\nFrag den Nutzer, ob er einen davon starten will (dann play_streaming_title).';
+  }catch(e){return 'Vorschlaege konnten gerade nicht geladen werden.';}
 }
 let links=[];
 function runTool(name,a){
@@ -501,7 +726,7 @@ async function runProvider(p,key,history,small,query){
 function keyList(p){const k=[cfg.keys[p]||''];if(p==='groq')(sync.groqAll||[]).slice(1).forEach(x=>k.push(x));return [...new Set(k.filter(Boolean))];}
 async function runWithKeys(p,keys,h,small,q){let last;for(const k of keys){try{return await runProvider(p,k,h,small,q);}catch(e){last=e;if(!isLimit(e))throw e;}}throw last;}
 const isLimit=e=>e&&(e.status===429||/rate|quota|limit|overload|exhaust/i.test(String(e.message)));
-const PC_RE=/\b(pc|rechner|computer|laptop)\b|lautst[aä]rke|\bleiser\b|\blauter\b|\bstumm\b|screenshot|bildschirmfoto|minimier|maximier/i;
+const PC_RE=/\b(pc|rechner|computer|laptop)\b|lautst[aä]rke|\bleiser\b|\blauter\b|\bstumm\b|screenshot|bildschirmfoto|minimier|maximier|einstellung|kachel|\bdesign\b|automati|bildschirm|schau auf|windows.?start|weckwort|spielmodus|performance|sparmodus|steam|discord|mikrofon|empfindlich/i;   // auch die neuen PC-Funktionen (Einstellungen, Kacheln, Design, Automationen, Bildschirm) laufen ueber den PC
 async function askPc(){track('chat_via_pc');
   const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),70000);
   try{
@@ -2154,6 +2379,178 @@ if('serviceWorker' in navigator&&!NATIVE){navigator.serviceWorker.register('sw.j
     else setTimeout(()=>{busy=false;next();},800+x.t.length*60);
   }
   setInterval(poll,5000);setTimeout(poll,3000);
+})();
+
+// ---- Neu in 1.6.75: Timer, Automationen und Bildschirm am PC ----
+(function(){
+  const G=id=>document.getElementById(id);
+  const hdr=()=>({'Content-Type':'application/json','X-Ari-Token':sync.token});
+  const linked=()=>!!(sync&&sync.token&&sync.origin);
+  async function api(path,body){
+    const r=await hubFetch(path,body===undefined?{headers:hdr()}:{method:'POST',headers:hdr(),body:JSON.stringify(body)});
+    if(!r.ok){const e=new Error('http '+r.status);e.status=r.status;throw e;}
+    return r.json();
+  }
+  function row(title,sub,btns){
+    const d=document.createElement('div');d.className='pcn-row';
+    const l=document.createElement('div');const b=document.createElement('b');b.textContent=title;l.appendChild(b);
+    if(sub){const s=document.createElement('small');s.textContent=sub;l.appendChild(s);}
+    d.appendChild(l);const r=document.createElement('div');r.style.cssText='display:flex;gap:6px;align-items:center';
+    (btns||[]).forEach(x=>r.appendChild(x));d.appendChild(r);return d;
+  }
+  function btn(txt,fn,cls){const b=document.createElement('button');b.type='button';b.textContent=txt;b.className=cls||'pcn-x';if(!cls)b.style.fontSize='12px';b.onclick=fn;return b;}
+  const fmt=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,'0');return (d?d+'T ':'')+(h||d?h+':'+p(m)+':'+p(x):p(m)+':'+p(x));};
+  // ---------- Timer ----------
+  let tmList=[],tmOff=0;
+  async function tmLoad(){
+    const box=G('pcTmList');if(!box)return;
+    if(!linked()){box.textContent='Verbinde dich mit dem PC.';return;}
+    try{const d=await api('/phone/api/timers');tmOff=(d.now||Date.now())-Date.now();tmList=d.timers||[];tmDraw();}catch(e){box.textContent='PC nicht erreichbar.';}
+  }
+  function tmDraw(){
+    const box=G('pcTmList');if(!box||!G('pcTmSec').open)return;
+    if(!tmList.length){box.textContent='Gerade läuft kein Timer und keine Erinnerung.';box.className='dim';return;}
+    box.className='';box.textContent='';
+    const now=(Date.now()+tmOff)/1000;
+    tmList.slice().sort((x,y)=>x.due-y.due).forEach(t=>{
+      const left=t.due-now,late=left<0;
+      box.appendChild(row((t.kind==='reminder'?'Erinnerung: ':'Timer: ')+(t.label||'ohne Namen'),late?'war fällig vor '+fmt(-left):'noch '+fmt(left),
+        [btn('✕',async()=>{try{await api('/phone/api/timers/done',{id:t.id});}catch(e){}tmLoad();})]));
+    });
+  }
+  async function tmAdd(kind){
+    const min=parseFloat(G('pcTmMin').value),msg=G('pcTmMsg');
+    if(!(min>0)){msg.textContent='Bitte Minuten eintragen.';return;}
+    try{const d=await api('/phone/api/timers/add',{seconds:Math.round(min*60),label:G('pcTmLbl').value.trim(),kind});msg.textContent=d.message||'Gestellt.';G('pcTmMin').value='';tmLoad();}
+    catch(e){msg.textContent='Das hat nicht geklappt – ist der PC erreichbar?';}
+  }
+  // ---------- Automationen ----------
+  async function auLoad(){
+    const box=G('pcAuList');if(!box)return;
+    if(!linked()){box.textContent='Verbinde dich mit dem PC.';return;}
+    let d;try{d=await api('/phone/api/automations');}catch(e){
+      box.className='dim';box.textContent=e.status===404?'Der Mod „Automationen“ ist am PC nicht installiert (PC: Einstellungen › MODS).':'PC nicht erreichbar.';return;}
+    const rules=d.rules||[];box.textContent='';box.className='';
+    if(!rules.length){box.className='dim';box.textContent='Noch keine Automationen.';return;}
+    rules.forEach(r=>{
+      const on=document.createElement('input');on.type='checkbox';on.checked=r.enabled!==false;on.style.cssText='width:auto;accent-color:var(--pink)';
+      on.onchange=async()=>{try{await api('/phone/api/automations/toggle',{id:r.id,enabled:on.checked});}catch(e){}};
+      box.appendChild(row(r.name,r.text||'',[on,btn('TEST',async()=>{try{await api('/phone/api/automations/test',{id:r.id});}catch(e){}},'pcn-x'),btn('✕',async()=>{if(!confirm('Automation „'+r.name+'“ löschen?'))return;try{await api('/phone/api/automations/delete',{id:r.id});}catch(e){}auLoad();})]));
+    });
+  }
+  async function pcChat(text){
+    const r=await hubFetch('/phone/api/chat',{timeout:150000,method:'POST',headers:hdr(),body:JSON.stringify({messages:[{role:'user',content:text}]})});
+    if(!r.ok)throw new Error('http '+r.status);const d=await r.json();return String(d.reply||'').trim();
+  }
+  async function auNew(){
+    const t=G('pcAuSay').value.trim(),msg=G('pcAuMsg');
+    if(t.length<8){msg.textContent='Bitte die Regel in ganzen Worten schreiben.';return;}
+    msg.textContent='Der PC legt die Regel an …';
+    try{const a=await pcChat('Lege eine Automation an: '+t);msg.textContent=a||'Erledigt.';G('pcAuSay').value='';auLoad();}
+    catch(e){msg.textContent='Das hat nicht geklappt – ist der PC erreichbar?';}
+  }
+  // ---------- Bildschirm ----------
+  async function scrGo(){
+    const out=G('pcScrOut'),q=G('pcScrQ').value.trim(),b=G('pcScrGo');
+    if(!linked()){out.textContent='Verbinde dich zuerst mit dem PC.';return;}
+    b.disabled=true;out.textContent='A.R.I schaut auf den PC-Bildschirm …';
+    try{out.textContent=await pcChat('Schau auf den Bildschirm und '+(q||'erkläre, was ich sehe und was ich als Nächstes tun sollte')+'.')||'Keine Antwort.';}
+    catch(e){out.textContent='Das hat nicht geklappt – ist der PC erreichbar?';}
+    b.disabled=false;
+  }
+  G('pcTmAdd').onclick=()=>tmAdd('timer');G('pcTmRem').onclick=()=>tmAdd('reminder');
+  G('pcAuNew').onclick=auNew;G('pcScrGo').onclick=scrGo;
+  G('pcTmSec').addEventListener('toggle',()=>{if(G('pcTmSec').open)tmLoad();});
+  G('pcAuSec').addEventListener('toggle',()=>{if(G('pcAuSec').open)auLoad();});
+  setInterval(()=>{if(G('pcTmSec').open){tmDraw();}},1000);
+  setInterval(()=>{if(G('pcTmSec').open&&document.visibilityState==='visible')tmLoad();},8000);
+  // ---------- goldene NEU-Abzeichen (nach einem Update) ----------
+  const NEW_REL=105;
+  let nb=store.get('ari-app-newbase',null);
+  if(nb==null){nb=(sync&&sync.token)?NEW_REL-1:NEW_REL;store.set('ari-app-newbase',nb);}   // frisch installiert (noch nicht gekoppelt): kein NEU
+  const seenSet=()=>new Set(store.get('ari-app-newseen',[]));
+  const pills=[];
+  function pill(extra){const p=document.createElement('span');p.className='newg'+(extra?' '+extra:'');p.textContent='NEU';return p;}
+  function markSeen(id){const s=seenSet();s.add(id);store.set('ari-app-newseen',[...s]);document.querySelectorAll('.newg[data-newid="'+id+'"]:not(.newg-nav)').forEach(p=>p.remove());
+    if(!document.querySelector('#pcNew .newg,#appNew .newg')){G('pcNewTag').style.display='none';document.querySelectorAll('.newg-nav').forEach(p=>p.remove());}}
+  [['appNewSec','app-tools'],['pcTmSec','app-timer'],['pcAuSec','app-automationen'],['pcScrSec','app-bildschirm']].forEach(([sec,id])=>{
+    if(NEW_REL<=nb||seenSet().has(id)){return;}
+    const sum=G(sec).querySelector('summary'),p=pill();p.dataset.newid=id;sum.appendChild(p);
+    G(sec).addEventListener('toggle',()=>{if(G(sec).open)markSeen(id);});pills.push(id);
+  });
+  if(!pills.length){G('pcNewTag').style.display='none';}
+  else{const nav=document.querySelector('nav button[data-t="pc"]');if(nav){const p=pill('newg-nav');p.dataset.newid=pills[0];nav.appendChild(p);}}
+})();
+
+// ---- Neu: Termin-Erinnerungen auf dem Handy (Ansage in der App + Wecker-Timer, wenn die App zu ist) ----
+(function(){
+  const KEY='ari-app-reminded',LEADS=[1440,60,30,5];
+  const getSt=()=>store.get(KEY,{});
+  const putSt=o=>{const cut=Date.now()-3*86400000;Object.keys(o).forEach(k=>{if(o[k]<cut)delete o[k];});store.set(KEY,o);};
+  const enabled=()=>cfg.remind!==false;
+  const clock=d=>d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  const day0=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+  function when(e,mins){
+    const dd=Math.round((day0(e.start)-day0(new Date()))/86400000),at=clock(e.start);
+    if(mins>=1320)return (dd<=1?'morgen':dd===2?'übermorgen':'in '+dd+' Tagen')+' um '+at;
+    if(mins>=90)return 'in '+Math.round(mins/60)+' Stunden';
+    if(mins>=55)return 'in etwa einer Stunde';
+    if(mins<=1)return 'gleich';
+    return 'in '+mins+' Minuten';
+  }
+  function say(kind,e,mins){
+    const loc=e.location?' – '+e.location:'';
+    const t=kind==='now'?e.title+' beginnt jetzt'+loc+'.':kind==='allday'?'Heute ganztägig: '+e.title+'.':kind==='allday_pre'?'Morgen ganztägig: '+e.title+'.':'Erinnerung: '+e.title+' beginnt '+when(e,mins)+loc+'.';
+    try{addMsg('a',t);hist.push({role:'assistant',content:t});if(hist.length>20)hist.splice(0,hist.length-20);const lg=document.getElementById('log');if(lg)lg.scrollTop=1e9;}catch(x){}
+    try{toast(t);}catch(x){}
+    try{speak(t);}catch(x){}
+    try{if(navigator.vibrate)navigator.vibrate([200,100,200]);}catch(x){}
+  }
+  function items(){
+    return ((calCache&&calCache.events)||[]).map(r=>{const s=new Date(r.start);return isNaN(s)?null:{title:r.title||'Termin',start:s,end:r.end?new Date(r.end):null,allDay:!!r.allDay,location:r.location||''};}).filter(Boolean);
+  }
+  function tick(){
+    if(!enabled())return;
+    const ev=items();if(!ev.length)return;
+    const now=Date.now(),st=getSt(),today0=day0(new Date());let ch=false;
+    for(const e of ev){
+      if(e.allDay){
+        const s0=day0(e.start),e0=Math.max(s0+86400000,e.end?day0(e.end):0);
+        const k='ad:'+e.title+s0+':'+today0;
+        if(s0<=today0&&e0>today0&&!st[k]){st[k]=now;ch=true;say('allday',e);}
+        const kp='adpre:'+e.title+s0;   // Tag vorher ab 12 Uhr
+        if(s0>today0&&s0-now>0&&s0-now<=12*3600000&&!st[kp]){st[kp]=now;ch=true;say('allday_pre',e);}
+        continue;
+      }
+      const t=e.start.getTime(),diff=t-now,kNow='now:'+e.title+t;
+      if(diff<=30000){if(diff>-5*60000&&!st[kNow]){st[kNow]=now;LEADS.forEach(L=>{st['pre'+L+':'+e.title+t]=now;});ch=true;say('now',e);}continue;}
+      const app=LEADS.filter(L=>diff<=L*60000);if(!app.length)continue;
+      const tight=app[app.length-1],kt='pre'+tight+':'+e.title+t;
+      if(!st[kt]){app.forEach(L=>{st['pre'+L+':'+e.title+t]=now;});ch=true;say('pre',e,Math.max(1,Math.round(diff/60000)));}
+    }
+    if(ch)putSt(st);
+  }
+  // Wenn die App zu ist: Timer in der Uhr-App des Handys (klingelt von selbst)
+  async function schedule(){
+    const W=NATIVE&&window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AriWake;if(!W||!W.setTimer||!enabled())return;
+    const st=store.get('ari-app-evtimers',{}),now=Date.now();let n=0;
+    Object.keys(st).forEach(k=>{if(st[k]<now-86400000)delete st[k];});
+    for(const e of items()){
+      if(n>=6)break;
+      let at,label;
+      if(e.allDay){const s0=day0(e.start);at=s0-12*3600000;label='Morgen: '+e.title;}
+      else{at=e.start.getTime()-60*60000;label=e.title+' in 1 Stunde';}
+      const secs=Math.round((at-now)/1000),k='tm:'+e.title+e.start.getTime();
+      if(secs<60||secs>24*3600||st[k])continue;
+      try{await W.setTimer({seconds:secs,label:label.slice(0,40)});st[k]=now;n++;}catch(x){}
+    }
+    store.set('ari-app-evtimers',st);
+  }
+  const cb=document.getElementById('appRemind');
+  if(cb){cb.checked=enabled();cb.onchange=()=>{cfg.remind=cb.checked;saveCfg();if(cb.checked){tick();schedule();}};}
+  setInterval(tick,30000);setTimeout(tick,4000);
+  setInterval(schedule,10*60000);setTimeout(schedule,8000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){tick();}});
 })();
 
 })();

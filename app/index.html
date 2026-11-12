@@ -25,6 +25,15 @@
   --panel-border:color-mix(in srgb,var(--pink) 26%,rgba(255,255,255,.08));
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+.newg{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:99px;font:700 9px/1.7 var(--font-mono);letter-spacing:.14em;color:#2a1c00;background:linear-gradient(135deg,#ffe58a,#f5b301 55%,#ffd75e);box-shadow:0 0 8px rgba(255,200,60,.6);vertical-align:middle;text-transform:none;animation:newgPulse 2.2s ease-in-out infinite}
+nav button{position:relative}
+.newg-nav{position:absolute;top:2px;right:6px;margin:0;pointer-events:none}
+@keyframes newgPulse{0%,100%{box-shadow:0 0 6px rgba(255,200,60,.5)}50%{box-shadow:0 0 14px rgba(255,210,80,.95)}}
+.pcn-row{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-size:12px}
+.pcn-row small{display:block;opacity:.65;margin-top:2px;line-height:1.4}
+.pcn-x{cursor:pointer;opacity:.75;padding:2px 8px;border:1px solid rgba(255,90,90,.5);border-radius:8px;color:var(--danger);background:none;font:inherit}
+.pcn-in{width:100%;margin:4px 0;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:var(--text);font:inherit}
+
 html,body{height:100%;overflow:hidden}
 body{
   background:
@@ -562,6 +571,46 @@ body.syncing .syncspin{display:inline-block}
           <div id="pcState" style="margin:0 0 10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);font-size:12px;line-height:1.5">Nicht mit dem PC verbunden.</div>
           <div class="dim" style="margin-bottom:10px">Die App läuft ohne PC. Für Bildschirm, Steuerung und Mediensteuerung müsst ihr im selben WLAN sein.</div>
           <div class="dim2" id="pcMsg" style="margin-top:4px;margin-bottom:10px"></div>
+          <div class="panel" id="appNew" style="margin-bottom:10px">
+            <div class="panel-h cy"><span class="ico">✦</span><span class="t">NEU IN DER APP</span></div>
+            <details class="set-section" id="appNewSec"><summary>WAS A.R.I AUCH OHNE PC KANN</summary><div class="set-section-body">
+              <div class="dim" style="line-height:1.6">
+                • <b>Termine:</b> „Trag morgen um 15 Uhr Zahnarzt ein“ – A.R.I bereitet den Termin im Google Kalender vor, du tippst dort nur auf Speichern. „Was habe ich diese Woche?“ liest deine Termine vor.<br>
+                • <b>Musik:</b> „Spiel Queen auf Spotify“ öffnet Spotify mit der Suche. Das Abspielen tippst du dort selbst an.<br>
+                • <b>YouTube und Webseiten:</b> „Suche auf YouTube nach …“ oder „Öffne tagesschau.de“.<br>
+                • <b>Filme und Serien:</b> „Ich möchte Inception schauen“ öffnet den passenden Dienst; Filme starten bei Netflix und Prime Video direkt.<br>
+                • <b>Erinnerungen und Timer:</b> „Erinnere mich morgen um 8 an …“ – mit Liste und Abbrechen. Zusätzlich klingelt die Uhr-App, wenn A.R.I zu ist (bis 24 Stunden).<br>
+                • <b>E-Mail, Suche, Würfel:</b> „Schreib Max eine Mail …“ bereitet sie in der Mail-App vor; „Suche …“ öffnet Google; „Würfle“ würfelt.<br>
+                • <b>Die App selbst per Sprache:</b> „Antworten nicht mehr vorlesen“, „Befehle immer an den PC“, „Mach die App grün“.<br>
+                • <b>Route:</b> „Route nach Hamburg“ öffnet Google Maps (wie bisher).<br>
+                • <b>Am PC:</b> Einstellungen, Kacheln, Design, Automationen und Bildschirm gehen über den PC im WLAN.<br>
+                • <b>Termin-Erinnerungen:</b> A.R.I meldet sich vor Terminen (1 Tag, 1 Stunde, 30 und 5 Minuten vorher) und sagt ganztägige Termine wie Geburtstage schon am Tag davor an.
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;justify-content:flex-start"><input type="checkbox" id="appRemind" style="width:auto;accent-color:var(--pink)"> Termine auf dem Handy ansagen</label>
+            </div></details>
+          </div>
+          <div class="panel" id="pcNew" style="margin-bottom:10px">
+            <div class="panel-h cy"><span class="ico">⚡</span><span class="t">AM PC</span><span class="tag" id="pcNewTag">NEU</span></div>
+            <details class="set-section" id="pcTmSec"><summary>TIMER UND ERINNERUNGEN</summary><div class="set-section-body">
+              <div id="pcTmList" class="dim">Verbinde dich mit dem PC.</div>
+              <input class="pcn-in" id="pcTmLbl" type="text" maxlength="60" placeholder="Wofür? (z. B. Nudeln, Wäsche aufhängen)" autocomplete="off">
+              <div style="display:flex;gap:8px"><input class="pcn-in" id="pcTmMin" type="number" min="1" max="43200" placeholder="Minuten" style="flex:1"><button class="btn pri" id="pcTmAdd" type="button" style="flex:1">TIMER</button><button class="btn" id="pcTmRem" type="button" style="flex:1">ERINNERUNG</button></div>
+              <div class="dim2" id="pcTmMsg" style="margin-top:6px;min-height:14px"></div>
+            </div></details>
+            <details class="set-section" id="pcAuSec"><summary>AUTOMATIONEN</summary><div class="set-section-body">
+              <div id="pcAuList" class="dim">Verbinde dich mit dem PC.</div>
+              <div class="dim2" style="margin-top:8px">Neue Regel in eigenen Worten, z. B. „Wenn ich Steam starte, schalte den Spielmodus an“:</div>
+              <input class="pcn-in" id="pcAuSay" type="text" maxlength="200" placeholder="Wenn … dann …" autocomplete="off">
+              <button class="btn pri" id="pcAuNew" type="button" style="width:100%">REGEL ANLEGEN</button>
+              <div class="dim2" id="pcAuMsg" style="margin-top:6px;min-height:14px"></div>
+            </div></details>
+            <details class="set-section" id="pcScrSec"><summary>BILDSCHIRM ERKLÄREN</summary><div class="set-section-body">
+              <div class="dim">A.R.I schaut auf deinen PC-Bildschirm und erklärt Fehler oder Seiten. Das Bild geht dafür einmalig an deinen KI-Anbieter (braucht Claude, ChatGPT oder Gemini).</div>
+              <input class="pcn-in" id="pcScrQ" type="text" maxlength="200" placeholder="Was soll A.R.I dazu sagen? (leer = erklären)" autocomplete="off">
+              <button class="btn pri" id="pcScrGo" type="button" style="width:100%">BILDSCHIRM ANSEHEN</button>
+              <div id="pcScrOut" style="margin-top:8px;font-size:13px;line-height:1.5;white-space:pre-wrap"></div>
+            </div></details>
+          </div>
           <div style="padding:9px 0;border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:10px">
             <button type="button" class="btn pri" id="pcSimBtn" style="width:100%">▣ PC-VERSION STARTEN</button>
             <div style="font-size:11px;opacity:.55;line-height:1.45;margin-top:6px">Zeigt die A.R.I-Oberfläche wie am PC direkt in der App (Planet + Astro, Live-Werte vom PC). Solange sie an ist, <b>bleibt der Bildschirm an</b> und geht nicht mehr aus.</div>
