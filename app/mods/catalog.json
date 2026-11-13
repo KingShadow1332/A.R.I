@@ -4,10 +4,10 @@
                      "id":  "discord",
                      "name":  "Discord",
                      "description":  "Discord im HUD: Sprachkanal-Kachel, private Nachrichten und Erwähnungen, Stream im Planeten – mit Stream-Fix.",
-                     "version":  "1.1.10",
+                     "version":  "1.1.11",
                      "icon":  "💬",
-                     "zip":  "discord-1.1.10.zip",
-                     "sha256":  "cb010bdb87efacb4ef1739f978f29d775dd10d64eb3861a911f4aa1321ae92ac",
+                     "zip":  "discord-1.1.11.zip",
+                     "sha256":  "a98db94a6fc18244f4d77a00e2f7ca9adbc45d329e69e0f9de70f0c0b334f8b3",
                      "min_core":  77,
                      "details":  [
                                      "Neue Kachel „Discord“: zeigt deinen Sprachkanal, den Server und die Leute darin. Wer spricht, bekommt sofort einen grünen Ring; Stumm und Taub sind markiert.",
@@ -20,7 +20,8 @@
                                      "Ein Schalter: In den Einstellungen steuert „Discord automatisch in der Hauptkachel zeigen“ alles (Stream-Pop-out und Planet bei Sprechern). Aus = A.R.I fasst Discord nicht an.",
                                      "Fürs Spielen: Läuft ein Vollbild-Spiel im Vordergrund (z. B. SnowRunner), lässt das Mod Discord ganz in Ruhe und das HUD schaltet nicht auf den Stream um – es bleibt beim Planeten. Das Pop-out liegt nur direkt über A.R.I, nie über anderen Fenstern. Es werden nur Fenster von Discord.exe benutzt, andere Fenster fasst das Mod nie an.",
                                      "Pop-out in der Kachel: kein Flackern, Astro nur einmal, Bild sofort da; die Titelleiste ist wieder durchsichtig (das HUD scheint hindurch). Discord-Bilder erscheinen an der Benachrichtigung.",
-                                     "Läuft dein Spiel auf einem anderen Bildschirm als A.R.I, bleibt der Discord-Stream in der Kachel sichtbar - nur ein Vollbild-Spiel auf demselben Monitor blendet ihn aus. Die Titelleiste des Pop-outs ist jetzt wirklich durchsichtig, und der Streifen liegt immer über dem Fenster."
+                                     "Läuft dein Spiel auf einem anderen Bildschirm als A.R.I, bleibt der Discord-Stream in der Kachel sichtbar - nur ein Vollbild-Spiel auf demselben Monitor blendet ihn aus. Die Titelleiste des Pop-outs ist jetzt wirklich durchsichtig, und der Streifen liegt immer über dem Fenster.",
+                                     "Das automatische Pop-out klickt nicht mehr blind ins Discord-Fenster: Wenn du im Chat schreibst oder auf Leute klickst, bleibt alles, wie es ist - A.R.I drückt nur noch den Pop-out-Knopf, wenn er wirklich zu sehen ist."
                                  ]
                  },
                  {
